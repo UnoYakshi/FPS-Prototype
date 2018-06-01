@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/UnoYakshi/FPS-Prototype/badge.svg?branch=master)](https://coveralls.io/github/UnoYakshi/FPS-Prototype?branch=master)
+
 # FPS-Prototype
 There are a few main project's ideas:
 1. Create a shooting range level for TFPS (tactical FPS) for future weapons tests.
