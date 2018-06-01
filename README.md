@@ -1,4 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/github/UnoYakshi/FPS-Prototype/badge.svg?branch=master)](https://coveralls.io/github/UnoYakshi/FPS-Prototype?branch=master)
+[![CodeFactor](https://www.codefactor.io/repository/github/unoyakshi/fps-prototype/badge)](https://www.codefactor.io/repository/github/unoyakshi/fps-prototype)
 
 # FPS-Prototype
 There are a few main project's ideas:
