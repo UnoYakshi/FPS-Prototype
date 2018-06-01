@@ -129,7 +129,7 @@ void AProtCharacter::Use_Implementation()
 		if (Usable)
 		{
 			CurrentInteractive = Usable;
-			Usable->OnUse();
+			Usable->OnUse(this);
 		}
 		else
 		{
@@ -148,7 +148,7 @@ void AProtCharacter::StopUsing_Implementation()
 {
 	if (CurrentInteractive)
 	{
-		CurrentInteractive->OnStopUsing();
+		CurrentInteractive->OnStopUsing(this);
 		CurrentInteractive = nullptr;
 	}
 }

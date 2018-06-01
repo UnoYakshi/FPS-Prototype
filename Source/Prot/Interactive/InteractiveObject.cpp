@@ -22,25 +22,31 @@ void AInteractiveObject::Tick(float DeltaTime)
 }
 
 // Interactive...
-void AInteractiveObject::OnUse()
+bool AInteractiveObject::OnUse_Implementation(AActor* Initiator)
 {
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnUse"));
+	return true;
 }
 
-void AInteractiveObject::OnStopUsing()
+bool AInteractiveObject::OnStopUsing_Implementation(AActor* Initiator)
 {
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnStopUsing"));
+	return true;
 }
 
-void AInteractiveObject::OnFocusBegin()
+bool AInteractiveObject::OnFocusBegin_Implementation()
 {
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnFocusStart"));
+	return true;
 }
 
-void AInteractiveObject::OnFocusEnd()
+bool AInteractiveObject::OnFocusEnd_Implementation()
 {
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnFocusEnd"));
+	return true;
 }
 
