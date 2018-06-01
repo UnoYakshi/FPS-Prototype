@@ -6,6 +6,7 @@
 AInteractiveObject::AInteractiveObject()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bIsUsed = false;
 
 }
 
@@ -25,28 +26,30 @@ void AInteractiveObject::Tick(float DeltaTime)
 bool AInteractiveObject::OnUse_Implementation(AActor* Initiator)
 {
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnUse"));
-	return true;
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), _T("OnUse")));
+	bIsUsed = true;
+	return bIsUsed;
 }
 
 bool AInteractiveObject::OnStopUsing_Implementation(AActor* Initiator)
 {
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnStopUsing"));
-	return true;
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), _T("OnStopUsing")));
+	bIsUsed = false;
+	return bIsUsed;
 }
 
 bool AInteractiveObject::OnFocusBegin_Implementation()
 {
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnFocusStart"));
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnFocusStart"));
 	return true;
 }
 
 bool AInteractiveObject::OnFocusEnd_Implementation()
 {
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), "OnFocusEnd"));
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(_T("INTERACTION %s"), _T("OnFocusEnd")));
 	return true;
 }
 
