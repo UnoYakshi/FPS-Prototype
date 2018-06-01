@@ -20,7 +20,10 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	/** Interactive "interface"... */
 	virtual void OnUse();
+	virtual void OnStopUsing();
+
 	virtual void OnFocusBegin();
 	virtual void OnFocusEnd();
 	

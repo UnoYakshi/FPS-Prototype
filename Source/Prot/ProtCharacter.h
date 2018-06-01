@@ -31,8 +31,31 @@ public:
 	float BaseLookUpRate;
 
 public:
+	/** Weapon's mesh to hold in hands... */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* WeaponMesh;
+
+	/** Current InteractiveObject... */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	AInteractiveObject* CurrentInteractive;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interaction")
+	float MaxUseDistance;
+
+	/** Performs raytrace to find closest looked - at UsableActor.*/
+	class AInteractiveObject* GetInteractiveInView();
+
+	/** Basic interaction with InteractiveObjects... */
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Interaction")
+	virtual void Use();
+	virtual void Use_Implementation();
+	bool Use_Validate();
+
+	/** Stop the interaction with InteractiveObjects... */
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Interaction")
+	virtual void StopUsing();
+	virtual void StopUsing_Implementation();
+	bool StopUsing_Validate();
 
 protected:
 
