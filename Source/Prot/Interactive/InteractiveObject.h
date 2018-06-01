@@ -21,10 +21,20 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/** Interactive "interface"... */
-	virtual void OnUse();
-	virtual void OnStopUsing();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool OnUse(AActor* Initiator);
+	bool OnUse_Implementation(AActor* Initiator);
 
-	virtual void OnFocusBegin();
-	virtual void OnFocusEnd();
-	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool OnStopUsing(AActor* Initiator);
+	bool OnStopUsing_Implementation(AActor* Initiator);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool OnFocusBegin();
+	bool OnFocusBegin_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool OnFocusEnd();
+	bool OnFocusEnd_Implementation();
+
 };

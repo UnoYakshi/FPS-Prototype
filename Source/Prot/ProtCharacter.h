@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "ProtCharacter.generated.h"
 
+// Forward declarations...
+class AInteractiveObject;
+
 UCLASS(config=Game)
 class AProtCharacter : public ACharacter
 {

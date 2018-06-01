@@ -15,9 +15,15 @@ class PROT_API ASwitcherObject : public AInteractiveObject
 	GENERATED_BODY()
 
 public:
-	virtual void OnUse() override;
-	virtual void TurnOn();
-	virtual void TurnOff();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool OnUse(AActor* Initiator);
+	bool OnUse_Implementation(AActor* Initiator);
+
+	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	//bool OnStopUsing(AActor* Initiator) override;
+
+	bool TurnOn();
+	bool TurnOff();
 	
 	
 };

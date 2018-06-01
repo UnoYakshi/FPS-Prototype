@@ -2,18 +2,22 @@
 
 #include "SwitcherObject.h"
 
-void ASwitcherObject::OnUse()
+bool ASwitcherObject::OnUse_Implementation(AActor* Initiator)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("SWITCH %s"), "OnUse"));
+	return true;
+
 }
 
-void ASwitcherObject::TurnOn()
+bool ASwitcherObject::TurnOn()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("SWITCH %s"), "ON"));
+	return true;
 }
 
-void ASwitcherObject::TurnOff()
+bool ASwitcherObject::TurnOff()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(_T("SWITCH %s"), "OFF"));
+	return true;
 }
 
