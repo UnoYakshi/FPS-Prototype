@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "DrawDebugHelpers.h"
 #include "Interactive/InteractiveObject.h"
 
 
@@ -68,7 +69,7 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
-	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::StopUsing);
+	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProtCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AProtCharacter::MoveRight);
@@ -112,8 +113,7 @@ AInteractiveObject* AProtCharacter::GetInteractiveInView()
 
 	FHitResult Hit(ForceInit);
 	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, TraceParams);
-
-	//DrawDebugLine(GetWorld(), start_trace, end_trace, FColor(255, 255, 255), false, 1);
+	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 255, 255), false, 1);
 
 	return Cast< AInteractiveObject >(Hit.GetActor());
 }
