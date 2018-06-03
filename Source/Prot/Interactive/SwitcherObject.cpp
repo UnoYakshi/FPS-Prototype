@@ -8,14 +8,14 @@ bool ASwitcherObject::OnUse_Implementation(AActor* Initiator)
 	return true;
 }
 
-bool ASwitcherObject::TurnOn()
+bool ASwitcherObject::TurnOn_Implementation()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(_T("SWITCH %s"), _T("ON")));
 	bIsUsed = true;
 	return bIsUsed;
 }
 
-bool ASwitcherObject::TurnOff()
+bool ASwitcherObject::TurnOff_Implementation()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(_T("SWITCH %s"), _T("OFF")));
 	bIsUsed = false;

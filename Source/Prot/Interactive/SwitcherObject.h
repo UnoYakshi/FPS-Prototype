@@ -22,8 +22,13 @@ public:
 	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	//bool OnStopUsing(AActor* Initiator) override;
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	bool TurnOn();
+	bool TurnOn_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	bool TurnOff();
-	
+	bool TurnOff_Implementation();
+
 	
 };
