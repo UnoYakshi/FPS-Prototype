@@ -1,12 +1,40 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Prot.h"
 #include "Weapon.h"
+
+#include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystem.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "TimerManager.h"
+#include "Net/UnrealNetwork.h"
+
+
+static int32 DebugWeaponDrawing = 0;
+FAutoConsoleVariableRef CVARDebugWeaponDrawing(
+	_T("PROT.DebugWeapons"),
+	DebugWeaponDrawing,
+	_T("Draw Debug Lines for Weapons"),
+	ECVF_Cheat);
 
 
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	SKMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
+	RootComponent = SKMeshComp;
+
+	MuzzleSocketName = FName("Muzzle");
+	TracerTargetName = FName("Target");
+
+	SetReplicates(true);
+
+	NetUpdateFrequency = 66.0f;
+	MinNetUpdateFrequency = 33.0f;
 }
 
 void AWeapon::BeginPlay()
@@ -22,8 +50,9 @@ void AWeapon::Tick(float DeltaTime)
 }
 
 void AWeapon::Fire()
-{
-	if (ROLE == ROLE_Authority)
+{	
+
+	if (Role == ROLE_Authority)
 	{
 		ServerFire();
 	}
@@ -42,7 +71,7 @@ void AWeapon::Fire()
 		float HalfRad = FMath::DegreesToRadians(WeaponData.BulletSpread);
 
 		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(MyOwner);
+		QueryParams.AddIgnoredActor(WeaponOwner);
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
 		QueryParams.bReturnPhysicalMaterial = true;
@@ -57,13 +86,13 @@ void AWeapon::Fire()
 
 			SurfaceType = UPhysicalMaterial::DetermineSurfaceType(Hit.PhysMaterial.Get());
 
-			float ActualDamage = BaseDamage;
+			float ActualDamage = WeaponData.BaseDamage;
 			if (SurfaceType == SURFACE_FLESHVULNERABLE)
 			{
 				ActualDamage *= 4.0f;
 			}
 
-			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, MyOwner->GetInstigatorController(), MyOwner, WeaponData.DamageType);
+			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, WeaponOwner->GetInstigatorController(), WeaponOwner, WeaponData.DamageType);
 
 			PlayImpactEffects(SurfaceType, Hit.ImpactPoint);
 
@@ -84,7 +113,6 @@ void AWeapon::Fire()
 		}
 
 		LastFireTime = GetWorld()->TimeSeconds;
-	}
 	}
 }
 
