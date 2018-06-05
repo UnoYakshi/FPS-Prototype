@@ -8,6 +8,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Interactive/InteractiveObject.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 // AProtCharacter
@@ -49,6 +52,10 @@ AProtCharacter::AProtCharacter()
 	{
 		WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("weapon_r"));
 	}
+
+	// Default values for Interactive stuff...
+	MaxUseDistance = 600.f;
+	CurrentInteractive = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,6 +67,9 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
+	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProtCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AProtCharacter::MoveRight);
@@ -80,6 +90,73 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AProtCharacter::OnResetVR);
 }
 
+
+AInteractiveObject* AProtCharacter::GetInteractiveInView()
+{
+	FVector camLoc;
+	FRotator camRot;
+
+	if (Controller == nullptr)
+	{
+		return nullptr;
+	}
+
+	Controller->GetPlayerViewPoint(camLoc, camRot);
+	const FVector StartTrace = camLoc;
+	const FVector direction = camRot.Vector();
+	const FVector EndTrace = StartTrace + (direction * MaxUseDistance);
+
+	FCollisionQueryParams TraceParams(FName(_T("InteractiveRaytrace")), true, this);
+	TraceParams.bTraceAsyncScene = true;
+	TraceParams.bReturnPhysicalMaterial = false;
+	TraceParams.bTraceComplex = true;
+
+	FHitResult Hit(ForceInit);
+	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, TraceParams);
+	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 255, 255), false, 1);
+
+	return Cast< AInteractiveObject >(Hit.GetActor());
+}
+
+/*
+Runs on Server. Perform "OnUsed" on currently viewed UsableActor if implemented.
+*/
+void AProtCharacter::Use_Implementation()
+{
+	if (this->Controller && this->Controller->IsLocalController())
+	{
+		AInteractiveObject* Usable = this->GetInteractiveInView();
+		if (Usable)
+		{
+			CurrentInteractive = Usable;
+			Usable->OnUse(this);
+		}
+		else
+		{
+			CurrentInteractive = nullptr;
+		}
+	}
+
+}
+
+bool AProtCharacter::Use_Validate()
+{
+	return true;
+}
+
+void AProtCharacter::StopUsing_Implementation()
+{
+	if (CurrentInteractive)
+	{
+		CurrentInteractive->OnStopUsing(this);
+		CurrentInteractive = nullptr;
+	}
+}
+
+bool AProtCharacter::StopUsing_Validate()
+{
+	return true;
+}
 
 void AProtCharacter::OnResetVR()
 {
