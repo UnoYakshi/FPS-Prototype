@@ -61,10 +61,8 @@ struct FWeaponContent
 		ImpactFX(nullptr),
 		TracerFX(nullptr),
 		MuzzleFX(nullptr),
-		FireCamShake(nullptr),
-
-	{
-	}
+		FireCamShake(nullptr)
+	{}
 };
 
 USTRUCT(BlueprintType)

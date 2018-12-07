@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Prot.h"
 #include "Weapon.h"
+#include "Prot.h"
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -57,7 +57,7 @@ void AWeapon::Fire()
 		ServerFire();
 	}
 
-	AActor* WeaponOwner = GetOwner();
+	AActor* WeaponOwner = GetOwner(); // TODO: Define it in the ctor...
 	if (WeaponOwner)
 	{
 		FVector EyeLocation;
@@ -108,11 +108,25 @@ void AWeapon::Fire()
 
 		if (Role == ROLE_Authority)
 		{
-			HitScanTrace.TraceTo = TracerEndPoint;
-			HitScanTrace.SurfaceType = SurfaceType;
+			//HitScanTrace.TraceTo = TracerEndPoint;
+			//HitScanTrace.SurfaceType = SurfaceType;
 		}
 
 		LastFireTime = GetWorld()->TimeSeconds;
 	}
 }
 
+void AWeapon::ServerFire_Implementation()
+{
+
+}
+bool AWeapon::ServerFire_Validate()
+{
+	return true;
+}
+
+void AWeapon::StartFire() {}
+void AWeapon::StopFire() {}
+
+void AWeapon::PlayFireEffects(FVector TraceEnd) {}
+void AWeapon::PlayImpactEffects(EPhysicalSurface SurfaceType, FVector ImpactPoint) {}
