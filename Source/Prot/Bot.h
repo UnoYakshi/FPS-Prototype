@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "PatrolPoint.h"
 #include "Bot.generated.h"
 
 UCLASS()
@@ -26,6 +27,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	
-	
+	//Points to patrol
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	TArray<APatrolPoint*> PatrolPoints;
 };
