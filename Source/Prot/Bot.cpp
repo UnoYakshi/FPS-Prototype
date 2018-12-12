@@ -1,7 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Bot.h"
-
+#include "Runtime/NavigationSystem/Public/NavigationSystem.h"
+#include "PatrolPoint.h"
+#include "Runtime/Engine/Public/DrawDebugHelpers.h"
+#include "Runtime/NavigationSystem/Public/NavigationPath.h"
 
 // Sets default values
 ABot::ABot()
@@ -19,6 +22,7 @@ ABot::ABot()
 		SphereVisual->SetWorldScale3D(FVector(0.8f));
 	}
 
+	CurrentPointIndex = 0;
 }
 
 // Called when the game starts or when spawned
@@ -42,3 +46,12 @@ void ABot::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+void ABot::MoveToNextPoint() 
+{
+	CurrentPointIndex++;
+	APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex];
+	UNavigationPath *Path = UNavigationSystemV1::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), NextPatrolPoint);
+
+	//FIXME compilation errors
+	//TODO movement
+}

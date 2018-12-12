@@ -19,6 +19,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	int CurrentPointIndex;
 
 public:	
 	// Called every frame
@@ -30,4 +31,6 @@ public:
 	//Points to patrol
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TArray<APatrolPoint*> PatrolPoints;
+
+	void MoveToNextPoint();
 };
