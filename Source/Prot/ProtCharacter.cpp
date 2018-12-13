@@ -35,6 +35,7 @@ AProtCharacter::AProtCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
+	// TODO: Attach Camera to eyes...
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -67,6 +68,11 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::StartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::StopFire);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
@@ -157,6 +163,50 @@ bool AProtCharacter::StopUsing_Validate()
 {
 	return true;
 }
+
+///
+/// FIREARMS
+///
+void AProtCharacter::StartFire_Implementation()
+{
+
+}
+
+bool AProtCharacter::StartFire_Validate()
+{
+	return true;
+}
+
+void AProtCharacter::StopFire_Implementation()
+{
+
+}
+
+bool AProtCharacter::StopFire_Validate()
+{
+	return true;
+}
+
+void AProtCharacter::StartAim_Implementation()
+{
+
+}
+
+bool AProtCharacter::StartAim_Validate()
+{
+	return true;
+}
+
+void AProtCharacter::StopAim_Implementation()
+{
+
+}
+
+bool AProtCharacter::StopAim_Validate()
+{
+	return true;
+}
+///
 
 void AProtCharacter::OnResetVR()
 {
