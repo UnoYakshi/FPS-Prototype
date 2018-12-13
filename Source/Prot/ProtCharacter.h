@@ -35,9 +35,33 @@ public:
 
 public:
 	/** Weapon's mesh to hold in hands... */
+	// TODO: Rework as CurrentWeapon of Weapon class...
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* WeaponMesh;
 
+	/** Handles Character's side firing, calls CurrentWeapon->StartFiring()... */
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
+	virtual void StartFire();
+	virtual void StartFire_Implementation();
+	bool StartFire_Validate();
+
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
+	virtual void StopFire();
+	virtual void StopFire_Implementation();
+	bool StopFire_Validate();
+
+	/** Handles camera manipulations for aiming... */
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
+	virtual void StartAim();
+	virtual void StartAim_Implementation();
+	bool StartAim_Validate();
+
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
+	virtual void StopAim();
+	virtual void StopAim_Implementation();
+	bool StopAim_Validate();
+
+public:
 	/** Current InteractiveObject... */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	AInteractiveObject* CurrentInteractive;
