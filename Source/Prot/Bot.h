@@ -33,4 +33,8 @@ public:
 	TArray<APatrolPoint*> PatrolPoints;
 
 	void MoveToNextPoint();
+
+	//Bot's mesh
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	USkeletalMeshComponent* BotMesh;
 };
