@@ -13,8 +13,9 @@ ABot::ABot()
 	PrimaryActorTick.bCanEverTick = true;
 
 	BotMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("BotMesh"));
-	BotMesh->SetupAttachment(RootComponent);
-
+	if (BotMesh) {
+		BotMesh->SetupAttachment(RootComponent);
+	}
 	CurrentPointIndex = 0;
 }
 
@@ -22,7 +23,7 @@ ABot::ABot()
 void ABot::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	MoveToNextPoint();
 }
 
 // Called every frame
@@ -42,9 +43,18 @@ void ABot::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void ABot::MoveToNextPoint() 
 {
 	CurrentPointIndex++;
-	APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex];
-	UNavigationPath *Path = UNavigationSystemV1::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), NextPatrolPoint);
+	if (CurrentPointIndex == PatrolPoints.Num()) {
+		CurrentPointIndex = 0;
+	}
 
-	//FIXME compilation errors
-	//TODO movement
+	APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex];
+	UWorld *World = GetWorld();
+	UNavigationPath *Path = UNavigationSystemV1::FindPathToActorSynchronously(World, GetActorLocation(), NextPatrolPoint);
+	TArray<FVector> Points = Path->PathPoints;
+	
+	float BoxSide = 1.0f;
+
+	for (int i = 0; i < Points.Num(); i++) {
+		DrawDebugBox(World, Points[i], FVector(BoxSide, BoxSide, BoxSide), FColor::White);
+	}
 }
