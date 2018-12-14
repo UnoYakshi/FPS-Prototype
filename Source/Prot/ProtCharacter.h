@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "MyPlayerController.h"
 #include "ProtCharacter.generated.h"
 
 // Forward declarations...
@@ -20,6 +21,10 @@ class AProtCharacter : public ACharacter
 
 public:
 	AProtCharacter();
+	virtual void Tick(float DeltaTime);
+	
+	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
+	FRotator GetAimOffsets() const;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -113,6 +118,19 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
+
+
+	/* True first person set-up... */
+	AMyPlayerController* PC;
+
+	float CameraTreshold = 20.f;
+	float RecoilOffset = 10.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRotator CameraLocalRotation = FRotator(0.f);
+
+	virtual void PreUpdateCamera(float DeltaTime);
+	virtual float CameraProcessYaw(float Input);
+	virtual float CameraProcessPitch(float Input);
 
 public:
 	/** Returns FollowCamera subobject **/

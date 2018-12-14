@@ -1,6 +1,7 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "ProtCharacter.h"
+#include "MyPlayerController.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -10,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Interactive/InteractiveObject.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,8 +38,9 @@ AProtCharacter::AProtCharacter()
 	GetCharacterMovement()->AirControl = 0.2f;
 
 	// Create and set-up FPP camera...
+	// TODO: Make blendspace to make pitch more seamless...
 	FPPCamera = CreateDefaultSubobject<UCameraComponent>(_T("FPPCamera"));
-	FPPCamera->SetupAttachment(GetMesh(), "head");
+	FPPCamera->SetupAttachment(GetMesh(), "eyes");
 	FPPCamera->bUsePawnControlRotation = true;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
@@ -57,6 +60,10 @@ AProtCharacter::AProtCharacter()
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+void AProtCharacter::Tick(float DeltaTime)
+{
+	PreUpdateCamera(DeltaTime);
+}
 
 void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -73,6 +80,11 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
 
+
+	//PlayerInputComponent->BindAxis("MoveForward", PC, &AMyPlayerController::InputMovementFront);
+	//PlayerInputComponent->BindAxis("MoveRight", PC, &AMyPlayerController::InputMovementSide);
+	PlayerInputComponent->BindAxis("CameraRotationVertical", PC, &AMyPlayerController::InputCameraAddPitch);
+	PlayerInputComponent->BindAxis("CameraRotationHorizontal", PC, &AMyPlayerController::InputCameraAddYaw);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProtCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AProtCharacter::MoveRight);
 
@@ -90,6 +102,15 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AProtCharacter::OnResetVR);
+}
+
+FRotator AProtCharacter::GetAimOffsets() const
+{
+	const FVector AimDirWS = GetBaseAimRotation().Vector();
+	const FVector AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);
+	const FRotator AimRotLS = AimDirLS.Rotation();
+
+	return AimRotLS;
 }
 
 
@@ -259,3 +280,68 @@ void AProtCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+
+void AProtCharacter::PreUpdateCamera(float DeltaTime)
+{
+	if (!FPPCamera || !PC)
+	{
+		return;
+	}
+	//-------------------------------------------------------
+	// Compute the rotation for Mesh AimOffset...
+	//-------------------------------------------------------
+	FRotator ControllerRotation = PC->GetControlRotation();
+	FRotator NewRotation = ControllerRotation;
+
+	// Get current controller rotation and process it to match the Character
+	NewRotation.Yaw = CameraProcessYaw(ControllerRotation.Yaw);
+	NewRotation.Pitch = CameraProcessPitch(ControllerRotation.Pitch + RecoilOffset);
+	NewRotation.Normalize();
+
+	// Clamp new rotation
+	NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch, -90.0f + CameraTreshold, 90.0f - CameraTreshold);
+	NewRotation.Yaw = FMath::Clamp(NewRotation.Yaw, -91.0f, 91.0f);
+
+	// Will be retrieved by AnimBlueprint...
+	CameraLocalRotation = NewRotation;
+}
+
+float AProtCharacter::CameraProcessPitch(float Input)
+{
+	//Recenter value
+	if (Input > 269.99f)
+	{
+		Input -= 270.0f;
+		Input = 90.0f - Input;
+		Input *= -1.0f;
+	}
+
+	return Input;
+}
+
+float AProtCharacter::CameraProcessYaw(float Input)
+{
+	// Get direction vectors from Character and PC...
+	FVector ActorDir = GetActorRotation().Vector();
+	FVector PCDir = FRotator(0.f, Input, 0.f).Vector();
+
+	// Compute the Angle difference between the two direction
+	float Angle = FMath::Acos(FVector::DotProduct(ActorDir, PCDir));
+	Angle = FMath::RadiansToDegrees(Angle);
+
+	// Find on which side is the angle difference (left or right)
+	FRotator Temp = GetActorRotation() - FRotator(0.f, 90.f, 0.f);
+	FVector Direction3 = Temp.Vector();
+
+	float Dot = FVector::DotProduct(Direction3, PCDir);
+
+	// Invert angle to switch side
+	if (Dot > 0.f)
+	{
+		Angle *= -1;
+	}
+
+	return Angle;
+}
+
