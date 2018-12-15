@@ -75,7 +75,9 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
-Content/StarterContent/
-Content/FPS_Weapon_Bundle/Weapons/Textures/SMG11/T_SMG11_Rem_NRM.uasset
-Content/FPS_Weapon_Bundle/Weapons/Textures/SMG11/T_SMG11_NRM.uasset
-Content/FPS_Weapon_Bundle/Weapons/Materials/Accessories/M_Scope_25x56.uasset
+
+
+#already content
+Content/StarterContent/*
+Content/FPS_Weapon_Bundle/*
+Content/AnimStarterPack/*
