@@ -19,6 +19,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// @Oninbo, add explanation...
 	int CurrentPointIndex;
 
 public:	
@@ -28,13 +30,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//Points to patrol
+	// Points to patrol
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TArray<APatrolPoint*> PatrolPoints;
 
-	void MoveToNextPoint();
+	UFUNCTION(BlueprintCallable, Category = "AI")
+	virtual void MoveToNextPoint();
 
-	//Bot's mesh
+	// Bot's mesh
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* BotMesh;
 };

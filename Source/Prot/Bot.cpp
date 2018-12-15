@@ -39,12 +39,12 @@ void ABot::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void ABot::MoveToNextPoint() 
+void ABot::MoveToNextPoint()
 {
-	CurrentPointIndex++;
+	// @Oninbo, fix CurrentPointIndex handling: there will be IndexOutOfRange stuff if you won't clamp the value...
+	++CurrentPointIndex;
 	APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex];
 	UNavigationPath *Path = UNavigationSystemV1::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), NextPatrolPoint);
 
-	//FIXME compilation errors
 	//TODO movement
 }
