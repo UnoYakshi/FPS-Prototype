@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Sound/SoundCue.h"
+#include "Magazine.h"
 #include "Weapon.generated.h"
-
 class AProtCharacter;
 
 USTRUCT(BlueprintType)
@@ -13,29 +14,12 @@ struct FWeaponGeneralData
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category = "Config")
-	uint32 ID : 1;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Config")
-	FName Name;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Config")
-	FString Description;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Config")
-	uint32 SlotNumber : 1;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Config")
-	float Weight;
-
-	FWeaponGeneralData() :
-		ID(-1),
-		Name(""),
-		Description(""),
-		SlotNumber(-1),
-		Weight(0)
-	{
-	}
+	FString Name;
+	float FireRate;
+	float BulletSpeed;
+	float Damage;
+	USoundCue* Noise;
+	FMagazineData CurrentMagazine;
 };
 
 USTRUCT(BlueprintType)
@@ -144,5 +128,6 @@ protected:
 public:
 	void StartFire();
 	void StopFire();
-
+	void StartReload();
+	void StopReload();
 };

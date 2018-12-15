@@ -125,8 +125,18 @@ bool AWeapon::ServerFire_Validate()
 	return true;
 }
 
-void AWeapon::StartFire() {}
-void AWeapon::StopFire() {}
 
 void AWeapon::PlayFireEffects(FVector TraceEnd) {}
 void AWeapon::PlayImpactEffects(EPhysicalSurface SurfaceType, FVector ImpactPoint) {}
+
+void AWeapon::StartFire()
+{
+}
+
+void AWeapon::StartReload()
+{
+}
+
+void AWeapon::StopReload()
+{
+}
