@@ -37,3 +37,10 @@ void AMagazine::AddAmmo(int32 NumToAdd)
 {
 	Data.CurrentAmmoNum = FMath::Clamp(Data.CurrentAmmoNum + NumToAdd, 0, Data.MaxCapacity);
 }
+
+FName AMagazine::GetProjectileTypeName() const
+{
+	const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, _T("EProjectileType"), true);
+	if (!EnumPtr) { return FName("Invalid"); }
+	return EnumPtr->GetNameByValue((int64)Data.ProjectileType);
+}
