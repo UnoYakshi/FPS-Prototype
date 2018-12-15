@@ -10,7 +10,7 @@
 
 
 UENUM(BlueprintType)
-enum class EProjectType : uint8
+enum class EProjectileType : uint8
 {
 	B762X39 	UMETA(DisplayName = "7.62x39 mm"),
 	B556X45 	UMETA(DisplayName = "5.56x45 mm"),
@@ -42,7 +42,7 @@ public:
 public:
 	/* Type of the bullet... */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Config")
-	EProjectType Type;
+	EProjectileType Type;
 	
 	/* Projectile's weight... */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Config")
