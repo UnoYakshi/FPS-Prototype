@@ -12,7 +12,7 @@ USTRUCT(BlueprintType)
 struct FMagazineData
 {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
-	EBulletType BulletType;
+	EProjectType ProjectileType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
 	int32 MaxCapacity;
@@ -21,7 +21,7 @@ struct FMagazineData
 	int32 CurrentAmmoNum;
 
 	FMagazineData() :
-		BulletType(EBulletType::MPORK),
+		ProjectileType(EProjectType::MPORK),
 		MaxCapacity(0),
 		CurrentAmmoNum(0)
 	{}
@@ -48,14 +48,17 @@ public:
 
 /// PARAMETERS
 public:
+	/* Magazine's config... */
 	FMagazineData Data;
 
 /// METHODS
 public:
-	/** Adds ammo to the magazine... */
+	/** Consumes ammo from the magazine [if there is enough ammo, otherwise do nothing]...  */
 	UFUNCTION(BlueprintCallable, Category = "Ammo")
 	virtual void ConsumeAmmo(int32 NumToConsume);
 
+	/* Adds ammo to the magazine [clamping the end value between 0 and MaxCapacity]... */
 	UFUNCTION(BlueprintCallable, Category = "Ammo")
 	virtual void AddAmmo(int32 NumToAdd);
+
 };

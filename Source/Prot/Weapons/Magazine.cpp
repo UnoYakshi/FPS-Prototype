@@ -26,12 +26,11 @@ void AMagazine::Tick(float DeltaTime)
 
 void AMagazine::ConsumeAmmo(int32 NumToConsume)
 {
-	if (Data.CurrentAmmoNum - NumToConsume < 0)
+	int32 EndResult = Data.CurrentAmmoNum - NumToConsume;
+	if (EndResult >= 0)
 	{
-		return -(Data.CurrentAmmoNum - NumToConsume);
+		Data.CurrentAmmoNum = EndResult;
 	}
-
-	Data.CurrentAmmoNum -= NumToConsume;
 }
 
 void AMagazine::AddAmmo(int32 NumToAdd)
