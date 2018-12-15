@@ -6,6 +6,19 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+
+UENUM(BlueprintType)
+enum class EBulletType : uint8
+{
+	B762X39 	UMETA(DisplayName = "7.62x39 mm"),
+	B556X45 	UMETA(DisplayName = "5.56x45 mm"),
+	B223REM		UMETA(DisplayName = ".223 Remington"),
+	B45ACP		UMETA(DisplayName = ".45 ACP"),
+	B9MM		UMETA(DisplayName = "9 mm"),
+	MPORK		UMETA(DisplayName = "Anti-muslim Pork")
+};
+
+
 UCLASS()
 class PROT_API AProjectile : public AActor
 {
@@ -23,6 +36,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
+public:
+	EBulletType Type;
 	
 };
