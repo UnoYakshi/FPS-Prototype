@@ -56,5 +56,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Config")
 	UParticleSystemComponent* TrailPSC;
 
+	/* Projectile's on-the-fly SoundCue... */
 	USoundCue* FlySC;
 };
