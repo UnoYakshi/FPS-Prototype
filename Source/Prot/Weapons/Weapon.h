@@ -9,17 +9,38 @@
 #include "Weapon.generated.h"
 class AProtCharacter;
 
+UENUM(BlueprintType)
+enum class WeaponState : uint8
+{
+		Idle,
+		Firing,
+		Reloading,
+		Equipping
+};
+
 USTRUCT(BlueprintType)
-struct FWeaponGeneralData
+struct FWeaponData
 {
 	GENERATED_USTRUCT_BODY()
 
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	FString Name;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	float FireRate;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	float BulletSpeed;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	float Damage;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	USoundCue* Noise;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	FMagazineData CurrentMagazine;
+
 };
 
 USTRUCT(BlueprintType)
@@ -46,10 +67,11 @@ struct FWeaponContent
 		TracerFX(nullptr),
 		MuzzleFX(nullptr),
 		FireCamShake(nullptr)
-	{}
+	{
+	}
 };
 
-USTRUCT(BlueprintType)
+/*USTRUCT(BlueprintType)
 struct FWeaponData
 {
 	GENERATED_USTRUCT_BODY()
@@ -60,11 +82,11 @@ struct FWeaponData
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<UDamageType> DamageType;
 
-	/* RPM - Bullets per minute fired by weapon */
+	/// RPM - Bullets per minute fired by weapon 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float RateOfFire;
 
-	/* Bullet Spread in Degrees */
+	/// Bullet Spread in Degrees 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin = 0.0f))
 	float BulletSpread;
 
@@ -79,7 +101,7 @@ struct FWeaponData
 	{
 		TimeBetweenShots = RateOfFire / 60.f;
 	}
-};
+};*/
 
 UCLASS()
 class PROT_API AWeapon : public AActor
@@ -119,13 +141,14 @@ protected:
 
 	void Fire();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerFire();
-
 	FTimerHandle TimerHandle_TimeBetweenShots;
 	float LastFireTime;
 
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerFire();
+
 public:
+
 	void StartFire();
 	void StopFire();
 	void StartReload();
