@@ -49,16 +49,15 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
-void AWeapon::ServerFire()
+void AWeapon::ServerFire_Implementation()
 {
 
 }
 
-// I don't know what is it and what UPROPERTY it should have (not defined on weapon.h
-/*bool AWeapon::ServerFire_Validate() 
+bool AWeapon::ServerFire_Validate() 
 {
 	return true;
-}*/
+}
 
 
 void AWeapon::PlayFireEffects(FVector TraceEnd) {}

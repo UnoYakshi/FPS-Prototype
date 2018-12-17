@@ -145,7 +145,7 @@ protected:
 	float LastFireTime;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerFire();
+	void ServerFire();
 
 public:
 
