@@ -192,7 +192,7 @@ bool AProtCharacter::StopUsing_Validate()
 ///
 void AProtCharacter::StartFire_Implementation()
 {
-
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("This is an on screen message!"));
 }
 
 bool AProtCharacter::StartFire_Validate()
