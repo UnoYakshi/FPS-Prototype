@@ -49,81 +49,16 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
-void AWeapon::Fire()
-{	
-
-	if (Role == ROLE_Authority)
-	{
-		ServerFire();
-	}
-
-	AActor* WeaponOwner = GetOwner(); // TODO: Define it in the ctor...
-	if (WeaponOwner)
-	{
-		FVector EyeLocation;
-		FRotator EyeRotation;
-
-		WeaponOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-		FVector ShotDirection = EyeRotation.Vector();
-		FVector TraceEnd = EyeLocation + (ShotDirection * 10000.f);
-
-		// Bullet spread...
-		float HalfRad = FMath::DegreesToRadians(WeaponData.BulletSpread);
-
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(WeaponOwner);
-		QueryParams.AddIgnoredActor(this);
-		QueryParams.bTraceComplex = true;
-		QueryParams.bReturnPhysicalMaterial = true;
-
-		FVector TracerEndPoint = TraceEnd;
-		EPhysicalSurface SurfaceType = SurfaceType_Default;
-		FHitResult Hit;
-		if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, COLLISION_WEAPON, QueryParams))
-		{
-			// Blocking hit! Process damage
-			AActor* HitActor = Hit.GetActor();
-
-			SurfaceType = UPhysicalMaterial::DetermineSurfaceType(Hit.PhysMaterial.Get());
-
-			float ActualDamage = WeaponData.BaseDamage;
-			if (SurfaceType == SURFACE_FLESHVULNERABLE)
-			{
-				ActualDamage *= 4.0f;
-			}
-
-			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, WeaponOwner->GetInstigatorController(), WeaponOwner, WeaponData.DamageType);
-
-			PlayImpactEffects(SurfaceType, Hit.ImpactPoint);
-
-			TracerEndPoint = Hit.ImpactPoint;
-		}
-
-		if (DebugWeaponDrawing > 0)
-		{
-			DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
-		}
-
-		PlayFireEffects(TracerEndPoint);
-
-		if (Role == ROLE_Authority)
-		{
-			//HitScanTrace.TraceTo = TracerEndPoint;
-			//HitScanTrace.SurfaceType = SurfaceType;
-		}
-
-		LastFireTime = GetWorld()->TimeSeconds;
-	}
-}
-
-void AWeapon::ServerFire_Implementation()
+void AWeapon::ServerFire()
 {
 
 }
-bool AWeapon::ServerFire_Validate()
+
+// I don't know what is it and what UPROPERTY it should have (not defined on weapon.h
+/*bool AWeapon::ServerFire_Validate() 
 {
 	return true;
-}
+}*/
 
 
 void AWeapon::PlayFireEffects(FVector TraceEnd) {}
@@ -131,6 +66,18 @@ void AWeapon::PlayImpactEffects(EPhysicalSurface SurfaceType, FVector ImpactPoin
 
 void AWeapon::StartFire()
 {
+
+}
+
+void AWeapon::Fire()
+{
+	//it was the one in ShooterExample but cleared it to delete FWeaponGeneralData and use FweaponData instead
+}
+
+void AWeapon::StopFire()
+{
+	LastFireTime = GetWorld()->GetTimeSeconds();
+	//.............
 }
 
 void AWeapon::StartReload()
