@@ -19,6 +19,11 @@
 
 AProtCharacter::AProtCharacter()
 {
+	// Enable ticking...
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -43,8 +48,8 @@ AProtCharacter::AProtCharacter()
 	FPPCamera->SetupAttachment(GetMesh(), "eyes");
 	FPPCamera->bUsePawnControlRotation = true;
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationRoll = true;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
 
 	// Create weapon's skeletal mesh...
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
@@ -62,6 +67,7 @@ AProtCharacter::AProtCharacter()
 // Input
 void AProtCharacter::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
 	PreUpdateCamera(DeltaTime);
 }
 
