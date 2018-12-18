@@ -65,18 +65,29 @@ void AWeapon::PlayImpactEffects(EPhysicalSurface SurfaceType, FVector ImpactPoin
 
 void AWeapon::StartFire()
 {
+	//compile error :
 
+	if (CurrentMagazine->Data.CurrentAmmoNum <= 0)//No Ammo
+	{
+		//TODO : play sound here
+		return;
+	}
+	WeaponData.bIsFiring = true;
+	Fire();
 }
 
 void AWeapon::Fire()
 {
 	//it was the one in ShooterExample but cleared it to delete FWeaponGeneralData and use FweaponData instead
+
 }
 
 void AWeapon::StopFire()
 {
 	LastFireTime = GetWorld()->GetTimeSeconds();
-	//.............
+	WeaponData.bIsFiring = false;
+	//TODO add stop animation
+
 }
 
 void AWeapon::StartReload()

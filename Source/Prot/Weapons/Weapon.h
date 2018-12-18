@@ -27,7 +27,7 @@ struct FWeaponData
 	FString Name;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	float FireRate;
+	float FireRate;//Here we mean Time Between Shots
 
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	float BulletSpeed;
@@ -36,11 +36,16 @@ struct FWeaponData
 	float Damage;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	USoundCue* Noise;
+	float ReloadTime;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	FMagazineData CurrentMagazine;
+	bool bIsFiring;
 
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	USoundCue* Noise;
+
+	//need to put default values
 };
 
 USTRUCT(BlueprintType)
@@ -110,7 +115,7 @@ class PROT_API AWeapon : public AActor
 	
 public:	
 	AWeapon();
-
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -128,6 +133,9 @@ public:
 	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName TracerTargetName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	AMagazine *CurrentMagazine;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FWeaponData WeaponData;
