@@ -41,11 +41,7 @@ struct FWeaponData
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	bool bIsFiring;
 
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	USoundCue* Noise;
-
-	//need to put default values
+	///TODO : Default Values
 };
 
 USTRUCT(BlueprintType)
@@ -53,19 +49,36 @@ struct FWeaponContent
 {
 	GENERATED_USTRUCT_BODY()
 	
+	/// TODO: Make it UParticleSystemComponent instead...
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem* MuzzleFX;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* ImpactFX;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* TracerFX;
 
-	/// TODO: Make it UParticleSystemComponent instead...
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	UParticleSystem* MuzzleFX;
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	USoundCue* FireCue;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	USoundCue* FireLoopedCue;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	USoundCue* FireFinishedCue;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	USoundCue* OutOfAmmoCue;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	USoundCue* ReloadCue;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	USoundCue* EquipCue;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> FireCamShake;
-
 
 	FWeaponContent() :
 		ImpactFX(nullptr),
@@ -76,39 +89,17 @@ struct FWeaponContent
 	}
 };
 
-/*USTRUCT(BlueprintType)
-struct FWeaponData
+USTRUCT(BlueprintType)
+struct FWeaponAnim
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	float BaseDamage;
+	/** animation played on pawn (1st person view) */
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	UAnimMontage* Pawn1P;
+};
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<UDamageType> DamageType;
-
-	/// RPM - Bullets per minute fired by weapon 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	float RateOfFire;
-
-	/// Bullet Spread in Degrees 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin = 0.0f))
-	float BulletSpread;
-
-	// Derived from RateOfFire
-	float TimeBetweenShots;
-
-
-	FWeaponData() :
-		DamageType(nullptr),
-		RateOfFire(200.f),
-		BulletSpread(0.f)
-	{
-		TimeBetweenShots = RateOfFire / 60.f;
-	}
-};*/
-
-UCLASS()
+UCLASS(Blueprintable)
 class PROT_API AWeapon : public AActor
 {
 	GENERATED_BODY()
@@ -156,9 +147,23 @@ protected:
 	void ServerFire();
 
 public:
+	void Destroyed();
+
 
 	void StartFire();
 	void StopFire();
 	void StartReload();
 	void StopReload();
+	void UseAmmo();
+	virtual void OnEquip(const AWeapon* LastWeapon);
+	void OnEquipFinished();
+	void ServerStartFire();
+	void ServerStopFire();
+	void ServerStartReload();
+	void ServerStopReload();
+	void ServerHandleFiring();
+	void ClientHandleFiring();
+	void ClientFire();
+	bool CanReload();
+	bool CanFire();
 };

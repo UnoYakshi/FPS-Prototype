@@ -63,9 +63,16 @@ bool AWeapon::ServerFire_Validate()
 void AWeapon::PlayFireEffects(FVector TraceEnd) {}
 void AWeapon::PlayImpactEffects(EPhysicalSurface SurfaceType, FVector ImpactPoint) {}
 
+bool AWeapon::CanReload()
+{
+	return true;
+}
+bool AWeapon::CanFire()
+{
+	return true;
+}
 void AWeapon::StartFire()
 {
-	//compile error :
 
 	if (CurrentMagazine->Data.CurrentAmmoNum <= 0)//No Ammo
 	{
@@ -78,13 +85,25 @@ void AWeapon::StartFire()
 
 void AWeapon::Fire()
 {
-	//it was the one in ShooterExample but cleared it to delete FWeaponGeneralData and use FweaponData instead
-
+	if (Carrier && CanFire() && CurrentMagazine->Data.CurrentAmmoNum > 0)
+	{
+		///TODO : Server Stuff
+		///TODO : Add Firing System
+		UseAmmo();
+	}
+	else if (CanReload())
+	{
+		StartReload();
+	}
+	else
+	{
+		//Play Out of Ammo Sound
+	}
+	LastFireTime = GetWorld()->GetTimeSeconds();
 }
 
 void AWeapon::StopFire()
 {
-	LastFireTime = GetWorld()->GetTimeSeconds();
 	WeaponData.bIsFiring = false;
 	//TODO add stop animation
 
@@ -96,4 +115,43 @@ void AWeapon::StartReload()
 
 void AWeapon::StopReload()
 {
+}
+
+void AWeapon::UseAmmo()
+{
+	CurrentMagazine->ConsumeAmmo(1);
+}
+void AWeapon::OnEquip(const AWeapon* LastWeapon)
+{
+
+}
+void AWeapon::OnEquipFinished()
+{
+}
+void AWeapon::ServerStartFire()
+{
+}
+void AWeapon::ServerStopFire()
+{
+}
+void AWeapon::ServerStartReload()
+{
+}
+void AWeapon::ServerStopReload()
+{
+}
+void AWeapon::ServerHandleFiring()
+{
+}
+void AWeapon::ClientHandleFiring()
+{
+}
+void AWeapon::ClientFire()
+{
+}
+void AWeapon::Destroyed()
+{
+	Super::Destroyed();
+
+	//StopSimulatingWeaponFire();
 }
