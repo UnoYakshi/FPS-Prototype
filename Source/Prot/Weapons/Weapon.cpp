@@ -703,16 +703,14 @@ void AWeapon::SimulateWeaponFire()
 				if (PlayerCon != NULL)
 				{
 					Mesh->GetSocketLocation(MuzzleAttachPoint);
-					//TODO:: MUZZLE PARTICLE!
-					//MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
-					//MuzzlePSC->bOwnerNoSee = false;
-					//MuzzlePSC->bOnlyOwnerSee = false;
+					MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
+					MuzzlePSC->bOwnerNoSee = false;
+					MuzzlePSC->bOnlyOwnerSee = false;
 				}
 			}
 			else
 			{
-
-				//MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, UseWeaponMesh, MuzzleAttachPoint);
+				MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, UseWeaponMesh, MuzzleAttachPoint);
 			}
 		}
 	}
