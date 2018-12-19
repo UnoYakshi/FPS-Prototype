@@ -25,7 +25,7 @@ enum class EWeaponState: uint8
 	Equipping
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FWeaponData
 {
 	GENERATED_USTRUCT_BODY()
@@ -51,7 +51,7 @@ struct FWeaponData
 	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FWeaponAnim
 {
 	GENERATED_USTRUCT_BODY()
@@ -65,7 +65,7 @@ struct FWeaponAnim
 		UAnimMontage* Pawn3P;
 };
 
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class PROT_API AWeapon : public AActor
 {
 	GENERATED_BODY()

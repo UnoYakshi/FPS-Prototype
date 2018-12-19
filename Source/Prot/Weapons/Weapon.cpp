@@ -167,8 +167,8 @@ void AWeapon::AttachMeshToPawn()
 
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, 
 		// bOwnerNoSee flags deal with visibility.
-		FName AttachPoint = FName("weapon_r");//TODO: MyPawn->GetWeaponAttachPoint();
-		if (MyPawn->IsLocallyControlled() == true)
+		FName AttachPoint = MyPawn->GetWeaponAttachPoint();
+		if (MyPawn->IsLocallyControlled())
 		{
 			USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
 			Mesh->SetHiddenInGame(false);
@@ -315,7 +315,7 @@ bool AWeapon::CanFire() const
 {
 	bool bCanFire = MyPawn;//TODO: && MyPawn->CanFire();
 	bool bStateOKToFire = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
-	return ((bCanFire == true) && (bStateOKToFire == true) && (bPendingReload == false));
+	return (bCanFire && bStateOKToFire && !bPendingReload);
 }
 
 bool AWeapon::CanReload() const
@@ -324,7 +324,7 @@ bool AWeapon::CanReload() const
 	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
 	bool bGotAmmo = true;
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
-	return ((bCanReload == true) && (bGotAmmo == true) && (bStateOKToReload == true));
+	return (bCanReload && bGotAmmo && bStateOKToReload);
 }
 
 
@@ -452,7 +452,7 @@ void AWeapon::DetermineWeaponState()
 				NewState = EWeaponState::Reloading;
 			}
 		}
-		else if ((bPendingReload == false) && (bWantsToFire == true) && (CanFire() == true))
+		else if (!bPendingReload && bWantsToFire && CanFire())
 		{
 			NewState = EWeaponState::Firing;
 		}
@@ -697,10 +697,10 @@ void AWeapon::SimulateWeaponFire()
 		USkeletalMeshComponent* UseWeaponMesh = GetWeaponMesh();
 		if (!bLoopedMuzzleFX || MuzzlePSC == NULL)
 		{
-			if ((MyPawn != NULL) && (MyPawn->IsLocallyControlled() == true))
+			if (MyPawn && MyPawn->IsLocallyControlled())
 			{
 				AController* PlayerCon = MyPawn->GetController();
-				if (PlayerCon != NULL)
+				if (PlayerCon)
 				{
 					Mesh->GetSocketLocation(MuzzleAttachPoint);
 					MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);

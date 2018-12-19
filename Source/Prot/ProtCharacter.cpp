@@ -51,11 +51,13 @@ AProtCharacter::AProtCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+	WeaponAttachPoint = FName("weapon_socket_right");
+
 	// Create weapon's skeletal mesh...
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
 	if (WeaponMesh)
 	{
-		WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("weapon_r"));
+		WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
 	}
 
 	// Default values for Interactive stuff...
@@ -324,6 +326,11 @@ float AProtCharacter::CameraProcessPitch(float Input)
 	}
 
 	return Input;
+}
+
+FName AProtCharacter::GetWeaponAttachPoint() const
+{
+	return FName();
 }
 
 float AProtCharacter::CameraProcessYaw(float Input)

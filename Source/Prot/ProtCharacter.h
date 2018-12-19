@@ -119,7 +119,6 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
 
-
 	/* True first person set-up... */
 	AMyPlayerController* PC;
 
@@ -132,8 +131,17 @@ protected:
 	virtual float CameraProcessYaw(float Input);
 	virtual float CameraProcessPitch(float Input);
 
+protected:
+	FName WeaponAttachPoint;
+
+///////////////////////////////
+// Getters...
 public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFPPCamera() const { return FPPCamera; }
+
+	/** Returns Weapon attach point... */
+	FName GetWeaponAttachPoint() const;
+
 };
 
