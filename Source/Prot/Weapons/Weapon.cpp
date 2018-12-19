@@ -12,12 +12,10 @@
 #include "Kismet/GameplayStatics.h"
 
 
-AWeapon::AWeapon(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-//AWeapon::AWeapon()
+AWeapon::AWeapon()
 {
-	//Mesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponMesh1P"));
 	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh1P"));
-	//Mesh->MeshComponentUpdateFlag = EMeshComponentUpdateFlag::OnlyTickPoseWhenRendered;
+	Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 	Mesh->bReceivesDecals = false;
 	Mesh->CastShadow = true;
 	Mesh->SetCollisionObjectType(ECC_WorldDynamic);
@@ -26,7 +24,7 @@ AWeapon::AWeapon(const FObjectInitializer& ObjectInitializer) : Super(ObjectInit
 	Mesh->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Block);
 	Mesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	Mesh->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
-	//RootComponent = Mesh;
+	RootComponent = Mesh;
 
 	bLoopedMuzzleFX = false;
 	bLoopedFireAnim = false;

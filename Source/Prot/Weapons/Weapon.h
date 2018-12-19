@@ -68,7 +68,7 @@ struct FWeaponAnim
 UCLASS(Abstract, Blueprintable)
 class PROT_API AWeapon : public AActor
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
 
 public:
 	AWeapon();
