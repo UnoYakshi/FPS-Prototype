@@ -2,6 +2,7 @@
 
 #include "ProtCharacter.h"
 #include "MyPlayerController.h"
+#include "Weapons/Weapon.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -51,13 +52,11 @@ AProtCharacter::AProtCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	WeaponAttachPoint = FName("weapon_socket_right");
-
 	// Create weapon's skeletal mesh...
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
 	if (WeaponMesh)
 	{
-		WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
+		WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("weapon_r"));
 	}
 
 	// Default values for Interactive stuff...
@@ -328,9 +327,81 @@ float AProtCharacter::CameraProcessPitch(float Input)
 	return Input;
 }
 
+void AProtCharacter::EquipWeapon(AWeapon* Weapon)
+{
+	if (Weapon)
+	{
+		if (Role == ROLE_Authority)
+		{
+			SetCurrentWeapon(Weapon, CurrentWeapon);
+		}
+		else
+		{
+			ServerEquipWeapon(Weapon);
+		}
+	}
+}
+
+bool AProtCharacter::ServerEquipWeapon_Validate(AWeapon* Weapon)
+{
+	return true;
+}
+
+void AProtCharacter::ServerEquipWeapon_Implementation(AWeapon* Weapon)
+{
+	EquipWeapon(Weapon);
+}
+
+void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
+{
+	AWeapon* LocalLastWeapon = nullptr;
+
+	if (LastWeapon)
+	{
+		LocalLastWeapon = LastWeapon;
+	}
+	else if (NewWeapon != CurrentWeapon)
+	{
+		LocalLastWeapon = CurrentWeapon;
+	}
+
+	// unequip previous
+	if (LocalLastWeapon)
+	{
+		LocalLastWeapon->OnUnEquip();
+	}
+
+	CurrentWeapon = NewWeapon;
+
+	// equip new one
+	if (NewWeapon)
+	{
+		NewWeapon->SetOwningPawn(this);	// Make sure weapon's MyPawn is pointing back to us. 
+		// During replication, we can't guarantee APawn::CurrentWeapon will rep after AWeapon::MyPawn!
+		
+		NewWeapon->OnEquip(LastWeapon);
+	}
+}
+
+/////////////////////////////////////////////
+// REPLICATION
+
+void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
+{
+	SetCurrentWeapon(CurrentWeapon, LastWeapon);
+}
+void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+
+}
+
+/////////////////////////////////////////////
+// UTILITY
 FName AProtCharacter::GetWeaponAttachPoint() const
 {
-	return FName();
+	return WeaponAttachPoint;
 }
 
 float AProtCharacter::CameraProcessYaw(float Input)

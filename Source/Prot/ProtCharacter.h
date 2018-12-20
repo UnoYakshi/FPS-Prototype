@@ -9,6 +9,7 @@
 
 // Forward declarations...
 class AInteractiveObject;
+class AWeapon;
 
 UCLASS(config=Game)
 class AProtCharacter : public ACharacter
@@ -132,7 +133,31 @@ protected:
 	virtual float CameraProcessPitch(float Input);
 
 protected:
+	/**
+	* [server + local] equips weapon from inventory
+	*
+	* @param Weapon	Weapon to equip
+	*/
+	void EquipWeapon(class AWeapon* Weapon);
+
+	/** equip weapon */
+	UFUNCTION(reliable, server, WithValidation)
+	void ServerEquipWeapon(class AWeapon* NewWeapon);
+
+
+protected:
 	FName WeaponAttachPoint;
+
+	/** currently equipped weapon */
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_CurrentWeapon)
+	class AWeapon* CurrentWeapon;
+
+protected:
+	/** Updates current weapon...*/
+	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
+
+	UFUNCTION()
+	void OnRep_CurrentWeapon(class AWeapon* LastWeapon);
 
 ///////////////////////////////
 // Getters...

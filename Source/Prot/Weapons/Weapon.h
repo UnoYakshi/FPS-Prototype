@@ -30,25 +30,31 @@ struct FWeaponData
 {
 	GENERATED_USTRUCT_BODY()
 
+	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
+	FString Name;
+
+	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
+	FString Description;
 
 	/** time between two consecutive shots */
 	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
-		float TimeBetweenShots;
+	float TimeBetweenShots;
 
 	/** failsafe reload duration if weapon doesn't have any animation for it */
 	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
-		float NoAnimReloadDuration;
+	float NoAnimReloadDuration;
 
 	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
-		float Damage;
+	float Damage;
 
 	/** defaults */
-	FWeaponData()
-	{
-		TimeBetweenShots = 0.2f;
-		NoAnimReloadDuration = 1.0f;
-		Damage = 0.f;
-	}
+	FWeaponData() :
+		Name(FString("")),
+		Description(FString("")),
+		TimeBetweenShots(0.2f),
+		NoAnimReloadDuration(1.f),
+		Damage(0.f)
+	{}
 };
 
 USTRUCT(BlueprintType)
@@ -56,13 +62,13 @@ struct FWeaponAnim
 {
 	GENERATED_USTRUCT_BODY()
 
-		/** animation played on pawn (1st person view) */
-		UPROPERTY(EditDefaultsOnly, Category = Animation)
-		UAnimMontage* Pawn1P;
+	/** animation played on pawn (1st person view) */
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	UAnimMontage* Pawn1P;
 
 	/** animation played on pawn (3rd person view) */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-		UAnimMontage* Pawn3P;
+	UAnimMontage* Pawn3P;
 };
 
 UCLASS(Abstract, Blueprintable, BlueprintType)
@@ -89,6 +95,7 @@ private:
 	/** consume a bullet */
 	void UseAmmo();
 
+	/**  */
 	AMagazine* CurrentMagazine;
 
 	/** query ammo type */
@@ -99,7 +106,7 @@ private:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Inventory
-
+public:
 	/** weapon is being equipped by owner pawn */
 	virtual void OnEquip(const AWeapon* LastWeapon);
 
@@ -124,7 +131,7 @@ private:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Input
-
+public:
 	/** [local + server] start weapon fire */
 	virtual void StartFire();
 
@@ -141,13 +148,13 @@ private:
 	virtual void ReloadWeapon();
 
 	/** trigger reload from server */
-	UFUNCTION(reliable, client)
-		void ClientStartReload();
+	UFUNCTION(Reliable, Client)
+	void ClientStartReload();
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Control
-
+protected:
 	/** check if weapon can fire */
 	bool CanFire() const;
 
@@ -157,7 +164,7 @@ private:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Reading data
-
+public:
 	/** get current weapon state */
 	EWeaponState GetCurrentState() const;
 
@@ -166,7 +173,7 @@ private:
 
 	/** get pawn owner */
 	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
-		class AProtCharacter* GetPawnOwner() const;
+	class AProtCharacter* GetPawnOwner() const;
 
 	/** set the weapon's owning pawn */
 	void SetOwningPawn(AProtCharacter* AShooterCharacter);
@@ -178,30 +185,28 @@ private:
 	float GetEquipDuration() const;
 
 protected:
-
-	/** pawn owner */
+	/** Weapon's pawn owner... */
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_MyPawn)
-		class AProtCharacter* MyPawn;
+	class AProtCharacter* MyPawn;
 
-	/** weapon data */
+	/** Weapon's data... */
 	UPROPERTY(EditDefaultsOnly, Category = Config)
-		FWeaponData WeaponConfig;
+	FWeaponData WeaponConfig;
 
 private:
-
-	/** weapon mesh: 1st person view */
+	/** Weapon's mesh... */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-		USkeletalMeshComponent* Mesh;
+	USkeletalMeshComponent* Mesh;
 
 protected:
 
 	/** firing audio (bLoopedFireSound set) */
 	UPROPERTY(Transient)
-		UAudioComponent* FireAC;
+	UAudioComponent* FireAC;
 
 	/** name of bone/socket for muzzle in weapon mesh */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		FName MuzzleAttachPoint;
+	FName MuzzleAttachPoint;
 
 	/** FX for muzzle flash */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
@@ -321,16 +326,16 @@ protected:
 	//////////////////////////////////////////////////////////////////////////
 	// Input - server side
 
-	UFUNCTION(reliable, server, WithValidation)
+	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerStartFire();
 
-	UFUNCTION(reliable, server, WithValidation)
+	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerStopFire();
 
-	UFUNCTION(reliable, server, WithValidation)
+	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerStartReload();
 
-	UFUNCTION(reliable, server, WithValidation)
+	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerStopReload();
 
 
