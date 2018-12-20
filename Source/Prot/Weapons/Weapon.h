@@ -362,11 +362,11 @@ protected:
 	// Weapon usage
 
 	/** [local] weapon specific fire implementation */
-	virtual void FireWeapon() PURE_VIRTUAL(AWeapon::FireWeapon, );
+	virtual void FireWeapon();
 
 	/** [server] fire & update ammo */
-	UFUNCTION(reliable, server, WithValidation)
-		void ServerHandleFiring();
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerHandleFiring();
 
 	/** [local + server] handle weapon fire */
 	void HandleFiring();

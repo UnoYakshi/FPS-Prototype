@@ -149,11 +149,12 @@ protected:
 	FName WeaponAttachPoint;
 
 	/** currently equipped weapon */
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_CurrentWeapon)
+	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon)
 	class AWeapon* CurrentWeapon;
 
 protected:
 	/** Updates current weapon...*/
+	UFUNCTION(BlueprintCallable)
 	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
 
 	UFUNCTION()

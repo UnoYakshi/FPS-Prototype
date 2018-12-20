@@ -194,6 +194,7 @@ bool AProtCharacter::StopUsing_Validate()
 void AProtCharacter::StartFire_Implementation()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Fire at will!"));
+	CurrentWeapon->StartFire();
 }
 
 bool AProtCharacter::StartFire_Validate()
@@ -204,6 +205,7 @@ bool AProtCharacter::StartFire_Validate()
 void AProtCharacter::StopFire_Implementation()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Halt your fire!"));
+	CurrentWeapon->StopFire();
 }
 
 bool AProtCharacter::StopFire_Validate()

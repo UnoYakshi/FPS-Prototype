@@ -263,6 +263,12 @@ void AWeapon::StopReload()
 	}
 }
 
+void AWeapon::FireWeapon()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Pew!"));
+
+}
+
 bool AWeapon::ServerStartFire_Validate()
 {
 	return true;
