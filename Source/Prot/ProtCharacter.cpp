@@ -52,17 +52,26 @@ AProtCharacter::AProtCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Create weapon's skeletal mesh...
+	// Handle Weapon settings...
+	WeaponAttachPoint = FName("weapon_socket_right");
+	
+	// Create weapon's skeletal mesh (TESTING ONLY)...
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
-	if (WeaponMesh)
-	{
-		WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("weapon_r"));
-	}
+	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
+	//->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
 
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;
 }
+
+void AProtCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	WeaponMesh = CurrentWeapon->GetWeaponMesh();
+	WeaponMesh->SetRelativeLocation(FVector::ZeroVector);
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Input

@@ -80,6 +80,7 @@ public:
 	AWeapon();
 
 private:
+	virtual void Tick(float DeltaTime);
 
 	/** perform initial setup */
 	virtual void PostInitializeComponents() override;
@@ -193,9 +194,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Config)
 	FWeaponData WeaponConfig;
 
-private:
-	/** Weapon's mesh... */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+protected://TODO: private
+	/** Weapon's mesh... VisibleDefaultsOnly*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh)
 	USkeletalMeshComponent* Mesh;
 
 protected:

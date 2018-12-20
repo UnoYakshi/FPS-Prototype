@@ -10,6 +10,7 @@
 #include "Components/AudioComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 
 AWeapon::AWeapon()
@@ -43,6 +44,27 @@ AWeapon::AWeapon()
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	bReplicates = true;
 	bNetUseOwnerRelevancy = true;
+}
+
+void AWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	const FVector Origin = GetMuzzleLocation();
+	// Should be GetForwardVector()...	
+	// But we have the weapon rotated by 90 degrees counter-clockwise...
+	const FVector Direciton = Mesh->GetRightVector();
+	const float ProjectileAdjustRange = 10000.0f;
+	
+
+	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
+
+	DrawDebugLine(
+		GetWorld(),
+		Origin, EndTrace,
+		FColor(255, 0, 0),
+		false, -1, 0, 3
+	);
 }
 
 void AWeapon::PostInitializeComponents()
@@ -110,7 +132,6 @@ void AWeapon::OnEquipFinished()
 	{
 		// TODO: Some functionality upon weapon handling...
 	}
-
 
 }
 
@@ -565,7 +586,7 @@ FVector AWeapon::GetCameraAim() const
 
 FVector AWeapon::GetAdjustedAim() const
 {
-	AMyPlayerController* const PlayerController = Instigator ? Cast<AMyPlayerController>(Instigator->Controller) : NULL;
+	AMyPlayerController* const PlayerController = Instigator ? Cast<AMyPlayerController>(Instigator->Controller) : nullptr;
 	FVector FinalAim = FVector::ZeroVector;
 	// If we have a player controller use it for the aim
 	if (PlayerController)

@@ -22,7 +22,8 @@ class AProtCharacter : public ACharacter
 
 public:
 	AProtCharacter();
-	virtual void Tick(float DeltaTime);
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	
 	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
 	FRotator GetAimOffsets() const;
@@ -148,7 +149,7 @@ protected:
 protected:
 	FName WeaponAttachPoint;
 
-	/** currently equipped weapon */
+	/** Currently equipped weapon... */
 	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon)
 	class AWeapon* CurrentWeapon;
 
