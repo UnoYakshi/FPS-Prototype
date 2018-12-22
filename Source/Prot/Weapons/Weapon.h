@@ -211,84 +211,84 @@ protected:
 
 	/** FX for muzzle flash */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		UParticleSystem* MuzzleFX;
+	UParticleSystem* MuzzleFX;
 
 	/** spawned component for muzzle FX */
 	UPROPERTY(Transient)
-		UParticleSystemComponent* MuzzlePSC;
+	UParticleSystemComponent* MuzzlePSC;
 
 	/** spawned component for second muzzle FX (Needed for split screen) */
 	UPROPERTY(Transient)
-		UParticleSystemComponent* MuzzlePSCSecondary;
+	UParticleSystemComponent* MuzzlePSCSecondary;
 
 	/** camera shake on firing */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		TSubclassOf<UCameraShake> FireCameraShake;
+	TSubclassOf<UCameraShake> FireCameraShake;
 
 	/** force feedback effect to play when the weapon is fired */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		UForceFeedbackEffect *FireForceFeedback;
+	UForceFeedbackEffect *FireForceFeedback;
 
 	/** single fire sound (bLoopedFireSound not set) */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* FireSound;
+	USoundCue* FireSound;
 
 	/** looped fire sound (bLoopedFireSound set) */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* FireLoopSound;
+	USoundCue* FireLoopSound;
 
 	/** finished burst sound (bLoopedFireSound set) */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* FireFinishSound;
+	USoundCue* FireFinishSound;
 
 	/** out of ammo sound */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* OutOfAmmoSound;
+	USoundCue* OutOfAmmoSound;
 
 	/** reload sound */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* ReloadSound;
+	USoundCue* ReloadSound;
 
 	/** reload animations */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-		FWeaponAnim ReloadAnim;
+	FWeaponAnim ReloadAnim;
 
 	/** equip sound */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* EquipSound;
+	USoundCue* EquipSound;
 
 	/** equip animations */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-		FWeaponAnim EquipAnim;
+	FWeaponAnim EquipAnim;
 
 	/** fire animations */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-		FWeaponAnim FireAnim;
+	FWeaponAnim FireAnim;
 
 	/** is muzzle FX looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		uint32 bLoopedMuzzleFX : 1;
+	uint32 bLoopedMuzzleFX : 1;
 
 	/** is fire sound looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		uint32 bLoopedFireSound : 1;
+	uint32 bLoopedFireSound : 1;
 
 	/** is fire animation looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-		uint32 bLoopedFireAnim : 1;
+	uint32 bLoopedFireAnim : 1;
 
 	/** is fire animation playing? */
 	uint32 bPlayingFireAnim : 1;
 
-		/** is weapon currently equipped? */
-		uint32 bIsEquipped : 1;
+	/** is weapon currently equipped? */
+	uint32 bIsEquipped : 1;
 
 	/** is weapon fire active? */
 	uint32 bWantsToFire : 1;
 
 	/** is reload animation playing? */
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_Reload)
-		uint32 bPendingReload : 1;
+	uint32 bPendingReload : 1;
 
 	/** is equip animation playing? */
 	uint32 bPendingEquip : 1;
@@ -310,7 +310,7 @@ protected:
 
 	/** burst counter, used for replicating fire events to remote clients */
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_BurstCounter)
-		int32 BurstCounter;
+	int32 BurstCounter;
 
 	/** Handle for efficient management of OnEquipFinished timer */
 	FTimerHandle TimerHandle_OnEquipFinished;
@@ -328,29 +328,29 @@ protected:
 	// Input - server side
 
 	UFUNCTION(Reliable, Server, WithValidation)
-		void ServerStartFire();
+	void ServerStartFire();
 
 	UFUNCTION(Reliable, Server, WithValidation)
-		void ServerStopFire();
+	void ServerStopFire();
 
 	UFUNCTION(Reliable, Server, WithValidation)
-		void ServerStartReload();
+	void ServerStartReload();
 
 	UFUNCTION(Reliable, Server, WithValidation)
-		void ServerStopReload();
+	void ServerStopReload();
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Replication & effects
 
 	UFUNCTION()
-		void OnRep_MyPawn();
+	void OnRep_MyPawn();
 
 	UFUNCTION()
-		void OnRep_BurstCounter();
+	void OnRep_BurstCounter();
 
 	UFUNCTION()
-		void OnRep_Reload();
+	void OnRep_Reload();
 
 	/** Called in network play to do the cosmetic fx for firing */
 	virtual void SimulateWeaponFire();

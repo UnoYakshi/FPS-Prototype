@@ -131,8 +131,8 @@ void AWeapon::OnEquipFinished()
 	if (MyPawn)
 	{
 		// TODO: Some functionality upon weapon handling...
+		// Initially it was "realoading if needed"...
 	}
-
 }
 
 void AWeapon::OnUnEquip()
@@ -170,7 +170,7 @@ void AWeapon::OnLeaveInventory()
 {
 	if (Role == ROLE_Authority)
 	{
-		SetOwningPawn(NULL);
+		SetOwningPawn(nullptr);
 	}
 
 	if (IsAttachedToPawn())
@@ -189,18 +189,17 @@ void AWeapon::AttachMeshToPawn()
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, 
 		// bOwnerNoSee flags deal with visibility.
 		FName AttachPoint = MyPawn->GetWeaponAttachPoint();
+		USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
 		if (MyPawn->IsLocallyControlled())
 		{
-			USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
 			Mesh->SetHiddenInGame(false);
 			Mesh->AttachToComponent(PawnMesh, FAttachmentTransformRules::KeepRelativeTransform, AttachPoint);
 		}
 		else
 		{
 			USkeletalMeshComponent* UseWeaponMesh = GetWeaponMesh();
-			USkeletalMeshComponent* UsePawnMesh = MyPawn->GetMesh();
-			UseWeaponMesh->AttachToComponent(UsePawnMesh, FAttachmentTransformRules::KeepRelativeTransform, AttachPoint);
 			UseWeaponMesh->SetHiddenInGame(false);
+			UseWeaponMesh->AttachToComponent(PawnMesh, FAttachmentTransformRules::KeepRelativeTransform, AttachPoint);
 		}
 	}
 }
@@ -340,7 +339,7 @@ void AWeapon::ClientStartReload_Implementation()
 
 bool AWeapon::CanFire() const
 {
-	bool bCanFire = MyPawn;//TODO: && MyPawn->CanFire();
+	bool bCanFire = MyPawn && true;//TODO: && MyPawn->CanFire();
 	bool bStateOKToFire = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanFire && bStateOKToFire && !bPendingReload);
 }
@@ -394,7 +393,7 @@ void AWeapon::HandleFiring()
 			PlayWeaponSound(OutOfAmmoSound);
 		}
 
-		// stop weapon fire FX, but stay in Firing state
+		// Stop weapon fire FX, but stay in Firing state just yet...
 		if (BurstCounter > 0)
 		{
 			OnBurstFinished();
@@ -722,7 +721,7 @@ void AWeapon::SimulateWeaponFire()
 	if (MuzzleFX)
 	{
 		USkeletalMeshComponent* UseWeaponMesh = GetWeaponMesh();
-		if (!bLoopedMuzzleFX || MuzzlePSC == NULL)
+		if (!bLoopedMuzzleFX || !MuzzlePSC)
 		{
 			if (MyPawn && MyPawn->IsLocallyControlled())
 			{
@@ -750,7 +749,7 @@ void AWeapon::SimulateWeaponFire()
 
 	if (bLoopedFireSound)
 	{
-		if (FireAC == NULL)
+		if (!FireAC)
 		{
 			FireAC = PlayWeaponSound(FireLoopSound);
 		}
@@ -760,14 +759,14 @@ void AWeapon::SimulateWeaponFire()
 		PlayWeaponSound(FireSound);
 	}
 
-	AMyPlayerController* PC = (MyPawn != NULL) ? Cast<AMyPlayerController>(MyPawn->Controller) : NULL;
-	if (PC != NULL && PC->IsLocalController())
+	AMyPlayerController* PC = (MyPawn) ? Cast<AMyPlayerController>(MyPawn->Controller) : nullptr;
+	if (PC && PC->IsLocalController())
 	{
-		if (FireCameraShake != NULL)
+		if (FireCameraShake)
 		{
 			PC->ClientPlayCameraShake(FireCameraShake, 1);
 		}
-		if (FireForceFeedback != NULL)
+		if (FireForceFeedback)
 		{
 			PC->ClientPlayForceFeedback(FireForceFeedback, false, false, "Weapon");
 		}
@@ -778,15 +777,15 @@ void AWeapon::StopSimulatingWeaponFire()
 {
 	if (bLoopedMuzzleFX)
 	{
-		if (MuzzlePSC != NULL)
+		if (MuzzlePSC)
 		{
 			MuzzlePSC->DeactivateSystem();
-			MuzzlePSC = NULL;
+			MuzzlePSC = nullptr;
 		}
-		if (MuzzlePSCSecondary != NULL)
+		if (MuzzlePSCSecondary)
 		{
 			MuzzlePSCSecondary->DeactivateSystem();
-			MuzzlePSCSecondary = NULL;
+			MuzzlePSCSecondary = nullptr;
 		}
 	}
 
@@ -799,7 +798,7 @@ void AWeapon::StopSimulatingWeaponFire()
 	if (FireAC)
 	{
 		FireAC->FadeOut(0.1f, 0.0f);
-		FireAC = NULL;
+		FireAC = nullptr;
 
 		PlayWeaponSound(FireFinishSound);
 	}
