@@ -218,21 +218,25 @@ void AWeapon::DetachMeshFromPawn()
 
 void AWeapon::StartFire()
 {
-	switch (Role)
+	if (DEBUG)
 	{
-	case ROLE_SimulatedProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::SimProxy!"));
-		break;
-	case ROLE_AutonomousProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::Client!"));
-		break;
-	case ROLE_Authority:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::Server!"));
-		break;
-	default:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::NANI!"));
-		break;
+		switch (Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::SimProxy!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::Client!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::Server!"));
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::NANI!"));
+			break;
+		}
 	}
+	
 
 	if (Role < ROLE_Authority)
 	{
@@ -248,21 +252,25 @@ void AWeapon::StartFire()
 
 void AWeapon::StopFire()
 {
-	switch (Role)
+	if (DEBUG)
 	{
-	case ROLE_SimulatedProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::SimProxy!"));
-		break;
-	case ROLE_AutonomousProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::Client!"));
-		break;
-	case ROLE_Authority:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::Server!"));
-		break;
-	default:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::NANI!"));
-		break;
+		switch (Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::SimProxy!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::Client!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::Server!"));
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::NANI!"));
+			break;
+		}
 	}
+
 
 	if (Role < ROLE_Authority)
 	{
@@ -319,7 +327,12 @@ void AWeapon::StopReload()
 
 void AWeapon::FireWeapon()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Pew!"));
+	if (DEBUG)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1, 5.f, FColor::Red, TEXT("Pew!")
+		);
+	}
 
 }
 
@@ -418,8 +431,12 @@ void AWeapon::HandleFiring()
 
 			// update firing FX on remote clients if function was called on server
 			++BurstCounter;
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
-				TEXT("GENERAL: " + FString::FromInt(BurstCounter)));
+			if (DEBUG)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+					TEXT("GENERAL: " + FString::FromInt(BurstCounter))
+				);
+			}
 		}
 	}
 	else if (MyPawn && MyPawn->IsLocallyControlled())
@@ -478,13 +495,18 @@ void AWeapon::ServerHandleFiring_Implementation()
 
 		// update firing FX on remote clients
 		++BurstCounter;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
-			TEXT("SERVER: " + FString::FromInt(BurstCounter)));
+		if (DEBUG)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+				TEXT("SERVER: " + FString::FromInt(BurstCounter))
+			);
+		}
 	}
 }
 
 void AWeapon::ReloadWeapon()
 {
+
 }
 
 void AWeapon::SetWeaponState(EWeaponState NewState)
@@ -673,10 +695,12 @@ FVector AWeapon::GetCameraDamageStartLocation(const FVector& AimDir) const
 		// Adjust trace so there is nothing blocking the ray between the camera and the pawn, and calculate distance from adjusted start
 		OutStartTrace = OutStartTrace + AimDir * ((Instigator->GetActorLocation() - OutStartTrace) | AimDir);
 	}
-	/*else if (AIPC)
+	/*
+	else if (AIPC)
 	{
 		OutStartTrace = GetMuzzleLocation();
-	}*/
+	}
+	//*/
 
 	return OutStartTrace;
 }

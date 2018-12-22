@@ -20,7 +20,6 @@
 //////////////////////////////////////////////////////////////////////////
 // AProtCharacter
 
-/*
 AProtCharacter::AProtCharacter()
 {
 	// Enable ticking...
@@ -72,57 +71,6 @@ AProtCharacter::AProtCharacter()
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;
 }
-//*/
-
-AProtCharacter::AProtCharacter(const class FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-	// Enable ticking...
-	PrimaryActorTick.bCanEverTick = true;
-	//PrimaryActorTick.bStartWithTickEnabled = true;
-	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
-
-	// Networking...
-	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
-	bReplicates = true;
-	bNetUseOwnerRelevancy = true;
-
-
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	//GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
-
-	// set our turn rates for input
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
-
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
-	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 0.2f;
-
-	// Create and set-up FPP camera...
-	// TODO: Make blendspace to make pitch more seamless...
-	FPPCamera = ObjectInitializer.CreateDefaultSubobject<UCameraComponent>(this, _T("FPPCamera"));
-	FPPCamera->SetupAttachment(GetMesh(), "eyes");
-	FPPCamera->bUsePawnControlRotation = true;
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
-
-	// Handle Weapon settings...
-	WeaponAttachPoint = FName("weapon_socket_right");
-
-	// Create weapon's skeletal mesh (TESTING ONLY)...
-	WeaponMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponSKMesh"));
-	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
-
-	// Default values for Interactive stuff...
-	MaxUseDistance = 600.f;
-	CurrentInteractive = nullptr;
-	CurrentWeapon = nullptr;
-}
 
 
 void AProtCharacter::BeginPlay()
@@ -156,7 +104,6 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
 
-
 	//PlayerInputComponent->BindAxis("MoveForward", PC, &AMyPlayerController::InputMovementFront);
 	//PlayerInputComponent->BindAxis("MoveRight", PC, &AMyPlayerController::InputMovementSide);
 	PlayerInputComponent->BindAxis("CameraRotationVertical", PC, &AMyPlayerController::InputCameraAddPitch);
@@ -188,7 +135,6 @@ FRotator AProtCharacter::GetAimOffsets() const
 
 	return AimRotLS;
 }
-
 
 AInteractiveObject* AProtCharacter::GetInteractiveInView()
 {
@@ -257,80 +203,56 @@ bool AProtCharacter::StopUsing_Validate()
 	return true;
 }
 
-
 ///
 /// FIREARMS
 ///
 void AProtCharacter::TryStartFire()
 {
-	switch (Role)
+	if (DEBUG)
 	{
-	case ROLE_SimulatedProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::SimProxy!"));
-		break;
-	case ROLE_AutonomousProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Client!"));
-		break;
-	case ROLE_Authority:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Server!"));
-		break;
-	default:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::NANI!"));
-		break;
+		switch (Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::SimProxy!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Client!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Server!"));
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::NANI!"));
+			break;
+		}
 	}
-
 	// TODO: Check if character CanFire()...
 
 	JustFire();
-
-	/*
-	if (Role < ROLE_Authority)
-	{
-		// Server...
-		ServerStartFire();
-	}
-	else
-	{
-		// Client...
-		JustFire();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Fire at will!"));
-	}
-	//*/
 }
 
 void AProtCharacter::TryStopFire()
 {
-	switch (Role)
+	if (DEBUG)
 	{
-	case ROLE_SimulatedProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::SimProxy!"));
-		break;
-	case ROLE_AutonomousProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off+::Client!"));
-		break;
-	case ROLE_Authority:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off+::Server!"));
-		break;
-	default:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off+::NANI!"));
-		break;
+		switch (Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::SimProxy!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Client!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Server!"));
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::NANI!"));
+			break;
+		}
 	}
 
 	JustFireEnd();
-
-	/*
-	if (Role < ROLE_Authority)
-	{
-		// Server...
-		ServerStopFire();
-	}
-	else
-	{
-		// Client...
-		JustFireEnd();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Halt your fire!"));
-	}
-	//*/
 }
 
 void AProtCharacter::JustFire()
@@ -357,27 +279,6 @@ void AProtCharacter::JustFireEnd()
 	}
 }
 
-/*
-void AProtCharacter::ServerStartFire_Implementation()
-{
-	JustFire();
-}
-
-bool AProtCharacter::ServerStartFire_Validate()
-{
-	return true;
-}
-
-void AProtCharacter::ServerStopFire_Implementation()
-{
-	JustFireEnd();
-}
-
-bool AProtCharacter::ServerStopFire_Validate()
-{
-	return true;
-}
-//*/
 void AProtCharacter::StartAim_Implementation()
 {
 
@@ -397,7 +298,6 @@ bool AProtCharacter::StopAim_Validate()
 {
 	return true;
 }
-///
 
 void AProtCharacter::OnResetVR()
 {
@@ -454,7 +354,6 @@ void AProtCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
-
 
 void AProtCharacter::PreUpdateCamera(float DeltaTime)
 {
@@ -598,4 +497,3 @@ float AProtCharacter::CameraProcessYaw(float Input)
 
 	return Angle;
 }
-

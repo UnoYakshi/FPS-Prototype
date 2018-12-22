@@ -3,7 +3,6 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "Engine/Canvas.h" // for FCanvasIcon
 #include "Projectile.h"
 #include "Magazine.h"
 #include "Weapon.generated.h"

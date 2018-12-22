@@ -9,12 +9,11 @@
 #include "Net/UnrealNetwork.h"
 #include "ProtCharacter.generated.h"
 
+// Either print debug-lines on screen or not...
+#define DEBUG false
+
 // Forward declarations...
 class AInteractiveObject;
-//class AWeapon;
-
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnProtCharacterEquipWeapon, AProtCharacter*, AWeapon* /* new */);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnProtCharacterUnEquipWeapon, AProtCharacter*, AWeapon* /* old */);
 
 
 UCLASS(Abstract, config=Game)
@@ -26,9 +25,7 @@ class AProtCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
 
-	//AProtCharacter();
-
-	AProtCharacter(const FObjectInitializer& ObjectInitializer);
+	AProtCharacter();
 
 	virtual void BeginPlay() override;
 
@@ -53,22 +50,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* WeaponMesh;
 
+	/** Either player pressed Fire action or not (i.e., LMB is pressed)... */
 	bool bWantsToFire;
 
-	/** Handles Character's side start firing... */
+	//////////////////////////////////////////////
+	// Handles Character's side start firing...
+	//
 	/** Player pressed StartFire action (LMB pressed)... */
 	void TryStartFire();
 
-	/** [client] Starts weapon fire... */
+	/** Starts weapon fire... */
 	void JustFire();
-	
-	// Server...
-	/*
-	UFUNCTION(WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void ServerStartFire();
-	virtual void ServerStartFire_Implementation();
-	bool ServerStartFire_Validate();
-	//*/
 
 	//////////////////////////////////////////////
 	// Handles Character's side stop firing...
@@ -76,16 +68,8 @@ public:
 	/** Player pressed StartFire action (LMB released)... */
 	void TryStopFire();
 
-	/** [client] Stops weapon fire... */
+	/** Stops weapon fire... */
 	void JustFireEnd();
-
-	// Server...
-	/*
-	UFUNCTION(WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void ServerStopFire();
-	virtual void ServerStopFire_Implementation();
-	bool ServerStopFire_Validate();
-	//*/
 
 	//////////////////////////////////////////////
 	// Handles camera manipulations for aiming (RMB)...
@@ -179,13 +163,6 @@ protected:
 	/** equip weapon */
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerEquipWeapon(class AWeapon* NewWeapon);
-
-	/** Global notification when a character equips a weapon. Needed for replication graph. */
-	PROT_API static FOnProtCharacterEquipWeapon NotifyEquipWeapon;
-
-	/** Global notification when a character un-equips a weapon. Needed for replication graph. */
-	PROT_API static FOnProtCharacterUnEquipWeapon NotifyUnEquipWeapon;
-
 
 protected:
 	FName WeaponAttachPoint;
