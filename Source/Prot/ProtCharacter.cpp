@@ -3,15 +3,17 @@
 #include "ProtCharacter.h"
 #include "MyPlayerController.h"
 #include "Weapons/Weapon.h"
+#include "Interactive/InteractiveObject.h"
+
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Interactive/InteractiveObject.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -24,6 +26,12 @@ AProtCharacter::AProtCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
+
+	// Networking...
+	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	bReplicates = true;
+	bNetUseOwnerRelevancy = true;
+
 
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -58,7 +66,6 @@ AProtCharacter::AProtCharacter()
 	// Create weapon's skeletal mesh (TESTING ONLY)...
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
 	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
-	//->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
 
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
@@ -68,10 +75,10 @@ AProtCharacter::AProtCharacter()
 void AProtCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	WeaponMesh = CurrentWeapon->GetWeaponMesh();
 	WeaponMesh->SetRelativeLocation(FVector::ZeroVector);
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -88,8 +95,8 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::StartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::StopFire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::TryStartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
 
@@ -197,29 +204,119 @@ bool AProtCharacter::StopUsing_Validate()
 	return true;
 }
 
+
 ///
 /// FIREARMS
 ///
-void AProtCharacter::StartFire_Implementation()
+void AProtCharacter::TryStartFire()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Fire at will!"));
+	switch (Role)
+	{
+	case ROLE_SimulatedProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::SimProxy!"));
+		break;
+	case ROLE_AutonomousProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Client!"));
+		break;
+	case ROLE_Authority:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Server!"));
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::NANI!"));
+		break;
+	}
+	/*
 	AMyPlayerController* MyPC = Cast<AMyPlayerController>(Controller);
-	CurrentWeapon->StartFire();
+	if (MyPC)
+	{
+		JustFire();
+	}
+	//*/
+
+	// TODO: Check if character CanFire()...
+
+	//*
+	if (Role < ROLE_Authority)
+	{
+		// Server...
+		ServerStartFire();
+	}
+	else
+	{
+		// Client...
+		JustFire();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Fire at will!"));
+	}
+	//*/
+}
+
+void AProtCharacter::TryStopFire()
+{
+	//JustFireEnd();
+	switch (Role)
+	{
+	case ROLE_SimulatedProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::SimProxy!"));
+		break;
+	case ROLE_AutonomousProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off+::Client!"));
+		break;
+	case ROLE_Authority:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off+::Server!"));
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off+::NANI!"));
+		break;
+	}
+
+	//*
+	if (Role < ROLE_Authority)
+	{
+		// Server...
+		ServerStopFire();
+	}
+	else
+	{
+		// Client...
+		JustFireEnd();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Halt your fire!"));
+	}
+	//*/
+}
+
+void AProtCharacter::JustFire()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StartFire();
+	}
+}
+
+void AProtCharacter::JustFireEnd()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StopFire();
+	}
+}
+
+void AProtCharacter::ServerStartFire_Implementation()
+{
+	JustFire();
 }
 
 
-bool AProtCharacter::StartFire_Validate()
+bool AProtCharacter::ServerStartFire_Validate()
 {
 	return true;
 }
 
-void AProtCharacter::StopFire_Implementation()
+void AProtCharacter::ServerStopFire_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Halt your fire!"));
-	CurrentWeapon->StopFire();
+	JustFireEnd();
 }
 
-bool AProtCharacter::StopFire_Validate()
+bool AProtCharacter::ServerStopFire_Validate()
 {
 	return true;
 }
@@ -378,7 +475,7 @@ void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
 		LocalLastWeapon = CurrentWeapon;
 	}
 
-	// unequip previous
+	// Unequip previous weapon if any...
 	if (LocalLastWeapon)
 	{
 		LocalLastWeapon->OnUnEquip();
@@ -386,7 +483,7 @@ void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
 
 	CurrentWeapon = NewWeapon;
 
-	// equip new one
+	// Equip a new one...
 	if (NewWeapon)
 	{
 		NewWeapon->SetOwningPawn(this);	// Make sure weapon's MyPawn is pointing back to us. 
@@ -407,7 +504,10 @@ void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	/// only to local owner: weapon change requests are locally instigated, other clients don't need it
+	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
 
+	DOREPLIFETIME(AProtCharacter, CurrentWeapon);
 }
 
 /////////////////////////////////////////////

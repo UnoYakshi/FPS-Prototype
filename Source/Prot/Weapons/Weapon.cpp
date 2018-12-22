@@ -216,6 +216,22 @@ void AWeapon::DetachMeshFromPawn()
 
 void AWeapon::StartFire()
 {
+	switch (Role)
+	{
+	case ROLE_SimulatedProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::SimProxy!"));
+		break;
+	case ROLE_AutonomousProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::Client!"));
+		break;
+	case ROLE_Authority:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::Server!"));
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::NANI!"));
+		break;
+	}
+
 	if (Role < ROLE_Authority)
 	{
 		ServerStartFire();
@@ -230,6 +246,22 @@ void AWeapon::StartFire()
 
 void AWeapon::StopFire()
 {
+	switch (Role)
+	{
+	case ROLE_SimulatedProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::SimProxy!"));
+		break;
+	case ROLE_AutonomousProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::Client!"));
+		break;
+	case ROLE_Authority:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::Server!"));
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::NANI!"));
+		break;
+	}
+
 	if (Role < ROLE_Authority)
 	{
 		ServerStopFire();
@@ -384,6 +416,8 @@ void AWeapon::HandleFiring()
 
 			// update firing FX on remote clients if function was called on server
 			++BurstCounter;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+				TEXT("GENERAL: " + FString::FromInt(BurstCounter)));
 		}
 	}
 	else if (MyPawn && MyPawn->IsLocallyControlled())
@@ -437,6 +471,8 @@ void AWeapon::ServerHandleFiring_Implementation()
 
 		// update firing FX on remote clients
 		++BurstCounter;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+			TEXT("SERVER: " + FString::FromInt(BurstCounter)));
 	}
 }
 

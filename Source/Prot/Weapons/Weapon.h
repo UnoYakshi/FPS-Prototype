@@ -309,7 +309,7 @@ protected:
 	float EquipDuration;
 
 	/** burst counter, used for replicating fire events to remote clients */
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_BurstCounter)
+	UPROPERTY(VisibleAnywhere, Transient, ReplicatedUsing = OnRep_BurstCounter)
 	int32 BurstCounter;
 
 	/** Handle for efficient management of OnEquipFinished timer */

@@ -3,15 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "MyPlayerController.h"
+#include "Weapons/Weapon.h"
+#include "GameFramework/Character.h"
+#include "Net/UnrealNetwork.h"
 #include "ProtCharacter.generated.h"
 
 // Forward declarations...
 class AInteractiveObject;
-class AWeapon;
+//class AWeapon;
 
-UCLASS(config=Game)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnProtCharacterEquipWeapon, AProtCharacter*, AWeapon* /* new */);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnProtCharacterUnEquipWeapon, AProtCharacter*, AWeapon* /* old */);
+
+
+UCLASS(Abstract, config=Game)
 class AProtCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -20,14 +26,11 @@ class AProtCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
 
-public:
 	AProtCharacter();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	
-	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
-	FRotator GetAimOffsets() const;
 
+public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -37,23 +40,46 @@ public:
 	float BaseLookUpRate;
 
 public:
+	/** Returns Aim Offsets?.. */
+	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
+	FRotator GetAimOffsets() const;
+
 	/** Weapon's mesh to hold in hands... */
 	// TODO: Rework as CurrentWeapon of Weapon class...
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* WeaponMesh;
 
-	/** Handles Character's side firing, calls CurrentWeapon->StartFiring()... */
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StartFire();
-	virtual void StartFire_Implementation();
-	bool StartFire_Validate();
+	/** Handles Character's side start firing... */
+	/** Player pressed StartFire action (LMB pressed)... */
+	void TryStartFire();
 
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StopFire();
-	virtual void StopFire_Implementation();
-	bool StopFire_Validate();
+	/** [client] Starts weapon fire... */
+	void JustFire();
+	
+	// Server...
+	UFUNCTION(WithValidation, Server, Reliable, Category = "Weapons")
+	virtual void ServerStartFire();
+	virtual void ServerStartFire_Implementation();
+	bool ServerStartFire_Validate();
 
-	/** Handles camera manipulations for aiming... */
+	//////////////////////////////////////////////
+	// Handles Character's side stop firing...
+	//
+	/** Player pressed StartFire action (LMB released)... */
+	void TryStopFire();
+
+	/** [client] Stops weapon fire... */
+	void JustFireEnd();
+
+	// Server...
+	UFUNCTION(WithValidation, Server, Reliable, Category = "Weapons")
+	virtual void ServerStopFire();
+	virtual void ServerStopFire_Implementation();
+	bool ServerStopFire_Validate();
+
+	//////////////////////////////////////////////
+	// Handles camera manipulations for aiming (RMB)...
+	//
 	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
 	virtual void StartAim();
 	virtual void StartAim_Implementation();
@@ -88,7 +114,6 @@ public:
 	bool StopUsing_Validate();
 
 protected:
-
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
 
@@ -142,8 +167,14 @@ protected:
 	void EquipWeapon(class AWeapon* Weapon);
 
 	/** equip weapon */
-	UFUNCTION(reliable, server, WithValidation)
+	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerEquipWeapon(class AWeapon* NewWeapon);
+
+	/** Global notification when a character equips a weapon. Needed for replication graph. */
+	PROT_API static FOnProtCharacterEquipWeapon NotifyEquipWeapon;
+
+	/** Global notification when a character un-equips a weapon. Needed for replication graph. */
+	PROT_API static FOnProtCharacterUnEquipWeapon NotifyUnEquipWeapon;
 
 
 protected:
@@ -158,6 +189,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
 
+	/** CurrentWeapon replication handler... */
 	UFUNCTION()
 	void OnRep_CurrentWeapon(class AWeapon* LastWeapon);
 
