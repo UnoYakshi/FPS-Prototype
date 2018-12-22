@@ -368,6 +368,9 @@ protected:
 	/** [server] fire & update ammo */
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerHandleFiring();
+	void ServerHandleFiring_Implementation();
+	bool ServerHandleFiring_Validate();
+
 
 	/** [local + server] handle weapon fire */
 	void HandleFiring();

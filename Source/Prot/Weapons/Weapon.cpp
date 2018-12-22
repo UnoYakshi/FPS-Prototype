@@ -41,9 +41,11 @@ AWeapon::AWeapon()
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
+
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
-	bReplicates = true;
+	SetReplicates(true);
 	bNetUseOwnerRelevancy = true;
+
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -446,9 +448,14 @@ void AWeapon::HandleFiring()
 		bRefiring = (CurrentState == EWeaponState::Firing && WeaponConfig.TimeBetweenShots > 0.0f);
 		if (bRefiring)
 		{
-			GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &AWeapon::HandleFiring, WeaponConfig.TimeBetweenShots, false);
+			GetWorldTimerManager().SetTimer(
+				TimerHandle_HandleFiring, this, &AWeapon::HandleFiring, 
+				WeaponConfig.TimeBetweenShots, false
+			);
 		}
 	}
+
+	// TODO: Make noise...
 
 	LastFireTime = GetWorld()->GetTimeSeconds();
 }
@@ -505,7 +512,7 @@ void AWeapon::DetermineWeaponState()
 	{
 		if (bPendingReload)
 		{
-			if (CanReload() == false)
+			if (!CanReload())
 			{
 				NewState = CurrentState;
 			}
@@ -534,7 +541,10 @@ void AWeapon::OnBurstStarted()
 	if (LastFireTime > 0 && WeaponConfig.TimeBetweenShots > 0.0f &&
 		LastFireTime + WeaponConfig.TimeBetweenShots > GameTime)
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &AWeapon::HandleFiring, LastFireTime + WeaponConfig.TimeBetweenShots - GameTime, false);
+		GetWorldTimerManager().SetTimer(
+			TimerHandle_HandleFiring, this, &AWeapon::HandleFiring, 
+			LastFireTime + WeaponConfig.TimeBetweenShots - GameTime, false
+		);
 	}
 	else
 	{

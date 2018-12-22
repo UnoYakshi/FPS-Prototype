@@ -26,8 +26,12 @@ class AProtCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
 
-	AProtCharacter();
+	//AProtCharacter();
+
+	AProtCharacter(const FObjectInitializer& ObjectInitializer);
+
 	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 
 public:
@@ -49,6 +53,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* WeaponMesh;
 
+	bool bWantsToFire;
+
 	/** Handles Character's side start firing... */
 	/** Player pressed StartFire action (LMB pressed)... */
 	void TryStartFire();
@@ -57,10 +63,12 @@ public:
 	void JustFire();
 	
 	// Server...
+	/*
 	UFUNCTION(WithValidation, Server, Reliable, Category = "Weapons")
 	virtual void ServerStartFire();
 	virtual void ServerStartFire_Implementation();
 	bool ServerStartFire_Validate();
+	//*/
 
 	//////////////////////////////////////////////
 	// Handles Character's side stop firing...
@@ -72,10 +80,12 @@ public:
 	void JustFireEnd();
 
 	// Server...
+	/*
 	UFUNCTION(WithValidation, Server, Reliable, Category = "Weapons")
 	virtual void ServerStopFire();
 	virtual void ServerStopFire_Implementation();
 	bool ServerStopFire_Validate();
+	//*/
 
 	//////////////////////////////////////////////
 	// Handles camera manipulations for aiming (RMB)...

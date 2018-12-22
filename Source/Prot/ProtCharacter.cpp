@@ -20,6 +20,7 @@
 //////////////////////////////////////////////////////////////////////////
 // AProtCharacter
 
+/*
 AProtCharacter::AProtCharacter()
 {
 	// Enable ticking...
@@ -71,6 +72,58 @@ AProtCharacter::AProtCharacter()
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;
 }
+//*/
+
+AProtCharacter::AProtCharacter(const class FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	// Enable ticking...
+	PrimaryActorTick.bCanEverTick = true;
+	//PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
+
+	// Networking...
+	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	bReplicates = true;
+	bNetUseOwnerRelevancy = true;
+
+
+	// Set size for collision capsule
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	//GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+
+	// set our turn rates for input
+	BaseTurnRate = 45.f;
+	BaseLookUpRate = 45.f;
+
+	// Configure character movement
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->AirControl = 0.2f;
+
+	// Create and set-up FPP camera...
+	// TODO: Make blendspace to make pitch more seamless...
+	FPPCamera = ObjectInitializer.CreateDefaultSubobject<UCameraComponent>(this, _T("FPPCamera"));
+	FPPCamera->SetupAttachment(GetMesh(), "eyes");
+	FPPCamera->bUsePawnControlRotation = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+	// Handle Weapon settings...
+	WeaponAttachPoint = FName("weapon_socket_right");
+
+	// Create weapon's skeletal mesh (TESTING ONLY)...
+	WeaponMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponSKMesh"));
+	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
+
+	// Default values for Interactive stuff...
+	MaxUseDistance = 600.f;
+	CurrentInteractive = nullptr;
+	CurrentWeapon = nullptr;
+}
+
 
 void AProtCharacter::BeginPlay()
 {
@@ -225,17 +278,12 @@ void AProtCharacter::TryStartFire()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::NANI!"));
 		break;
 	}
-	/*
-	AMyPlayerController* MyPC = Cast<AMyPlayerController>(Controller);
-	if (MyPC)
-	{
-		JustFire();
-	}
-	//*/
 
 	// TODO: Check if character CanFire()...
 
-	//*
+	JustFire();
+
+	/*
 	if (Role < ROLE_Authority)
 	{
 		// Server...
@@ -252,7 +300,6 @@ void AProtCharacter::TryStartFire()
 
 void AProtCharacter::TryStopFire()
 {
-	//JustFireEnd();
 	switch (Role)
 	{
 	case ROLE_SimulatedProxy:
@@ -269,7 +316,9 @@ void AProtCharacter::TryStopFire()
 		break;
 	}
 
-	//*
+	JustFireEnd();
+
+	/*
 	if (Role < ROLE_Authority)
 	{
 		// Server...
@@ -286,25 +335,33 @@ void AProtCharacter::TryStopFire()
 
 void AProtCharacter::JustFire()
 {
-	if (CurrentWeapon)
+	if (!bWantsToFire)
 	{
-		CurrentWeapon->StartFire();
+		bWantsToFire = true;
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->StartFire();
+		}
 	}
 }
 
 void AProtCharacter::JustFireEnd()
 {
-	if (CurrentWeapon)
+	if (bWantsToFire)
 	{
-		CurrentWeapon->StopFire();
+		bWantsToFire = false;
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->StopFire();
+		}
 	}
 }
 
+/*
 void AProtCharacter::ServerStartFire_Implementation()
 {
 	JustFire();
 }
-
 
 bool AProtCharacter::ServerStartFire_Validate()
 {
@@ -320,7 +377,7 @@ bool AProtCharacter::ServerStopFire_Validate()
 {
 	return true;
 }
-
+//*/
 void AProtCharacter::StartAim_Implementation()
 {
 
