@@ -4,6 +4,7 @@
 
 #include "Prot.h"
 #include "ProtCharacter.h"
+#include "Projectile.h"
 #include "MyPlayerController.h"
 
 #include "Particles/ParticleSystemComponent.h"
@@ -17,7 +18,7 @@ AWeapon::AWeapon()
 {
 	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh1P"));
 	Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
-	Mesh->bReceivesDecals = false;
+	Mesh->bReceivesDecals = true;
 	Mesh->CastShadow = true;
 	Mesh->SetCollisionObjectType(ECC_WorldDynamic);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -45,7 +46,6 @@ AWeapon::AWeapon()
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	SetReplicates(true);
 	bNetUseOwnerRelevancy = true;
-
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -327,13 +327,36 @@ void AWeapon::StopReload()
 
 void AWeapon::FireWeapon()
 {
-	if (DEBUG)
+	if (DEBUG || true)
 	{
 		GEngine->AddOnScreenDebugMessage(
 			-1, 5.f, FColor::Red, TEXT("Pew!")
 		);
 	}
 
+	const FVector Origin = GetMuzzleLocation();
+	const FVector Direciton = Mesh->GetRightVector();
+	const float ProjectileAdjustRange = 10000.0f;
+	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
+
+	if (ProjectileClass)
+	{
+		
+		UWorld* World = MyPawn->GetWorld();
+		AProjectile* NewProjectile = World->SpawnActor<AProjectile>(
+			ProjectileClass,
+			Origin, Mesh->GetForwardVector().Rotation()
+			);
+		if (NewProjectile)
+		{
+			NewProjectile->InitVelocity(Direciton);
+			if (DEBUG)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Direction: %s"), *Direciton.ToString());
+				UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *NewProjectile->GetVelocity().ToString());
+			}
+		}
+	}
 }
 
 bool AWeapon::ServerStartFire_Validate()
@@ -783,10 +806,25 @@ void AWeapon::OnRep_Reload()
 
 void AWeapon::SimulateWeaponFire()
 {
+	if (MuzzleFX)
+	{
+		MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
+	}
+
+	if (!bPlayingFireAnim)
+	{
+		PlayWeaponAnimation(FireAnim);
+		bPlayingFireAnim = true;
+	}
+
+	PlayWeaponSound(FireSound);
+
+	/*/
 	if (Role == ROLE_Authority && CurrentState != EWeaponState::Firing)
 	{
 		return;
 	}
+	/
 
 	if (MuzzleFX)
 	{
@@ -841,21 +879,24 @@ void AWeapon::SimulateWeaponFire()
 			PC->ClientPlayForceFeedback(FireForceFeedback, false, false, "Weapon");
 		}
 	}
+	//*/
 }
 
 void AWeapon::StopSimulatingWeaponFire()
 {
+	if (bPlayingFireAnim)
+	{
+		StopWeaponAnimation(FireAnim);
+		bPlayingFireAnim = false;
+	}
+
+	/*
 	if (bLoopedMuzzleFX)
 	{
 		if (MuzzlePSC)
 		{
 			MuzzlePSC->DeactivateSystem();
 			MuzzlePSC = nullptr;
-		}
-		if (MuzzlePSCSecondary)
-		{
-			MuzzlePSCSecondary->DeactivateSystem();
-			MuzzlePSCSecondary = nullptr;
 		}
 	}
 
@@ -872,6 +913,7 @@ void AWeapon::StopSimulatingWeaponFire()
 
 		PlayWeaponSound(FireFinishSound);
 	}
+	*/
 }
 
 void AWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const

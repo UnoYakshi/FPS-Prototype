@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine.h"
 
 #define SURFACE_FLESHDEFAULT		SurfaceType1
 #define SURFACE_FLESHVULNERABLE		SurfaceType2

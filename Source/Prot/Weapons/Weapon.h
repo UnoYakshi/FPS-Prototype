@@ -199,6 +199,9 @@ protected://TODO: private
 	USkeletalMeshComponent* Mesh;
 
 protected:
+	/** Projectile class to spawn... */
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class AProjectile> ProjectileClass;
 
 	/** firing audio (bLoopedFireSound set) */
 	UPROPERTY(Transient)
@@ -215,10 +218,6 @@ protected:
 	/** spawned component for muzzle FX */
 	UPROPERTY(Transient)
 	UParticleSystemComponent* MuzzlePSC;
-
-	/** spawned component for second muzzle FX (Needed for split screen) */
-	UPROPERTY(Transient)
-	UParticleSystemComponent* MuzzlePSCSecondary;
 
 	/** camera shake on firing */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
@@ -266,34 +265,34 @@ protected:
 
 	/** is muzzle FX looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-	uint32 bLoopedMuzzleFX : 1;
+	bool bLoopedMuzzleFX;
 
 	/** is fire sound looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-	uint32 bLoopedFireSound : 1;
+	bool bLoopedFireSound;
 
 	/** is fire animation looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	uint32 bLoopedFireAnim : 1;
+	bool bLoopedFireAnim;
 
 	/** is fire animation playing? */
-	uint32 bPlayingFireAnim : 1;
+	bool bPlayingFireAnim;
 
 	/** is weapon currently equipped? */
-	uint32 bIsEquipped : 1;
+	bool bIsEquipped;
 
 	/** is weapon fire active? */
-	uint32 bWantsToFire : 1;
+	bool bWantsToFire;
 
 	/** is reload animation playing? */
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_Reload)
-	uint32 bPendingReload : 1;
+	bool bPendingReload;
 
 	/** is equip animation playing? */
-	uint32 bPendingEquip : 1;
+	bool bPendingEquip;
 
 	/** weapon is refiring */
-	uint32 bRefiring;
+	bool bRefiring;
 
 	/** current weapon state */
 	EWeaponState CurrentState;
