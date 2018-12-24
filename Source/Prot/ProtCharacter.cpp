@@ -72,7 +72,6 @@ AProtCharacter::AProtCharacter()
 	CurrentInteractive = nullptr;
 }
 
-
 void AProtCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -93,6 +92,7 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
+
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
@@ -100,6 +100,7 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
@@ -276,6 +277,23 @@ void AProtCharacter::JustFireEnd()
 		{
 			CurrentWeapon->StopFire();
 		}
+	}
+}
+
+void AProtCharacter::Reload()
+{
+	UE_LOG(LogTemp, Warning, TEXT("RELOAD"));
+
+	UWorld* World = GetWorld();
+	AMagazine* NewMag = World->SpawnActor<AMagazine>(
+		MagClassToSpawn,
+		GetActorLocation(),
+		GetActorRotation()
+		);
+	if (NewMag)
+	{
+		NewMag->SetActorHiddenInGame(false);
+		CurrentWeapon->ChangeMagazine(NewMag);
 	}
 }
 

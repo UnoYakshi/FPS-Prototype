@@ -95,13 +95,10 @@ private:
 	/** consume a bullet */
 	void UseAmmo();
 
-	/**  */
-	AMagazine* CurrentMagazine;
-
 	/** query ammo type */
 	virtual EProjectileType GetAmmoType() const
 	{
-		return CurrentMagazine->Data.ProjectileType;
+		return CurrentMag->Data.ProjectileType;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -151,6 +148,8 @@ public:
 	UFUNCTION(Reliable, Client)
 	void ClientStartReload();
 
+	void RemoveMagazine();
+	void ChangeMagazine(AMagazine* NewMagazine);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Control
@@ -202,6 +201,12 @@ protected:
 	/** Projectile class to spawn... */
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 	TSubclassOf<class AProjectile> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = Magazine)
+	TSubclassOf<class AMagazine> MagazineClass;
+
+	UPROPERTY(Transient)
+	AMagazine* CurrentMag;
 
 	/** firing audio (bLoopedFireSound set) */
 	UPROPERTY(Transient)
@@ -322,6 +327,7 @@ protected:
 	/** Handle for efficient management of HandleFiring timer */
 	FTimerHandle TimerHandle_HandleFiring;
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Input - server side
 
@@ -368,7 +374,6 @@ protected:
 	void ServerHandleFiring();
 	void ServerHandleFiring_Implementation();
 	bool ServerHandleFiring_Validate();
-
 
 	/** [local + server] handle weapon fire */
 	void HandleFiring();

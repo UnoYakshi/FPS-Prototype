@@ -53,6 +53,8 @@ public:
 	/** Either player pressed Fire action or not (i.e., LMB is pressed)... */
 	bool bWantsToFire;
 
+	/// //////////////////////////////////////////
+	/// FIRE
 	//////////////////////////////////////////////
 	// Handles Character's side start firing...
 	//
@@ -71,6 +73,19 @@ public:
 	/** Stops weapon fire... */
 	void JustFireEnd();
 
+	/// //////////////////////////////////////////
+	/// RELOAD
+	//////////////////////////////////////////////
+	// Handles Character's side start reloading...
+	//
+	/** Player pressed Reload action (R pressed)... */
+	void Reload();
+
+	UPROPERTY(EditDefaultsOnly, Category = Ammo)
+	TSubclassOf<class AMagazine> MagClassToSpawn;
+
+	/// //////////////////////////////////////////
+	/// AIM
 	//////////////////////////////////////////////
 	// Handles camera manipulations for aiming (RMB)...
 	//
@@ -144,7 +159,9 @@ protected:
 	AMyPlayerController* PC;
 
 	float CameraTreshold = 20.f;
+
 	float RecoilOffset = 10.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRotator CameraLocalRotation = FRotator(0.f);
 

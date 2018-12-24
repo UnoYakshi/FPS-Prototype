@@ -301,7 +301,6 @@ void AWeapon::StartReload(bool bFromReplication)
 		{
 			AnimDuration = WeaponConfig.NoAnimReloadDuration;
 		}
-
 		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &AWeapon::StopReload, AnimDuration, false);
 		if (Role == ROLE_Authority)
 		{
@@ -315,8 +314,14 @@ void AWeapon::StartReload(bool bFromReplication)
 	}
 }
 
+
+
 void AWeapon::StopReload()
 {
+	if (CurrentMag)
+	{
+
+	}	
 	if (CurrentState == EWeaponState::Reloading)
 	{
 		bPendingReload = false;
@@ -530,6 +535,27 @@ void AWeapon::ServerHandleFiring_Implementation()
 void AWeapon::ReloadWeapon()
 {
 
+}
+
+void AWeapon::RemoveMagazine()
+{
+	if (bPendingReload)
+	{
+		// TODO: Add animation?..
+		CurrentMag = nullptr;
+	}
+}
+
+void AWeapon::ChangeMagazine(AMagazine* NewMagazine)
+{
+	UE_LOG(LogTemp, Warning, TEXT("NEW MAG"));
+
+	RemoveMagazine();
+	if (bPendingReload && NewMagazine != CurrentMag)
+	{
+		CurrentMag = NewMagazine;
+	}
+	StartReload();
 }
 
 void AWeapon::SetWeaponState(EWeaponState NewState)
