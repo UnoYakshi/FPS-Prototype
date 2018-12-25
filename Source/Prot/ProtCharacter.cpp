@@ -292,6 +292,7 @@ void AProtCharacter::Reload()
 		);
 	if (NewMag)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("CHAR::Reload"));
 		NewMag->SetActorHiddenInGame(false);
 		CurrentWeapon->ChangeMagazine(NewMag);
 	}

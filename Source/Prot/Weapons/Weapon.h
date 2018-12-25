@@ -46,13 +46,17 @@ struct FWeaponData
 	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
 	float Damage;
 
+	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
+	int AmmoPerShot;
+
 	/** defaults */
 	FWeaponData() :
 		Name(FString("")),
 		Description(FString("")),
 		TimeBetweenShots(0.2f),
 		NoAnimReloadDuration(1.f),
-		Damage(0.f)
+		Damage(0.f),
+		AmmoPerShot(1)
 	{}
 };
 

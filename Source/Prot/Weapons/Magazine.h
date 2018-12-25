@@ -24,8 +24,8 @@ struct FMagazineData
 
 	FMagazineData() :
 		ProjectileType(EProjectileType::MPORK),
-		MaxCapacity(0),
-		CurrentAmmoNum(0)
+		MaxCapacity(30),
+		CurrentAmmoNum(30)
 	{}
 };
 
@@ -51,6 +51,7 @@ public:
 /// PARAMETERS
 public:
 	/* Magazine's config... */
+	UPROPERTY(EditDefaultsOnly)
 	FMagazineData Data;
 
 /// METHODS

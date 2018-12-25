@@ -57,7 +57,6 @@ void AWeapon::Tick(float DeltaTime)
 	// But we have the weapon rotated by 90 degrees counter-clockwise...
 	const FVector Direciton = Mesh->GetRightVector();
 	const float ProjectileAdjustRange = 10000.0f;
-	
 
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
 
@@ -286,6 +285,8 @@ void AWeapon::StopFire()
 
 void AWeapon::StartReload(bool bFromReplication)
 {
+	UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload"));
+
 	if (!bFromReplication && Role < ROLE_Authority)
 	{
 		ServerStartReload();
@@ -311,13 +312,14 @@ void AWeapon::StartReload(bool bFromReplication)
 		{
 			PlayWeaponSound(ReloadSound);
 		}
+		UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload END"));
 	}
 }
 
-
-
 void AWeapon::StopReload()
 {
+	UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload"));
+
 	if (CurrentMag)
 	{
 
@@ -327,6 +329,7 @@ void AWeapon::StopReload()
 		bPendingReload = false;
 		DetermineWeaponState();
 		StopWeaponAnimation(ReloadAnim);
+		UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload END"));
 	}
 }
 
@@ -346,7 +349,6 @@ void AWeapon::FireWeapon()
 
 	if (ProjectileClass)
 	{
-		
 		UWorld* World = MyPawn->GetWorld();
 		AProjectile* NewProjectile = World->SpawnActor<AProjectile>(
 			ProjectileClass,
@@ -391,6 +393,7 @@ bool AWeapon::ServerStartReload_Validate()
 
 void AWeapon::ServerStartReload_Implementation()
 {
+	UE_LOG(LogTemp, Warning, TEXT("WEAP::ServerStartReload"));
 	StartReload();
 }
 
@@ -421,9 +424,11 @@ bool AWeapon::CanFire() const
 
 bool AWeapon::CanReload() const
 {
-	bool bCanReload = (!MyPawn);
 	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
+	// TODO: Check if MyPawn has magazines...
+	bool bCanReload = (MyPawn);
 	bool bGotAmmo = true;
+
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanReload && bGotAmmo && bStateOKToReload);
 }
@@ -439,12 +444,15 @@ void AWeapon::GiveAmmo(int AddAmount)
 
 void AWeapon::UseAmmo()
 {
-
+	CurrentMag->ConsumeAmmo(WeaponConfig.AmmoPerShot);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
+		TEXT("GENERAL: " + FString::FromInt(CurrentMag->Data.CurrentAmmoNum))
+	);
 }
 
 void AWeapon::HandleFiring()
 {
-	if (CanFire())
+	if (CurrentMag && CurrentMag->Data.CurrentAmmoNum > 0 && CanFire())
 	{
 		if (GetNetMode() != NM_DedicatedServer)
 		{
@@ -543,15 +551,20 @@ void AWeapon::RemoveMagazine()
 	{
 		// TODO: Add animation?..
 		CurrentMag = nullptr;
+		UE_LOG(LogTemp, Warning, TEXT("WEAP::RemoveOldMag"));
 	}
 }
 
 void AWeapon::ChangeMagazine(AMagazine* NewMagazine)
 {
-	UE_LOG(LogTemp, Warning, TEXT("NEW MAG"));
+	bPendingReload = true;
+	if (NewMagazine)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WEAP::ChangeMag"));
+	}
 
 	RemoveMagazine();
-	if (bPendingReload && NewMagazine != CurrentMag)
+	if (NewMagazine != CurrentMag)
 	{
 		CurrentMag = NewMagazine;
 	}
