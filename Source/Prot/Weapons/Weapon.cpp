@@ -678,7 +678,7 @@ float AWeapon::PlayWeaponAnimation(const FWeaponAnim& Animation)
 	float Duration = 0.0f;
 	if (MyPawn)
 	{
-		UAnimMontage* UseAnim = Animation.Pawn1P;
+		UAnimMontage* UseAnim = Animation.PawnAnim;
 		if (UseAnim)
 		{
 			Duration = MyPawn->PlayAnimMontage(UseAnim);
@@ -692,7 +692,7 @@ void AWeapon::StopWeaponAnimation(const FWeaponAnim& Animation)
 {
 	if (MyPawn)
 	{
-		UAnimMontage* UseAnim = Animation.Pawn1P;
+		UAnimMontage* UseAnim = Animation.PawnAnim;
 		if (UseAnim)
 		{
 			MyPawn->StopAnimMontage(UseAnim);
@@ -857,44 +857,6 @@ void AWeapon::SimulateWeaponFire()
 		MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
 	}
 
-	if (!bPlayingFireAnim)
-	{
-		PlayWeaponAnimation(FireAnim);
-		bPlayingFireAnim = true;
-	}
-
-	PlayWeaponSound(FireSound);
-
-	/*/
-	if (Role == ROLE_Authority && CurrentState != EWeaponState::Firing)
-	{
-		return;
-	}
-	/
-
-	if (MuzzleFX)
-	{
-		USkeletalMeshComponent* UseWeaponMesh = GetWeaponMesh();
-		if (!bLoopedMuzzleFX || !MuzzlePSC)
-		{
-			if (MyPawn && MyPawn->IsLocallyControlled())
-			{
-				AController* PlayerCon = MyPawn->GetController();
-				if (PlayerCon)
-				{
-					Mesh->GetSocketLocation(MuzzleAttachPoint);
-					MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
-					MuzzlePSC->bOwnerNoSee = false;
-					MuzzlePSC->bOnlyOwnerSee = false;
-				}
-			}
-			else
-			{
-				MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, UseWeaponMesh, MuzzleAttachPoint);
-			}
-		}
-	}
-
 	if (!bLoopedFireAnim || !bPlayingFireAnim)
 	{
 		PlayWeaponAnimation(FireAnim);
@@ -903,7 +865,7 @@ void AWeapon::SimulateWeaponFire()
 
 	if (bLoopedFireSound)
 	{
-		if (!FireAC)
+		if (FireAC == NULL)
 		{
 			FireAC = PlayWeaponSound(FireLoopSound);
 		}
@@ -912,31 +874,10 @@ void AWeapon::SimulateWeaponFire()
 	{
 		PlayWeaponSound(FireSound);
 	}
-
-	AMyPlayerController* PC = (MyPawn) ? Cast<AMyPlayerController>(MyPawn->Controller) : nullptr;
-	if (PC && PC->IsLocalController())
-	{
-		if (FireCameraShake)
-		{
-			PC->ClientPlayCameraShake(FireCameraShake, 1);
-		}
-		if (FireForceFeedback)
-		{
-			PC->ClientPlayForceFeedback(FireForceFeedback, false, false, "Weapon");
-		}
-	}
-	//*/
 }
 
 void AWeapon::StopSimulatingWeaponFire()
 {
-	if (bPlayingFireAnim)
-	{
-		StopWeaponAnimation(FireAnim);
-		bPlayingFireAnim = false;
-	}
-
-	/*
 	if (bLoopedMuzzleFX)
 	{
 		if (MuzzlePSC)
@@ -959,7 +900,6 @@ void AWeapon::StopSimulatingWeaponFire()
 
 		PlayWeaponSound(FireFinishSound);
 	}
-	*/
 }
 
 void AWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const

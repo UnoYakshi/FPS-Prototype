@@ -69,13 +69,8 @@ struct FWeaponAnim
 {
 	GENERATED_USTRUCT_BODY()
 
-	/** animation played on pawn (1st person view) */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	UAnimMontage* Pawn1P;
-
-	/** animation played on pawn (3rd person view) */
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	UAnimMontage* Pawn3P;
+	UAnimMontage* PawnAnim;
 };
 
 UCLASS(Abstract, Blueprintable, BlueprintType)
