@@ -17,7 +17,6 @@ enum class EProjectileType : uint8
 	B762X39 	UMETA(DisplayName = "7.62x39 mm"),
 	B545x39		UMETA(DisplayName = "5.45x39 mm"),
 	B556X45 	UMETA(DisplayName = "5.56x45 mm"),
-	B223REM		UMETA(DisplayName = ".223 Remington"),
 	B45ACP		UMETA(DisplayName = ".45 ACP"),
 	B9MM		UMETA(DisplayName = "9 mm"),
 	MPORK		UMETA(DisplayName = "Anti-muslim Pork")
