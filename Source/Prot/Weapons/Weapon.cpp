@@ -46,6 +46,8 @@ AWeapon::AWeapon()
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	SetReplicates(true);
 	bNetUseOwnerRelevancy = true;
+	NetUpdateFrequency = 66.0f;
+	MinNetUpdateFrequency = 33.0f;
 }
 
 void AWeapon::Tick(float DeltaTime)
