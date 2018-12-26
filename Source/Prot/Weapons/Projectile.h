@@ -45,6 +45,8 @@ public:
 
 	void InitVelocity(const FVector ShootDirection);
 
+	void PlayImpactEffects(EPhysicalSurface SurfaceType, FVector ImpactPoint);
+
 /// PARAMETERS
 protected:
 	/* Type of the bullet... */

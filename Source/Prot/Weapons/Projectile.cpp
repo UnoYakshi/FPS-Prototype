@@ -70,6 +70,11 @@ void AProjectile::InitVelocity(const FVector ShootDirection)
 	}
 }
 
+void AProjectile::PlayImpactEffects(EPhysicalSurface SurfaceType, FVector ImpactPoint)
+{
+	
+}
+
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (OtherActor && 
