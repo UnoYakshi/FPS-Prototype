@@ -1,4 +1,4 @@
-// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Weapon.h"
 
@@ -557,6 +557,11 @@ void AWeapon::RemoveMagazine()
 
 void AWeapon::ChangeMagazine(AMagazine* NewMagazine)
 {
+	if (NewMagazine->Data.ProjectileType != WeaponConfig.WeaponProjectileType)
+	{
+		return;
+	}
+
 	bPendingReload = true;
 	if (NewMagazine)
 	{
