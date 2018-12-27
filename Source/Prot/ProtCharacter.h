@@ -51,14 +51,22 @@ public:
 	USkeletalMeshComponent* WeaponMesh;
 
 	/** Either player pressed Fire action or not (i.e., LMB is pressed)... */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	bool bWantsToFire;
 
 	/// //////////////////////////////////////////
 	/// FIRE
+	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
+	bool CanFire() const;
+
+	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
+	bool WeaponCanFire() const;
+
 	//////////////////////////////////////////////
 	// Handles Character's side start firing...
 	//
 	/** Player pressed StartFire action (LMB pressed)... */
+	UFUNCTION(BlueprintCallable)
 	void TryStartFire();
 
 	/** Starts weapon fire... */
@@ -68,6 +76,7 @@ public:
 	// Handles Character's side stop firing...
 	//
 	/** Player pressed StartFire action (LMB released)... */
+	UFUNCTION(BlueprintCallable)
 	void TryStopFire();
 
 	/** Stops weapon fire... */

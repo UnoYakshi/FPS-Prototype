@@ -85,7 +85,7 @@ void AProtCharacter::BeginPlay()
 void AProtCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	PreUpdateCamera(DeltaTime);
+	//PreUpdateCamera(DeltaTime);
 }
 
 void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -202,6 +202,16 @@ void AProtCharacter::StopUsing_Implementation()
 bool AProtCharacter::StopUsing_Validate()
 {
 	return true;
+}
+
+bool AProtCharacter::CanFire() const
+{
+	return true;
+}
+
+bool AProtCharacter::WeaponCanFire() const
+{
+	return CurrentWeapon->CanFire();
 }
 
 ///

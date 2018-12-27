@@ -419,10 +419,16 @@ void AWeapon::ClientStartReload_Implementation()
 
 bool AWeapon::CanFire() const
 {
-	bool bCanFire = MyPawn && true;//TODO: && MyPawn->CanFire();
+	bool bCanFire = MyPawn && MyPawn->CanFire();
 	bool bStateOKToFire = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanFire && bStateOKToFire && !bPendingReload);
 }
+
+bool AWeapon::HasAmmo() const
+{
+	return CurrentMag && CurrentMag->Data.CurrentAmmoNum > 0;
+}
+
 
 bool AWeapon::CanReload() const
 {
@@ -448,13 +454,13 @@ void AWeapon::UseAmmo()
 {
 	CurrentMag->ConsumeAmmo(WeaponConfig.AmmoPerShot);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
-		TEXT("GENERAL: " + FString::FromInt(CurrentMag->Data.CurrentAmmoNum))
+		TEXT("Ammo: " + FString::FromInt(CurrentMag->Data.CurrentAmmoNum))
 	);
 }
 
 void AWeapon::HandleFiring()
 {
-	if (CurrentMag && CurrentMag->Data.CurrentAmmoNum > 0 && CanFire())
+	if (HasAmmo() && CanFire())
 	{
 		if (GetNetMode() != NM_DedicatedServer)
 		{
@@ -522,7 +528,7 @@ bool AWeapon::ServerHandleFiring_Validate()
 
 void AWeapon::ServerHandleFiring_Implementation()
 {
-	const bool bShouldUpdateAmmo = (CanFire());
+	const bool bShouldUpdateAmmo = (HasAmmo() && CanFire());
 
 	HandleFiring();
 
@@ -633,8 +639,11 @@ void AWeapon::OnBurstStarted()
 		LastFireTime + WeaponConfig.TimeBetweenShots > GameTime)
 	{
 		GetWorldTimerManager().SetTimer(
-			TimerHandle_HandleFiring, this, &AWeapon::HandleFiring, 
-			LastFireTime + WeaponConfig.TimeBetweenShots - GameTime, false
+			TimerHandle_HandleFiring, 
+			this, 
+			&AWeapon::HandleFiring, 
+			LastFireTime + WeaponConfig.TimeBetweenShots - GameTime,
+			false
 		);
 	}
 	else
@@ -664,7 +673,7 @@ void AWeapon::OnBurstFinished()
 
 UAudioComponent* AWeapon::PlayWeaponSound(USoundCue* Sound)
 {
-	UAudioComponent* AC = NULL;
+	UAudioComponent* AC = nullptr;
 	if (Sound && MyPawn)
 	{
 		AC = UGameplayStatics::SpawnSoundAttached(Sound, MyPawn->GetRootComponent());
@@ -682,6 +691,10 @@ float AWeapon::PlayWeaponAnimation(const FWeaponAnim& Animation)
 		if (UseAnim)
 		{
 			Duration = MyPawn->PlayAnimMontage(UseAnim);
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
+				TEXT("ANIM: " + FString::SanitizeFloat(Duration))
+			);
 		}
 	}
 
@@ -857,7 +870,8 @@ void AWeapon::SimulateWeaponFire()
 		MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
 	}
 
-	if (!bLoopedFireAnim || !bPlayingFireAnim)
+	//if (!bLoopedFireAnim || !bPlayingFireAnim)
+	if (!bPlayingFireAnim)
 	{
 		PlayWeaponAnimation(FireAnim);
 		bPlayingFireAnim = true;

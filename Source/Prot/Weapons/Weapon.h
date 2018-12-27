@@ -156,11 +156,17 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Control
-protected:
+public:
 	/** check if weapon can fire */
+	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
 	bool CanFire() const;
 
+	/** Check if weapon has magazine and ammo... */
+	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
+	bool HasAmmo() const;
+
 	/** check if weapon can be reloaded */
+	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
 	bool CanReload() const;
 
 
@@ -192,7 +198,7 @@ protected:
 	class AProtCharacter* MyPawn;
 
 	/** Weapon's data... */
-	UPROPERTY(EditDefaultsOnly, Category = Config)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Config)
 	FWeaponData WeaponConfig;
 
 protected://TODO: private
@@ -264,11 +270,11 @@ protected:
 	USoundCue* EquipSound;
 
 	/** equip animations */
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation)
 	FWeaponAnim EquipAnim;
 
 	/** fire animations */
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation)
 	FWeaponAnim FireAnim;
 
 	/** is muzzle FX looped? */
@@ -284,6 +290,7 @@ protected:
 	bool bLoopedFireAnim;
 
 	/** is fire animation playing? */
+	UPROPERTY(BlueprintReadOnly)
 	bool bPlayingFireAnim;
 
 	/** is weapon currently equipped? */
@@ -293,7 +300,7 @@ protected:
 	bool bWantsToFire;
 
 	/** is reload animation playing? */
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_Reload)
+	UPROPERTY(Transient, BlueprintReadOnly, ReplicatedUsing = OnRep_Reload)
 	bool bPendingReload;
 
 	/** is equip animation playing? */
@@ -411,9 +418,11 @@ protected:
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound);
 
 	/** play weapon animations */
+	UFUNCTION(BlueprintCallable)
 	float PlayWeaponAnimation(const FWeaponAnim& Animation);
 
 	/** stop playing weapon animations */
+	UFUNCTION(BlueprintCallable)
 	void StopWeaponAnimation(const FWeaponAnim& Animation);
 
 	/** Get the aim of the weapon, allowing for adjustments to be made by the weapon */
