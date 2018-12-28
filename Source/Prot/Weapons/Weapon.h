@@ -52,7 +52,6 @@ struct FWeaponData
 	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
 	EProjectileType WeaponProjectileType;
 
-	/** defaults */
 	FWeaponData() :
 		Name(FString("")),
 		Description(FString("")),
@@ -62,15 +61,6 @@ struct FWeaponData
 		AmmoPerShot(1),
 		WeaponProjectileType(EProjectileType::B545x39)
 	{}
-};
-
-USTRUCT(BlueprintType)
-struct FWeaponAnim
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	UAnimMontage* PawnAnim;
 };
 
 UCLASS(Abstract, Blueprintable, BlueprintType)
@@ -98,7 +88,7 @@ private:
 	/** consume a bullet */
 	void UseAmmo();
 
-	/** query ammo type */
+	/** Returns current ammo type... */
 	virtual EProjectileType GetAmmoType() const
 	{
 		return CurrentMag->Data.ProjectileType;
@@ -151,7 +141,13 @@ public:
 	UFUNCTION(Reliable, Client)
 	void ClientStartReload();
 
+	/** Removes CurrentMag... */
+	// TODO: Detach magazine's mesh, disown from weapon...
 	void RemoveMagazine();
+
+	/** Changes CurrentMag to a new one...
+	*   Also checks either EProjectileType is compatible...	
+	*/
 	void ChangeMagazine(AMagazine* NewMagazine);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -263,7 +259,7 @@ protected:
 
 	/** reload animations */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	FWeaponAnim ReloadAnim;
+	UAnimMontage* ReloadAnim;
 
 	/** equip sound */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
@@ -271,11 +267,11 @@ protected:
 
 	/** equip animations */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation)
-	FWeaponAnim EquipAnim;
+	UAnimMontage* EquipAnim;
 
 	/** fire animations */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation)
-	FWeaponAnim FireAnim;
+	UAnimMontage* FireAnim;
 
 	/** is muzzle FX looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
@@ -419,11 +415,11 @@ protected:
 
 	/** play weapon animations */
 	UFUNCTION(BlueprintCallable)
-	float PlayWeaponAnimation(const FWeaponAnim& Animation);
+	float PlayWeaponAnimation(UAnimMontage* Animation);
 
 	/** stop playing weapon animations */
 	UFUNCTION(BlueprintCallable)
-	void StopWeaponAnimation(const FWeaponAnim& Animation);
+	void StopWeaponAnimation(UAnimMontage* Animation);
 
 	/** Get the aim of the weapon, allowing for adjustments to be made by the weapon */
 	virtual FVector GetAdjustedAim() const;

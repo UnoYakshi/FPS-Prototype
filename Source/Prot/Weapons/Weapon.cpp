@@ -682,34 +682,26 @@ UAudioComponent* AWeapon::PlayWeaponSound(USoundCue* Sound)
 	return AC;
 }
 
-float AWeapon::PlayWeaponAnimation(const FWeaponAnim& Animation)
+float AWeapon::PlayWeaponAnimation(UAnimMontage* Animation)
 {
 	float Duration = 0.0f;
-	if (MyPawn)
+	if (MyPawn && Animation)
 	{
-		UAnimMontage* UseAnim = Animation.PawnAnim;
-		if (UseAnim)
-		{
-			Duration = MyPawn->PlayAnimMontage(UseAnim);
+		Duration = MyPawn->PlayAnimMontage(Animation);
 
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
-				TEXT("ANIM: " + FString::SanitizeFloat(Duration))
-			);
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
+			TEXT("ANIM: " + FString::SanitizeFloat(Duration))
+		);
 	}
 
 	return Duration;
 }
 
-void AWeapon::StopWeaponAnimation(const FWeaponAnim& Animation)
+void AWeapon::StopWeaponAnimation(UAnimMontage* Animation)
 {
-	if (MyPawn)
+	if (MyPawn && Animation)
 	{
-		UAnimMontage* UseAnim = Animation.PawnAnim;
-		if (UseAnim)
-		{
-			MyPawn->StopAnimMontage(UseAnim);
-		}
+		MyPawn->StopAnimMontage(Animation);
 	}
 }
 
