@@ -53,7 +53,7 @@ AProtCharacter::AProtCharacter()
 
 	// Create and set-up FPP camera...
 	// TODO: Make blendspace to make pitch more seamless...
-	FPPCamera = CreateDefaultSubobject<UCameraComponent>(_T("FPPCamera"));
+	FPPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPPCamera"));
 	FPPCamera->SetupAttachment(GetMesh(), "eyes");
 	FPPCamera->bUsePawnControlRotation = true;
 	bUseControllerRotationPitch = false;
@@ -152,7 +152,7 @@ AInteractiveObject* AProtCharacter::GetInteractiveInView()
 	const FVector direction = camRot.Vector();
 	const FVector EndTrace = StartTrace + (direction * MaxUseDistance);
 
-	FCollisionQueryParams TraceParams(FName(_T("InteractiveRaytrace")), true, this);
+	FCollisionQueryParams TraceParams(FName(TEXT("InteractiveRaytrace")), true, this);
 	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 	TraceParams.bTraceComplex = true;
