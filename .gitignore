@@ -77,7 +77,6 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 
-#already content
+# Content packages...
 Content/StarterContent/*
 Content/FPS_Weapon_Bundle/*
-Content/AnimStarterPack/*
