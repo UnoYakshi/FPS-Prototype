@@ -7,7 +7,7 @@
 #include "ParticleDefinitions.h"
 #include "Sound/SoundCue.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Projectile.generated.h"
 
 
@@ -76,8 +76,8 @@ protected:
 	USoundCue* FlySC;
 
 	/** Sphere collision component */
-	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
-	USphereComponent* CollisionComp;
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	UCapsuleComponent* CollisionComp;
 
 	/** Projectile's speed, in m/s... */
 	UPROPERTY(EditAnywhere, Category = "Projectile")
