@@ -20,12 +20,20 @@ AProjectile::AProjectile() :
 	Mesh->bReceivesDecals = false;
 	RootComponent = Mesh;
 
-	// Use a sphere as a simple collision representation
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphereComp"));
-	CollisionComp->InitSphereRadius(3.0f);
+	// Use a capsule as a simple collision...
+	// Make it longer than a projectile to give overlap system possibility to handle it on a high speed...
+	CollisionComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionCapsuleComp"));
+	CollisionComp->InitCapsuleSize(2.f, 10.f);
+	CollisionComp->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");			// Collision profiles are defined in DefaultEngine.ini
 	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);		// set up a notification for when this component overlaps something
-	CollisionComp->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
+	CollisionComp->SetRelativeTransform(
+		FTransform(
+			FRotator(90.f, 0.f, 0.f),
+			FVector(0.f, -10.f, 0.f),
+			FVector(1.f)
+		)
+	);
 
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
