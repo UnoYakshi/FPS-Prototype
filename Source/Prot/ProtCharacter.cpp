@@ -2,15 +2,18 @@
 
 #include "ProtCharacter.h"
 #include "MyPlayerController.h"
+#include "Weapons/Weapon.h"
+#include "Interactive/InteractiveObject.h"
+
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Interactive/InteractiveObject.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -19,6 +22,17 @@
 
 AProtCharacter::AProtCharacter()
 {
+	// Enable ticking...
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
+
+	// Networking...
+	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	bReplicates = true;
+	bNetUseOwnerRelevancy = true;
+
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -39,47 +53,57 @@ AProtCharacter::AProtCharacter()
 
 	// Create and set-up FPP camera...
 	// TODO: Make blendspace to make pitch more seamless...
-	FPPCamera = CreateDefaultSubobject<UCameraComponent>(_T("FPPCamera"));
+	FPPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPPCamera"));
 	FPPCamera->SetupAttachment(GetMesh(), "eyes");
 	FPPCamera->bUsePawnControlRotation = true;
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationRoll = true;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
 
-	// Create weapon's skeletal mesh...
+	// Handle Weapon settings...
+	WeaponAttachPoint = FName("weapon_socket_right");
+	
+	// Create weapon's skeletal mesh (TESTING ONLY)...
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
-	if (WeaponMesh)
-	{
-		WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("weapon_r"));
-	}
+	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
 
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;
 }
 
+void AProtCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	WeaponMesh = CurrentWeapon->GetWeaponMesh();
+	WeaponMesh->SetRelativeLocation(FVector::ZeroVector);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 void AProtCharacter::Tick(float DeltaTime)
 {
-	PreUpdateCamera(DeltaTime);
+	Super::Tick(DeltaTime);
+	//PreUpdateCamera(DeltaTime);
 }
 
 void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
+
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::StartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::StopFire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::TryStartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
-
 
 	//PlayerInputComponent->BindAxis("MoveForward", PC, &AMyPlayerController::InputMovementFront);
 	//PlayerInputComponent->BindAxis("MoveRight", PC, &AMyPlayerController::InputMovementSide);
@@ -113,7 +137,6 @@ FRotator AProtCharacter::GetAimOffsets() const
 	return AimRotLS;
 }
 
-
 AInteractiveObject* AProtCharacter::GetInteractiveInView()
 {
 	FVector camLoc;
@@ -129,7 +152,7 @@ AInteractiveObject* AProtCharacter::GetInteractiveInView()
 	const FVector direction = camRot.Vector();
 	const FVector EndTrace = StartTrace + (direction * MaxUseDistance);
 
-	FCollisionQueryParams TraceParams(FName(_T("InteractiveRaytrace")), true, this);
+	FCollisionQueryParams TraceParams(FName(TEXT("InteractiveRaytrace")), true, this);
 	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 	TraceParams.bTraceComplex = true;
@@ -181,27 +204,108 @@ bool AProtCharacter::StopUsing_Validate()
 	return true;
 }
 
+bool AProtCharacter::CanFire() const
+{
+	return true;
+}
+
+bool AProtCharacter::WeaponCanFire() const
+{
+	return CurrentWeapon->CanFire();
+}
+
 ///
 /// FIREARMS
 ///
-void AProtCharacter::StartFire_Implementation()
+void AProtCharacter::TryStartFire()
 {
+	if (DEBUG)
+	{
+		switch (Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::SimProxy!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Client!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Server!"));
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::NANI!"));
+			break;
+		}
+	}
+	// TODO: Check if character CanFire()...
 
+	JustFire();
 }
 
-bool AProtCharacter::StartFire_Validate()
+void AProtCharacter::TryStopFire()
 {
-	return true;
+	if (DEBUG)
+	{
+		switch (Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::SimProxy!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Client!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Server!"));
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::NANI!"));
+			break;
+		}
+	}
+
+	JustFireEnd();
 }
 
-void AProtCharacter::StopFire_Implementation()
+void AProtCharacter::JustFire()
 {
-
+	if (!bWantsToFire)
+	{
+		bWantsToFire = true;
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->StartFire();
+		}
+	}
 }
 
-bool AProtCharacter::StopFire_Validate()
+void AProtCharacter::JustFireEnd()
 {
-	return true;
+	if (bWantsToFire)
+	{
+		bWantsToFire = false;
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->StopFire();
+		}
+	}
+}
+
+void AProtCharacter::Reload()
+{
+	UE_LOG(LogTemp, Warning, TEXT("RELOAD"));
+
+	UWorld* World = GetWorld();
+	AMagazine* NewMag = World->SpawnActor<AMagazine>(
+		MagClassToSpawn,
+		GetActorLocation(),
+		GetActorRotation()
+		);
+	if (NewMag)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CHAR::Reload"));
+		NewMag->SetActorHiddenInGame(false);
+		CurrentWeapon->ChangeMagazine(NewMag);
+	}
 }
 
 void AProtCharacter::StartAim_Implementation()
@@ -223,7 +327,6 @@ bool AProtCharacter::StopAim_Validate()
 {
 	return true;
 }
-///
 
 void AProtCharacter::OnResetVR()
 {
@@ -281,7 +384,6 @@ void AProtCharacter::MoveRight(float Value)
 	}
 }
 
-
 void AProtCharacter::PreUpdateCamera(float DeltaTime)
 {
 	if (!FPPCamera || !PC)
@@ -320,6 +422,86 @@ float AProtCharacter::CameraProcessPitch(float Input)
 	return Input;
 }
 
+void AProtCharacter::EquipWeapon(AWeapon* Weapon)
+{
+	if (Weapon)
+	{
+		if (Role == ROLE_Authority)
+		{
+			SetCurrentWeapon(Weapon, CurrentWeapon);
+		}
+		else
+		{
+			ServerEquipWeapon(Weapon);
+		}
+	}
+}
+
+bool AProtCharacter::ServerEquipWeapon_Validate(AWeapon* Weapon)
+{
+	return true;
+}
+
+void AProtCharacter::ServerEquipWeapon_Implementation(AWeapon* Weapon)
+{
+	EquipWeapon(Weapon);
+}
+
+void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
+{
+	AWeapon* LocalLastWeapon = nullptr;
+
+	if (LastWeapon)
+	{
+		LocalLastWeapon = LastWeapon;
+	}
+	else if (NewWeapon != CurrentWeapon)
+	{
+		LocalLastWeapon = CurrentWeapon;
+	}
+
+	// Unequip previous weapon if any...
+	if (LocalLastWeapon)
+	{
+		LocalLastWeapon->OnUnEquip();
+	}
+
+	CurrentWeapon = NewWeapon;
+
+	// Equip a new one...
+	if (NewWeapon)
+	{
+		NewWeapon->SetOwningPawn(this);	// Make sure weapon's MyPawn is pointing back to us. 
+		// During replication, we can't guarantee APawn::CurrentWeapon will rep after AWeapon::MyPawn!
+		
+		NewWeapon->OnEquip(LastWeapon);
+	}
+}
+
+/////////////////////////////////////////////
+// REPLICATION
+
+void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
+{
+	SetCurrentWeapon(CurrentWeapon, LastWeapon);
+}
+void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	/// only to local owner: weapon change requests are locally instigated, other clients don't need it
+	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
+
+	DOREPLIFETIME(AProtCharacter, CurrentWeapon);
+}
+
+/////////////////////////////////////////////
+// UTILITY
+FName AProtCharacter::GetWeaponAttachPoint() const
+{
+	return WeaponAttachPoint;
+}
+
 float AProtCharacter::CameraProcessYaw(float Input)
 {
 	// Get direction vectors from Character and PC...
@@ -344,4 +526,3 @@ float AProtCharacter::CameraProcessYaw(float Input)
 
 	return Angle;
 }
-
