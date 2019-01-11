@@ -43,20 +43,27 @@ void ABot::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ABot::MoveToNextPoint()
 {
-	++CurrentPointIndex;
+	APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex++];
 	if (CurrentPointIndex == PatrolPoints.Num())
 	{
 		CurrentPointIndex = 0;
 	}
 
-	APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex];
 	UWorld *World = GetWorld();
-	UNavigationPath *Path = UNavigationSystemV1::FindPathToActorSynchronously(World, GetActorLocation(), NextPatrolPoint);
-	TArray<FVector> Points = Path->PathPoints;
-	
-	//TODO movement
-	for (int i = 0; i < Points.Num(); ++i)
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World);
+	UNavigationPath* Path = NavSys->FindPathToLocationSynchronously(World, GetActorLocation(), NextPatrolPoint->GetActorLocation(), NULL);
+	if (Path)
 	{
-		DrawDebugBox(World, Points[i], FVector(1.0f, 1.0f, 1.0f), FColor::White);
+		TArray<FVector> Points = Path->PathPoints;
+		for (int i = 0; i < Points.Num(); ++i)
+		{
+			DrawDebugSphere(World, Points[i], 10.f, 6, FColor::White, true, 21.f, 0, 2.f);
+		}
+
+		//TODO movement
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SS"));
 	}
 }
