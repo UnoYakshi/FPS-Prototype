@@ -91,7 +91,7 @@ private:
 	/** Returns current ammo type... */
 	virtual EProjectileType GetAmmoType() const
 	{
-		return CurrentMag->Data.ProjectileType;
+		return (CurrentMag) ? (CurrentMag->Data.ProjectileType) : (EProjectileType::NONE);
 	}
 
 	//////////////////////////////////////////////////////////////////////////

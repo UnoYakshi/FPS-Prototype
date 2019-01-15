@@ -14,6 +14,7 @@
 UENUM(BlueprintType)
 enum class EProjectileType : uint8
 {
+	NONE		UMETA(DisplayName = "NO AMMO"),
 	B762X39 	UMETA(DisplayName = "7.62x39 mm"),
 	B545x39		UMETA(DisplayName = "5.45x39 mm"),
 	B556X45 	UMETA(DisplayName = "5.56x45 mm"),
