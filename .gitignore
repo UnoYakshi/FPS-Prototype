@@ -75,3 +75,8 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+
+# Content packages...
+Content/StarterContent/*
+Content/FPS_Weapon_Bundle/*
