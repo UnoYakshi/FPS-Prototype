@@ -52,8 +52,7 @@ void ABot::MoveToNextPoint()
 		}
 
 		UWorld *World = GetWorld();
-		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World);
-		UNavigationPath* Path = NavSys->FindPathToLocationSynchronously(World, GetActorLocation(), NextPatrolPoint->GetActorLocation(), NULL);
+		UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(World, GetActorLocation(), NextPatrolPoint->GetActorLocation(), NULL);
 		if (Path)
 		{
 			TArray<FVector> Points = Path->PathPoints;
