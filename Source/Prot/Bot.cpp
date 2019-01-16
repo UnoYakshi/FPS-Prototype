@@ -64,6 +64,6 @@ void ABot::MoveToNextPoint()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SS"));
+		UE_LOG(LogTemp, Error, TEXT("Creation of path to Patrol Point failed"));
 	}
 }
