@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "PatrolPoint.h"
+#include "NavigationPath.h"
 #include "Bot.generated.h"
 
 UCLASS()
@@ -20,8 +21,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// @Oninbo, add explanation...
-	int CurrentPointIndex;
+	// TODO: add explanation...
+	int CurrentPatrolPointIndex;
+
+	UNavigationPath* PathToNextPatrolPoint;
+
+	int CurrentPathPointIndex;
+
+	virtual void SetNextPathPoint();
 
 public:	
 	// Called every frame
@@ -35,7 +42,10 @@ public:
 	TArray<APatrolPoint*> PatrolPoints;
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
-	virtual void MoveToNextPoint();
+	virtual void MoveToNextPatrolPoint();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	float Speed;
 
 	// Bot's mesh
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
