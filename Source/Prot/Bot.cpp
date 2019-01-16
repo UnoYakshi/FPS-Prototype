@@ -43,27 +43,34 @@ void ABot::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ABot::MoveToNextPoint()
 {
-	APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex++];
-	if (CurrentPointIndex == PatrolPoints.Num())
+	if (PatrolPoints.Num() > 0)
 	{
-		CurrentPointIndex = 0;
-	}
-
-	UWorld *World = GetWorld();
-	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World);
-	UNavigationPath* Path = NavSys->FindPathToLocationSynchronously(World, GetActorLocation(), NextPatrolPoint->GetActorLocation(), NULL);
-	if (Path)
-	{
-		TArray<FVector> Points = Path->PathPoints;
-		for (int i = 0; i < Points.Num(); ++i)
+		APatrolPoint *NextPatrolPoint = PatrolPoints[CurrentPointIndex++];
+		if (CurrentPointIndex == PatrolPoints.Num())
 		{
-			DrawDebugSphere(World, Points[i], 10.f, 6, FColor::White, true, 21.f, 0, 2.f);
+			CurrentPointIndex = 0;
 		}
 
-		//TODO movement
+		UWorld *World = GetWorld();
+		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World);
+		UNavigationPath* Path = NavSys->FindPathToLocationSynchronously(World, GetActorLocation(), NextPatrolPoint->GetActorLocation(), NULL);
+		if (Path)
+		{
+			TArray<FVector> Points = Path->PathPoints;
+			for (int i = 0; i < Points.Num(); ++i)
+			{
+				DrawDebugSphere(World, Points[i], 10.f, 6, FColor::White, true, 21.f, 0, 2.f);
+			}
+
+			//TODO movement
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Creation of path to Patrol Point failed"));
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Creation of path to Patrol Point failed"));
+		UE_LOG(LogTemp, Warning, TEXT("The array of Patrol Points is empty"))
 	}
 }
