@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BotAIController.h"
+#include "BotAIC.h"
 #include "Bot.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/TargetPoint.h"
 
-ABotAIController::ABotAIController()
+ABotAIC::ABotAIC()
 {
 	//Initialize BehaviorTreeComponent, BlackboardComponent and the corresponding key
 
@@ -22,7 +22,7 @@ ABotAIController::ABotAIController()
 
 }
 
-void ABotAIController::Possess(APawn* Pawn)
+void ABotAIC::Possess(APawn* Pawn)
 {
 	Super::Possess(Pawn);
 

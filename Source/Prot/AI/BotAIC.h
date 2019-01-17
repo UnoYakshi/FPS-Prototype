@@ -5,16 +5,18 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
-#include "BotAIController.generated.h"
+#include "BotAIC.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROT_API ABotAIController : public AAIController
+class PROT_API ABotAIC : public AAIController
 {
 	GENERATED_BODY()
-	
+
+	ABotAIC();
+
 	/*Behavior tree comp ref*/
 	UBehaviorTreeComponent* BehaviorComp;
 
@@ -25,7 +27,7 @@ class PROT_API ABotAIController : public AAIController
 
 	/*Blackboard keys*/
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-		FName LocationToGoKey;
+	FName LocationToGoKey;
 
 	/*----------Blackboard----------*/
 
@@ -38,11 +40,11 @@ class PROT_API ABotAIController : public AAIController
 	virtual void Possess(APawn* Pawn) override;
 
 public:
+	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const {
+		return BlackboardComp;
+	}
 
-	/*----------Constructor----------*/
-	ABotAIController();
-
-	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
-
-	FORCEINLINE TArray<AActor*> GetAvailableTargetPoints() { return BotTargetPoints; }
+	FORCEINLINE TArray<AActor*> GetAvailableTargetPoints() {
+		return BotTargetPoints;
+	}
 };
