@@ -2,13 +2,13 @@
 
 #include "BotAIController.h"
 #include "Bot.h"
-#include "PatrolPoint.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/TargetPoint.h"
 
 ABotAIController::ABotAIController()
 {
@@ -41,7 +41,7 @@ void ABotAIController::Possess(APawn* Pawn)
 		The following function needs a TArray of AActors, that's why I declared the
 		BotTargetPoints as such. When I will need to get an exact point and compare it,
 		I will cast it to the corresponding class (ABotTargetPoint)*/
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APatrolPoint::StaticClass(), BotTargetPoints);
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATargetPoint::StaticClass(), BotTargetPoints);
 
 		//Start the behavior tree which corresponds to the specific character
 		BehaviorComp->StartTree(*Bot->BehaviorTree);
