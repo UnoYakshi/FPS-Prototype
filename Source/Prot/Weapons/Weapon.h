@@ -363,14 +363,10 @@ protected:
 	void OnRep_Reload();
 
 	/** Called in network play to do the cosmetic fx for firing */
-	UFUNCTION(Reliable, NetMulticast)
-	void SimulateWeaponFire();
-	void SimulateWeaponFire_Implementation();
+	virtual void SimulateWeaponFire();
 
 	/** Called in network play to stop cosmetic fx (e.g. for a looping shot). */
-	UFUNCTION(Reliable, NetMulticast)
-	void StopSimulatingWeaponFire();
-	void StopSimulatingWeaponFire_Implementation();
+	virtual void StopSimulatingWeaponFire();
 
 
 	//////////////////////////////////////////////////////////////////////////

@@ -855,9 +855,13 @@ void AWeapon::OnRep_Reload()
 	}
 }
 
-void AWeapon::SimulateWeaponFire_Implementation()
+void AWeapon::SimulateWeaponFire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("WEAP::SimulateWeaponFire"));
+	if (Role == ROLE_Authority && CurrentState != EWeaponState::Firing)
+	{
+		return;
+	}
+	
 	if (MuzzleFX)
 	{
 		MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
@@ -883,7 +887,7 @@ void AWeapon::SimulateWeaponFire_Implementation()
 	}
 }
 
-void AWeapon::StopSimulatingWeaponFire_Implementation()
+void AWeapon::StopSimulatingWeaponFire()
 {
 	if (bLoopedMuzzleFX)
 	{
