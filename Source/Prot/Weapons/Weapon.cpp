@@ -487,6 +487,24 @@ void AWeapon::UseAmmo()
 
 void AWeapon::HandleFiring()
 {
+	if (DEBUG)
+	{
+		switch (Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::HandleFiring::SimProxy!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::HandleFiring::Client!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::HandleFiring::Server!"));
+			break;
+		default:
+			break;
+		}
+	}
+
 	if (HasAmmo() && CanFire())
 	{
 		if (GetNetMode() != NM_DedicatedServer)
@@ -660,22 +678,23 @@ void AWeapon::DetermineWeaponState()
 
 void AWeapon::OnBurstStarted()
 {
-	// start firing, can be delayed to satisfy TimeBetweenShots
 	const float GameTime = GetWorld()->GetTimeSeconds();
-	if (LastFireTime > 0 && WeaponConfig.TimeBetweenShots > 0.0f &&
-		LastFireTime + WeaponConfig.TimeBetweenShots > GameTime)
+
+	// start firing, can be delayed to satisfy TimeBetweenShots
+	if ((LastFireTime > 0 && WeaponConfig.TimeBetweenShots > 0.0f) ||
+		LastFireTime + WeaponConfig.TimeBetweenShots <= GameTime)
 	{
-		GetWorldTimerManager().SetTimer(
-			TimerHandle_HandleFiring, 
-			this, 
-			&AWeapon::HandleFiring, 
-			LastFireTime + WeaponConfig.TimeBetweenShots - GameTime,
-			false
-		);
+		HandleFiring();
 	}
 	else
 	{
-		HandleFiring();
+		GetWorldTimerManager().SetTimer(
+			TimerHandle_HandleFiring,
+			this,
+			&AWeapon::HandleFiring,
+			LastFireTime + WeaponConfig.TimeBetweenShots - GameTime,
+			false
+		);
 	}
 }
 

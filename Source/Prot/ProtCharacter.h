@@ -10,7 +10,7 @@
 #include "ProtCharacter.generated.h"
 
 // Either print debug-lines on screen or not...
-#define DEBUG false
+#define DEBUG true
 
 // Forward declarations...
 class AInteractiveObject;
