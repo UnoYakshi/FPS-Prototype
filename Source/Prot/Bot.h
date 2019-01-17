@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "PatrolPoint.h"
 #include "NavigationPath.h"
+#include "GameFramework/PawnMovementComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "Bot.generated.h"
 
 UCLASS()
@@ -21,33 +23,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// TODO: add explanation...
-	int CurrentPatrolPointIndex;
-
-	UNavigationPath* PathToNextPatrolPoint;
-
-	int CurrentPathPointIndex;
-
-	virtual void SetNextPathPoint();
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// Points to patrol
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TArray<APatrolPoint*> PatrolPoints;
 
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	virtual void MoveToNextPatrolPoint();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
-	float Speed;
-
 	// Bot's mesh
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* BotMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	class UBehaviorTree* BehaviorTree;
+
+	class UPawnMovementComponent* BotMovementComponent;
+
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
 };

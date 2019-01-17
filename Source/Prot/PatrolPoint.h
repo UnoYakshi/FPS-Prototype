@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Engine/TargetPoint.h"
 #include "PatrolPoint.generated.h"
 
 UCLASS()
-class PROT_API APatrolPoint : public AActor
+class PROT_API APatrolPoint : public ATargetPoint
 {
 	GENERATED_BODY()
 	
@@ -22,7 +22,5 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	
 	
 };
