@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
-#include "PatrolPoint.h"
+#include "GameFramework/Character.h"
 #include "NavigationPath.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "Engine/TargetPoint.h"
 #include "Bot.generated.h"
 
 UCLASS()
-class PROT_API ABot : public APawn
+class PROT_API ABot : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -27,18 +27,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Points to patrol
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
-	TArray<APatrolPoint*> PatrolPoints;
-
-	// Bot's mesh
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	USkeletalMeshComponent* BotMesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBehaviorTree* BehaviorTree;
 
-	class UPawnMovementComponent* BotMovementComponent;
+	// Points to patrol
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	TArray<ATargetPoint*> PatrolPoints;
 
-	virtual UPawnMovementComponent* GetMovementComponent() const override;
 };
