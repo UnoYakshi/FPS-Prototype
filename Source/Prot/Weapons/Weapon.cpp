@@ -855,15 +855,16 @@ void AWeapon::OnRep_Reload()
 	}
 }
 
-void AWeapon::SimulateWeaponFire()
+void AWeapon::SimulateWeaponFire_Implementation()
 {
+	UE_LOG(LogTemp, Warning, TEXT("WEAP::SimulateWeaponFire"));
 	if (MuzzleFX)
 	{
 		MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
 	}
 
-	//if (!bLoopedFireAnim || !bPlayingFireAnim)
-	if (!bPlayingFireAnim)
+	if (!bLoopedFireAnim || !bPlayingFireAnim)
+	//if (!bPlayingFireAnim)
 	{
 		PlayWeaponAnimation(FireAnim);
 		bPlayingFireAnim = true;
@@ -882,7 +883,7 @@ void AWeapon::SimulateWeaponFire()
 	}
 }
 
-void AWeapon::StopSimulatingWeaponFire()
+void AWeapon::StopSimulatingWeaponFire_Implementation()
 {
 	if (bLoopedMuzzleFX)
 	{
