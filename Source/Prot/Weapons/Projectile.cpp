@@ -19,6 +19,8 @@ AProjectile::AProjectile() :
 	Mesh->CastShadow = false;
 	Mesh->bReceivesDecals = false;
 	RootComponent = Mesh;
+	bReplicates = true;
+	SetReplicates(true);
 
 	// Use a capsule as a simple collision...
 	// Make it longer than a projectile to give overlap system possibility to handle it on a high speed...

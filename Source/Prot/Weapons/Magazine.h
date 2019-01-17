@@ -51,11 +51,13 @@ public:
 /// PARAMETERS
 public:
 	/* Magazine's config... */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Replicated)
 	FMagazineData Data;
 
 /// METHODS
 public:
+	// TODO: Add replication for ConsumeAmmo...
+
 	/* Consumes ammo from the magazine [if there is enough ammo, otherwise do nothing]...  */
 	UFUNCTION(BlueprintCallable, Category = "Ammo")
 	virtual void ConsumeAmmo(int32 NumToConsume);

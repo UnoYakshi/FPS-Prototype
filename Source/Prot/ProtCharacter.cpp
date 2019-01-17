@@ -30,6 +30,8 @@ AProtCharacter::AProtCharacter()
 	// Networking...
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	bReplicates = true;
+	SetReplicates(true);
+	SetReplicateMovement(true);
 	bNetUseOwnerRelevancy = true;
 
 

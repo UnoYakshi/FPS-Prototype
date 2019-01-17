@@ -165,6 +165,19 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
 	bool CanReload() const;
 
+	bool HasInfiniteClip() const
+	{
+		return true;
+	}
+
+	int32 GetCurrentAmmo() 
+	{
+		if (CurrentMag)
+		{
+			return CurrentMag->Data.CurrentAmmoNum;
+		}
+		return 0;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Reading data
@@ -210,7 +223,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Magazine)
 	TSubclassOf<class AMagazine> MagazineClass;
 
-	UPROPERTY(Transient)
+	UPROPERTY(Replicated)
 	AMagazine* CurrentMag;
 
 	/** firing audio (bLoopedFireSound set) */
@@ -368,18 +381,20 @@ protected:
 	/** Called in network play to stop cosmetic fx (e.g. for a looping shot). */
 	virtual void StopSimulatingWeaponFire();
 
-
+	
 	//////////////////////////////////////////////////////////////////////////
 	// Weapon usage
 
 	/** [local] weapon specific fire implementation */
 	virtual void FireWeapon();
 
+	/** Spawn projectile(s) on the server... */
+	UFUNCTION(reliable, server, WithValidation)
+	void ServerFireProjectile(FVector Origin, FVector_NetQuantizeNormal ShootDir);
+
 	/** [server] fire & update ammo */
-	UFUNCTION(Reliable, Server, WithValidation)
+	UFUNCTION(reliable, server, WithValidation)
 	void ServerHandleFiring();
-	void ServerHandleFiring_Implementation();
-	bool ServerHandleFiring_Validate();
 
 	/** [local + server] handle weapon fire */
 	void HandleFiring();
@@ -442,7 +457,5 @@ protected:
 protected:
 	/** Returns Mesh subobject **/
 	FORCEINLINE USkeletalMeshComponent* GetMesh1P() const { return Mesh; }
-	/** Returns Mesh subobject **/
-	FORCEINLINE USkeletalMeshComponent* GetMesh3P() const { return Mesh; }
 };
 

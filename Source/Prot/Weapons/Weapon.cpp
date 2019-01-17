@@ -39,15 +39,16 @@ AWeapon::AWeapon()
 
 	BurstCounter = 0;
 	LastFireTime = 0.0f;
+	CurrentMag = nullptr;
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
-
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	bReplicates = true;
 	SetReplicates(true);
-	bNetUseOwnerRelevancy = true;
-	NetUpdateFrequency = 66.0f;
-	MinNetUpdateFrequency = 33.0f;
+	//bNetUseOwnerRelevancy = true;
+	//NetUpdateFrequency = 66.0f;
+	//MinNetUpdateFrequency = 33.0f;
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -119,6 +120,8 @@ void AWeapon::OnEquip(const AWeapon* LastWeapon)
 	{
 		PlayWeaponSound(EquipSound);
 	}
+
+	//AProtCharacter::NotifyEquipWeapon.Broadcast(MyPawn, this);
 }
 
 void AWeapon::OnEquipFinished()
@@ -160,6 +163,8 @@ void AWeapon::OnUnEquip()
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
 	}
+
+	//AProtCharacter::NotifyUnEquipWeapon.Broadcast(MyPawn, this);
 
 	DetermineWeaponState();
 }
@@ -210,7 +215,7 @@ void AWeapon::AttachMeshToPawn()
 void AWeapon::DetachMeshFromPawn()
 {
 	Mesh->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-	Mesh->SetHiddenInGame(true);
+	Mesh->SetHiddenInGame(false);
 }
 
 
@@ -273,7 +278,7 @@ void AWeapon::StopFire()
 	}
 
 
-	if (Role < ROLE_Authority)
+	if (Role < ROLE_Authority && MyPawn && MyPawn->IsLocallyControlled())
 	{
 		ServerStopFire();
 	}
@@ -288,6 +293,8 @@ void AWeapon::StopFire()
 void AWeapon::StartReload(bool bFromReplication)
 {
 	UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload"));
+
+	// TODO: Check a new magazine's available...
 
 	if (!bFromReplication && Role < ROLE_Authority)
 	{
@@ -322,10 +329,6 @@ void AWeapon::StopReload()
 {
 	UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload"));
 
-	if (CurrentMag)
-	{
-
-	}	
 	if (CurrentState == EWeaponState::Reloading)
 	{
 		bPendingReload = false;
@@ -344,11 +347,23 @@ void AWeapon::FireWeapon()
 		);
 	}
 
+	const float ProjectileAdjustRange = 10000.0f;
 	const FVector Origin = GetMuzzleLocation();
 	const FVector Direciton = Mesh->GetRightVector();
-	const float ProjectileAdjustRange = 10000.0f;
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
+	//const FHitResult Impact = WeaponTrace(Origin, EndTrace);
 
+	ServerFireProjectile(Origin, Direciton);
+}
+
+bool AWeapon::ServerFireProjectile_Validate(FVector Origin, FVector_NetQuantizeNormal ShootDir)
+{
+	return true;
+}
+
+void AWeapon::ServerFireProjectile_Implementation(FVector Origin, FVector_NetQuantizeNormal ShootDir)
+{
+	/*
 	if (ProjectileClass)
 	{
 		UWorld* World = MyPawn->GetWorld();
@@ -364,6 +379,21 @@ void AWeapon::FireWeapon()
 				UE_LOG(LogTemp, Warning, TEXT("Direction: %s"), *Direciton.ToString());
 				UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *NewProjectile->GetVelocity().ToString());
 			}
+		}
+	}
+	//*/
+
+	if (ProjectileClass)
+	{
+		FTransform SpawnTM(ShootDir.Rotation(), Origin);
+		AProjectile* NewProjectile = Cast<AProjectile>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ProjectileClass, SpawnTM));
+		if (NewProjectile)
+		{
+			NewProjectile->Instigator = Instigator;
+			NewProjectile->SetOwner(this);
+			NewProjectile->InitVelocity(ShootDir);
+
+			UGameplayStatics::FinishSpawningActor(NewProjectile, SpawnTM);
 		}
 	}
 }
@@ -429,14 +459,11 @@ bool AWeapon::HasAmmo() const
 	return CurrentMag && CurrentMag->Data.CurrentAmmoNum > 0;
 }
 
-
 bool AWeapon::CanReload() const
 {
-	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
+	bool bCanReload = (!MyPawn || MyPawn->CanReload());
 	// TODO: Check if MyPawn has magazines...
-	bool bCanReload = (MyPawn);
-	bool bGotAmmo = true;
-
+	bool bGotAmmo = HasInfiniteClip();
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanReload && bGotAmmo && bStateOKToReload);
 }
@@ -485,7 +512,7 @@ void AWeapon::HandleFiring()
 	}
 	else if (MyPawn && MyPawn->IsLocallyControlled())
 	{
-		if (!bRefiring)
+		if (GetCurrentAmmo() == 0 && !bRefiring)
 		{
 			PlayWeaponSound(OutOfAmmoSound);
 		}
@@ -918,6 +945,8 @@ void AWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, MyPawn);
+
+	DOREPLIFETIME_CONDITION(AWeapon, CurrentMag, COND_OwnerOnly);
 
 	DOREPLIFETIME_CONDITION(AWeapon, BurstCounter, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, bPendingReload, COND_SkipOwner);

@@ -15,6 +15,9 @@
 // Forward declarations...
 class AInteractiveObject;
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnProtCharacterEquipWeapon, AProtCharacter*, AWeapon* /* new */);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnProtCharacterUnEquipWeapon, AProtCharacter*, AWeapon* /* old */);
+
 
 UCLASS(Abstract, config=Game)
 class AProtCharacter : public ACharacter
@@ -66,7 +69,7 @@ public:
 	// Handles Character's side start firing...
 	//
 	/** Player pressed StartFire action (LMB pressed)... */
-	UFUNCTION(BlueprintCallable)
+	//UFUNCTION(BlueprintCallable)
 	void TryStartFire();
 
 	/** Starts weapon fire... */
@@ -76,7 +79,7 @@ public:
 	// Handles Character's side stop firing...
 	//
 	/** Player pressed StartFire action (LMB released)... */
-	UFUNCTION(BlueprintCallable)
+	//UFUNCTION(BlueprintCallable)
 	void TryStopFire();
 
 	/** Stops weapon fire... */
@@ -90,6 +93,11 @@ public:
 	/** Player pressed Reload action (R pressed)... */
 	void Reload();
 
+	bool CanReload() const
+	{
+		return true;
+	}
+
 	UPROPERTY(EditDefaultsOnly, Category = Ammo)
 	TSubclassOf<class AMagazine> MagClassToSpawn;
 
@@ -100,15 +108,17 @@ public:
 	//
 	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
 	virtual void StartAim();
-	virtual void StartAim_Implementation();
-	bool StartAim_Validate();
 
 	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
 	virtual void StopAim();
-	virtual void StopAim_Implementation();
-	bool StopAim_Validate();
 
 public:
+	/** Global notification when a character equips a weapon. Needed for replication graph. */
+	PROT_API static FOnProtCharacterEquipWeapon NotifyEquipWeapon;
+
+	/** Global notification when a character un-equips a weapon. Needed for replication graph. */
+	PROT_API static FOnProtCharacterUnEquipWeapon NotifyUnEquipWeapon;
+
 	/** Current InteractiveObject... */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	AInteractiveObject* CurrentInteractive;
