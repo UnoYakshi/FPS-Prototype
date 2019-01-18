@@ -12,21 +12,18 @@
 
 ABotAIC::ABotAIC()
 {
-	//Initialize BehaviorTreeComponent, BlackboardComponent and the corresponding key
+	//Initialize BehaviorTreeComponent, BlackboardComponent
 
 	BehaviorComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorComp"));
 
 	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
-
-	LocationToGoKey = "LocationToGo";
-
 }
 
 void ABotAIC::Possess(APawn* Pawn)
 {
 	Super::Possess(Pawn);
 
-	//Get the possessed Character and check if it's my own AI Character
+	//Get the possessed Pawn and check if it's Bot
 	ABot* Bot = Cast<ABot>(Pawn);
 
 	if (Bot)
@@ -37,13 +34,33 @@ void ABotAIC::Possess(APawn* Pawn)
 			BlackboardComp->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
 		}
 
-		/*Populate the array of available bot target points
-		The following function needs a TArray of AActors, that's why I declared the
-		BotTargetPoints as such. When I will need to get an exact point and compare it,
-		I will cast it to the corresponding class (ABotTargetPoint)*/
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATargetPoint::StaticClass(), BotTargetPoints);
+		BlackboardComp->SetValueAsInt("PointIndex", 0);
 
 		//Start the behavior tree which corresponds to the specific character
 		BehaviorComp->StartTree(*Bot->BehaviorTree);
 	}
+}
+
+//Gets Target Point from Bot's array by index
+ATargetPoint* ABotAIC::GetTargetPointByIndex(int index) const
+{
+	ABot* Bot = Cast<ABot>(GetPawn());
+
+	if (Bot && index < Bot->PatrolPoints.Num() && index >= 0)
+	{
+		return Bot->PatrolPoints[index];
+	}
+	return nullptr;
+}
+
+//Gets number of Target Points in Bot's array
+int ABotAIC::GetTargetPointsNumber()
+{
+	ABot* Bot = Cast<ABot>(GetPawn());
+
+	if (Bot)
+	{
+		return Bot->PatrolPoints.Num();
+	}
+	return 0;
 }

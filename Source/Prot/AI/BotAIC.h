@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "Engine/TargetPoint.h"
 #include "BotAIC.generated.h"
 
 /**
@@ -17,34 +18,22 @@ class PROT_API ABotAIC : public AAIController
 
 	ABotAIC();
 
-	/*Behavior tree comp ref*/
+	//Behavior tree component reference
 	UBehaviorTreeComponent* BehaviorComp;
 
-	/*----------Blackboard----------*/
-
-	/*Blackboard comp ref*/
+	//Blackboard component reference
 	UBlackboardComponent* BlackboardComp;
-
-	/*Blackboard keys*/
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	FName LocationToGoKey;
-
-	/*----------Blackboard----------*/
-
-	/*I use the AActor class as the Template class so I can use the GetAllActorsOfClass function.
-	However, in this collection I'm going to store all the Available ABotTargetPoint instances.*/
-	TArray<AActor*> BotTargetPoints;
 
 	/*Posses is executed when the character we want to control is spawned.
 	Inside this function, we initialize the blackboard and start the behavior tree*/
 	virtual void Possess(APawn* Pawn) override;
 
 public:
-	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const {
+	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const 
+	{
 		return BlackboardComp;
 	}
 
-	FORCEINLINE TArray<AActor*> GetAvailableTargetPoints() {
-		return BotTargetPoints;
-	}
+	virtual ATargetPoint* GetTargetPointByIndex(int index) const;
+	virtual int GetTargetPointsNumber();
 };
