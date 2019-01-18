@@ -8,20 +8,14 @@
 #include "Engine/TargetPoint.h"
 #include "BotAIC.generated.h"
 
-/**
- * 
- */
+//Bot Controller class that is used to get access for Bot's data from Behavior Tree 
 UCLASS()
 class PROT_API ABotAIC : public AAIController
 {
 	GENERATED_BODY()
 
 	ABotAIC();
-
-	//Behavior tree component reference
 	UBehaviorTreeComponent* BehaviorComp;
-
-	//Blackboard component reference
 	UBlackboardComponent* BlackboardComp;
 
 	/*Posses is executed when the character we want to control is spawned.
@@ -34,6 +28,9 @@ public:
 		return BlackboardComp;
 	}
 
+	//Gets Target Point from Bot's array by index
 	virtual ATargetPoint* GetTargetPointByIndex(int index) const;
+
+	//Gets number of Target Points in Bot's array
 	virtual int GetTargetPointsNumber();
 };

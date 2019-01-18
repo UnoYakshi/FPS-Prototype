@@ -6,9 +6,7 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "BTTargetPointSelection.generated.h"
 
-/**
- * 
- */
+//This class is used by Behavior Tree to select new Target Point for Bot
 UCLASS()
 class PROT_API UBTTargetPointSelection : public UBTTaskNode
 {

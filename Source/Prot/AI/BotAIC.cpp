@@ -13,9 +13,7 @@
 ABotAIC::ABotAIC()
 {
 	//Initialize BehaviorTreeComponent, BlackboardComponent
-
 	BehaviorComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorComp"));
-
 	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 }
 
@@ -25,19 +23,21 @@ void ABotAIC::Possess(APawn* Pawn)
 
 	//Get the possessed Pawn and check if it's Bot
 	ABot* Bot = Cast<ABot>(Pawn);
-
 	if (Bot)
 	{
 		//If the blackboard is valid initialize the blackboard for the corresponding behavior tree
 		if (Bot->BehaviorTree->BlackboardAsset)
 		{
 			BlackboardComp->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
+			BlackboardComp->SetValueAsInt("PointIndex", 0);
+
+			//Start the behavior tree which corresponds to the specific character
+			BehaviorComp->StartTree(*Bot->BehaviorTree);
 		}
-
-		BlackboardComp->SetValueAsInt("PointIndex", 0);
-
-		//Start the behavior tree which corresponds to the specific character
-		BehaviorComp->StartTree(*Bot->BehaviorTree);
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Blackboard was not valid"));
+		}
 	}
 }
 
@@ -45,7 +45,6 @@ void ABotAIC::Possess(APawn* Pawn)
 ATargetPoint* ABotAIC::GetTargetPointByIndex(int index) const
 {
 	ABot* Bot = Cast<ABot>(GetPawn());
-
 	if (Bot && index < Bot->PatrolPoints.Num() && index >= 0)
 	{
 		return Bot->PatrolPoints[index];
@@ -57,7 +56,6 @@ ATargetPoint* ABotAIC::GetTargetPointByIndex(int index) const
 int ABotAIC::GetTargetPointsNumber()
 {
 	ABot* Bot = Cast<ABot>(GetPawn());
-
 	if (Bot)
 	{
 		return Bot->PatrolPoints.Num();

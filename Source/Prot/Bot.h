@@ -10,23 +10,22 @@
 #include "Engine/TargetPoint.h"
 #include "Bot.generated.h"
 
+//This class is used to create Bots that can patrol Target Points
 UCLASS()
 class PROT_API ABot : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	ABot();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	//The class of Behavior Tree that describes Bot's logic
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBehaviorTree* BehaviorTree;
 
