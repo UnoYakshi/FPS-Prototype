@@ -7,16 +7,17 @@
 
 EBTNodeResult::Type UBTTargetPointSelection::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
-	ABotAIC* AICon = Cast<ABotAIC>(OwnerComp.GetAIOwner());
-	if (AICon)
+	//AI Contoller that owns the Behavior Tree from which this Task Node is executed
+	ABotAIC* AIController = Cast<ABotAIC>(OwnerComp.GetAIOwner());
+	if (AIController)
 	{
-		UBlackboardComponent* BlackboardComp = AICon->GetBlackboardComp();
+		UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComp();
 
 		//Update the Target Point in the Blackboard so the bot can move to the next Target Point
 		int PointIndex = BlackboardComp->GetValueAsInt("PointIndex");
-		BlackboardComp->SetValueAsObject("LocationToGo", AICon->GetTargetPointByIndex(PointIndex));
+		BlackboardComp->SetValueAsObject("LocationToGo", AIController->GetTargetPointByIndex(PointIndex));
 		PointIndex++;
-		if (PointIndex > AICon->GetTargetPointsNumber())
+		if (PointIndex > AIController->GetTargetPointsNumber())
 		{
 			PointIndex = 0;
 		}
