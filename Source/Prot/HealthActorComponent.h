@@ -7,19 +7,20 @@
 #include "UObject/ObjectMacros.h"
 #include "HealthActorComponent.generated.h"
 
+//Adding an ability to assign delegates that will be called
+//when the owner of the component is dead
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathSignature, AActor*, DeadActor);
 
+//Component for additng health to the game character
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROT_API UHealthActorComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UHealthActorComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	//Current Health value
@@ -32,7 +33,6 @@ protected:
 	bool bIsDead;
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Maximum value of Health
