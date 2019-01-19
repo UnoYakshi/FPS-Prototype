@@ -29,7 +29,7 @@ protected:
 	virtual void CheckDeath();
 
 	//States has Death happened or has not
-	bool isDead;
+	bool bIsDead;
 
 public:	
 	// Called every frame
@@ -53,5 +53,9 @@ public:
 
 	//Sets values to "alive" condition
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void BringToLife() { isDead = false; Health = MaxHealth; }
+	void BringToLife() { bIsDead = false; Health = MaxHealth; }
+	
+	//Tells if dead
+	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	bool isDead() { return bIsDead; }
 };

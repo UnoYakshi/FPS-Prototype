@@ -5,12 +5,12 @@
 UHealthActorComponent::UHealthActorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	BringToLife();
 }
 
 void UHealthActorComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	BringToLife();
 }
 
 void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -22,9 +22,9 @@ void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 //Checks if Death happened
 void UHealthActorComponent::CheckDeath()
 {
-	if (!isDead && Health <= 0.f)
+	if (!bIsDead && Health <= 0.f)
 	{
-		isDead = true;
+		bIsDead = true;
 		OnDeath.Broadcast(GetOwner());
 	}
 }
