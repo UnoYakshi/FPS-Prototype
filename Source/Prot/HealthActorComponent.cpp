@@ -16,7 +16,6 @@ void UHealthActorComponent::BeginPlay()
 void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	CheckDeath();
 }
 
 //Checks if Death happened
@@ -27,4 +26,22 @@ void UHealthActorComponent::CheckDeath()
 		bIsDead = true;
 		OnDeath.Broadcast(GetOwner());
 	}
+}
+
+//Sets new current value of Health
+void UHealthActorComponent::SetHealthValue(float NewHealthValue)
+{
+	if (NewHealthValue < 0.f)
+	{
+		Health = 0.f;
+	}
+	else if(NewHealthValue > MaxHealth)
+	{
+		Health = MaxHealth;
+	}
+	else
+	{
+		Health = NewHealthValue;
+	}
+	CheckDeath();
 }

@@ -32,6 +32,8 @@ protected:
 	//States has Death happened or has not
 	bool bIsDead;
 
+	//
+
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -47,13 +49,21 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Game|Health")
 	FDeathSignature OnDeath;
 
+	//Sets new current value of Health
+	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	void SetHealthValue(float NewHealthValue);
+
 	//Decreases current value of Health
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void DecreaseHealthValue(float DecreaseValue) { Health -= DecreaseValue; }
+	void DecreaseHealthValue(float DecreaseValue) { SetHealthValue(Health - DecreaseValue); }
+
+	//Inreases current value of Health
+	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	void IncreaseHealthValue(float IncreaseValue) { SetHealthValue(Health + IncreaseValue); }
 
 	//Sets values to "alive" condition
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void BringToLife() { bIsDead = false; Health = MaxHealth; }
+	void BringToLife() { bIsDead = false; SetHealthValue(MaxHealth); }
 	
 	//Tells if dead
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
