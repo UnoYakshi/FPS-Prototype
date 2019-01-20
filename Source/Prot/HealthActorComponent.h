@@ -12,7 +12,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathSignature, AActor*, DeadActor);
 
 //Component for additng health to the game character
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROT_API UHealthActorComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -31,7 +31,7 @@ protected:
 	virtual void CheckDeath();
 
 	//States has Death happened or has not
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(Replicated, EditDefaultsOnly)
 	bool bIsDead;
 
 public:	

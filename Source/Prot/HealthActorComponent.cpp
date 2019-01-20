@@ -52,4 +52,5 @@ void UHealthActorComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UHealthActorComponent, Health);
+	DOREPLIFETIME(UHealthActorComponent, bIsDead);
 }
