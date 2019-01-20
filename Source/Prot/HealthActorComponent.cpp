@@ -12,7 +12,6 @@ UHealthActorComponent::UHealthActorComponent()
 void UHealthActorComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	BringToLife();
 }
 
 void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

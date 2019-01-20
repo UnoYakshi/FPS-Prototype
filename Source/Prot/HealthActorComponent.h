@@ -24,13 +24,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	//Current Health value
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, EditDefaultsOnly)
 	float Health;
 
 	//Checks if Death happened
 	virtual void CheckDeath();
 
 	//States has Death happened or has not
+	UPROPERTY(EditDefaultsOnly)
 	bool bIsDead;
 
 public:	
