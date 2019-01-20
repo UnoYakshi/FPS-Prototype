@@ -24,6 +24,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	//Current Health value
+	UPROPERTY(Replicated)
 	float Health;
 
 	//Checks if Death happened
@@ -31,8 +32,6 @@ protected:
 
 	//States has Death happened or has not
 	bool bIsDead;
-
-	//
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -65,7 +64,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
 	void BringToLife() { bIsDead = false; SetHealthValue(MaxHealth); }
 	
+	//Sets values to "alive" condition and sets Health to given level
+	void BringToLife(float NewHealthValue) { bIsDead = false; SetHealthValue(NewHealthValue); }
+
 	//Tells if dead
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	bool isDead() { return bIsDead; }
+	bool IsDead() { return bIsDead; }
+
+	//Gets maximum health
+	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	bool GetMaxHealth() { return MaxHealth; }
+
+	//Gets replication properties, i.e. Health in our case
+	virtual void GetLifetimeReplicatedProps(TArray < class FLifetimeProperty > & OutLifetimeProps) const override;
 };

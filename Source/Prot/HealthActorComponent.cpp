@@ -1,10 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HealthActorComponent.h"
+#include "Net/UnrealNetwork.h"
 
 UHealthActorComponent::UHealthActorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicated(true);
 }
 
 void UHealthActorComponent::BeginPlay()
@@ -35,7 +37,7 @@ void UHealthActorComponent::SetHealthValue(float NewHealthValue)
 	{
 		Health = 0.f;
 	}
-	else if(NewHealthValue > MaxHealth)
+	else if (NewHealthValue > MaxHealth)
 	{
 		Health = MaxHealth;
 	}
@@ -44,4 +46,11 @@ void UHealthActorComponent::SetHealthValue(float NewHealthValue)
 		Health = NewHealthValue;
 	}
 	CheckDeath();
+}
+
+void UHealthActorComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UHealthActorComponent, Health);
 }
