@@ -29,7 +29,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBehaviorTree* BehaviorTree;
 
-	// Points to patrol
+	// Points that Bot will patrol in the same order as they are in the array
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TArray<ATargetPoint*> PatrolPoints;
 

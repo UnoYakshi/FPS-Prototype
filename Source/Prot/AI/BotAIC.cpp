@@ -13,8 +13,8 @@
 ABotAIC::ABotAIC()
 {
 	//Initialize BehaviorTreeComponent, BlackboardComponent
-	BehaviorComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorComp"));
-	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
+	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorComp"));
+	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 }
 
 void ABotAIC::Possess(APawn* Pawn)
@@ -28,11 +28,11 @@ void ABotAIC::Possess(APawn* Pawn)
 		//If the blackboard is valid initialize the blackboard for the corresponding behavior tree
 		if (Bot->BehaviorTree->BlackboardAsset)
 		{
-			BlackboardComp->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
-			BlackboardComp->SetValueAsInt("PointIndex", 0);
+			BlackboardComponent->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
+			BlackboardComponent->SetValueAsInt("PointIndex", 0);
 
 			//Start the behavior tree which corresponds to the specific character
-			BehaviorComp->StartTree(*Bot->BehaviorTree);
+			BehaviorTreeComponent->StartTree(*Bot->BehaviorTree);
 		}
 		else
 		{
@@ -41,7 +41,6 @@ void ABotAIC::Possess(APawn* Pawn)
 	}
 }
 
-//Gets Target Point from Bot's array by index
 ATargetPoint* ABotAIC::GetTargetPointByIndex(int index) const
 {
 	ABot* Bot = Cast<ABot>(GetPawn());
@@ -52,7 +51,6 @@ ATargetPoint* ABotAIC::GetTargetPointByIndex(int index) const
 	return nullptr;
 }
 
-//Gets number of Target Points in Bot's array
 int ABotAIC::GetTargetPointsNumber()
 {
 	ABot* Bot = Cast<ABot>(GetPawn());

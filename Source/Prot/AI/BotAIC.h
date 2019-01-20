@@ -15,17 +15,21 @@ class PROT_API ABotAIC : public AAIController
 	GENERATED_BODY()
 
 	ABotAIC();
-	UBehaviorTreeComponent* BehaviorComp;
-	UBlackboardComponent* BlackboardComp;
+
+	//For starting Behavior Tree
+	UBehaviorTreeComponent* BehaviorTreeComponent;
+
+	//For initializing Blackboard and its Values
+	UBlackboardComponent* BlackboardComponent;
 
 	/*Posses is executed when the character we want to control is spawned.
 	Inside this function, we initialize the blackboard and start the behavior tree*/
 	virtual void Possess(APawn* Pawn) override;
 
 public:
-	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const 
+	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const 
 	{
-		return BlackboardComp;
+		return BlackboardComponent;
 	}
 
 	//Gets Target Point from Bot's array by index
