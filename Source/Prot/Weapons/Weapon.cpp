@@ -901,7 +901,7 @@ void AWeapon::OnRep_Reload()
 	}
 }
 
-void AWeapon::SimulateWeaponFire()
+void AWeapon::SimulateWeaponFire_Implementation()
 {
 	if (Role == ROLE_Authority && CurrentState != EWeaponState::Firing)
 	{
@@ -933,7 +933,7 @@ void AWeapon::SimulateWeaponFire()
 	}
 }
 
-void AWeapon::StopSimulatingWeaponFire()
+void AWeapon::StopSimulatingWeaponFire_Implementation()
 {
 	if (bLoopedMuzzleFX)
 	{
