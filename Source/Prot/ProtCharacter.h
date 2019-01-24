@@ -33,6 +33,7 @@ class AProtCharacter : public ACharacter
 	virtual void Tick(float DeltaTime) override;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Replicated)
 	UHealthActorComponent* HealthComponent;
 
 public:
