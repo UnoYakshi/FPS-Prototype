@@ -64,18 +64,22 @@ public:
 
 	/** Decreases current value of Health */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void DecreaseHealthValue(float DecreaseValue) { SetHealthValue(Health - DecreaseValue); }
+	void DecreaseHealthValue(float DecreaseValue);
 
 	/** Inreases current value of Health */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void IncreaseHealthValue(float IncreaseValue) { SetHealthValue(Health + IncreaseValue); }
+	void IncreaseHealthValue(float IncreaseValue);
+
+	UFUNCTION(BlueprintCallable)
+	void Die();
 
 	/** Sets values to "alive" condition */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void BringToLife() { bIsDead = false; SetHealthValue(MaxHealth); }
+	void BringToLife();
 	
 	/** Sets values to "alive" condition and sets Health to given level */
-	void BringToLife(float NewHealthValue) { bIsDead = false; SetHealthValue(NewHealthValue); }
+	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	void BringToLife(float NewHealthValue);
 
 public:
 	/** Tells if dead */

@@ -65,6 +65,37 @@ bool UHealthActorComponent::Server_SetHealthValue_Validate(float NewHealthValue)
 	return true;
 }
 
+void UHealthActorComponent::IncreaseHealthValue(float IncreaseValue)
+{
+	SetHealthValue(Health + IncreaseValue);
+}
+
+void UHealthActorComponent::DecreaseHealthValue(float DecreaseValue)
+{
+	SetHealthValue(Health - DecreaseValue);
+}
+
+
+
+void UHealthActorComponent::Die()
+{
+	bIsDead = true;
+	OnDeath.Broadcast(GetOwner());
+}
+
+void UHealthActorComponent::BringToLife(float NewHealthValue)
+{
+	bIsDead = false;
+	SetHealthValue(NewHealthValue);	
+}
+
+
+void UHealthActorComponent::BringToLife()
+{
+	BringToLife(MaxHealth);
+}
+
+
 void UHealthActorComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
