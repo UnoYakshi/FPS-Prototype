@@ -11,9 +11,6 @@
 AProjectile::AProjectile() :
 	Speed(300.f)
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetCollisionObjectType(ECC_WorldDynamic);
 	Mesh->CastShadow = false;
@@ -44,6 +41,12 @@ AProjectile::AProjectile() :
 	ProjectileMovement->bShouldBounce = true;
 	ProjectileMovement->SetNetAddressable(); // Make DSO components net addressable
 	ProjectileMovement->SetIsReplicated(true); // Enable replication by default
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PrePhysics;
+	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	bReplicates = true;
+	bReplicateMovement = true;
 
 	InitialLifeSpan = 3.f;
 }
