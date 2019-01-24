@@ -51,37 +51,33 @@ protected:
 	virtual void CheckDeath();
 
 public:
-	/** Gets current value of Health */
-	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	float GetHealthValue() const { return Health; }
-
 	/** Sets new current value of Health */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void SetHealthValue(float NewHealthValue);
+	void SetHealthValue(const float NewHealthValue);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetHealthValue(float NewHealthValue);
+	void Server_SetHealthValue(const float NewHealthValue);
 
 	/** Decreases current value of Health */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void DecreaseHealthValue(float DecreaseValue);
+	void DecreaseHealthValue(const float DecreaseValue);
 
 	/** Inreases current value of Health */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void IncreaseHealthValue(float IncreaseValue);
+	void IncreaseHealthValue(const float IncreaseValue);
 
 	UFUNCTION(BlueprintCallable)
 	void Die();
 
-	/** Sets values to "alive" condition */
-	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void BringToLife();
-	
 	/** Sets values to "alive" condition and sets Health to given level */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
-	void BringToLife(float NewHealthValue);
+	void BringToLife(const float NewHealthValue);
 
 public:
+	/** Gets current value of Health */
+	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	float GetHealthValue() const { return Health; }
+
 	/** Tells if dead */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
 	bool IsDead() { return bIsDead; }

@@ -3,6 +3,7 @@
 #include "HealthActorComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/Engine.h"
 
 
 UHealthActorComponent::UHealthActorComponent()
@@ -28,17 +29,16 @@ void UHealthActorComponent::CheckDeath()
 	{
 		bIsDead = true;
 		OnDeath.Broadcast(GetOwner());
+		Die();
 	}
 }
 
-void UHealthActorComponent::SetHealthValue(float NewHealthValue)
+void UHealthActorComponent::SetHealthValue(const float NewHealthValue)
 {
-	//*
-	if (this->GetOwner()->Role < ROLE_Authority)
+	if (GetOwner()->Role < ROLE_Authority)
 	{
 		Server_SetHealthValue(NewHealthValue);
 	}
-	//*/
 
 	if (NewHealthValue < 0.f)
 	{
@@ -56,16 +56,16 @@ void UHealthActorComponent::SetHealthValue(float NewHealthValue)
 	CheckDeath();
 }
 
-void UHealthActorComponent::Server_SetHealthValue_Implementation(float NewHealthValue)
+void UHealthActorComponent::Server_SetHealthValue_Implementation(const float NewHealthValue)
 {
 	SetHealthValue(NewHealthValue);
 }
-bool UHealthActorComponent::Server_SetHealthValue_Validate(float NewHealthValue)
+bool UHealthActorComponent::Server_SetHealthValue_Validate(const float NewHealthValue)
 {
 	return true;
 }
 
-void UHealthActorComponent::IncreaseHealthValue(float IncreaseValue)
+void UHealthActorComponent::IncreaseHealthValue(const float IncreaseValue)
 {
 	SetHealthValue(Health + IncreaseValue);
 }
@@ -75,12 +75,23 @@ void UHealthActorComponent::DecreaseHealthValue(float DecreaseValue)
 	SetHealthValue(Health - DecreaseValue);
 }
 
-
-
 void UHealthActorComponent::Die()
 {
-	bIsDead = true;
-	OnDeath.Broadcast(GetOwner());
+	switch (GetOwner()->Role)
+	{
+	case ROLE_SimulatedProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead SIMULATED_PROXY!"));
+		break;
+	case ROLE_AutonomousProxy:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead AUTONOMOUS_PROXY!"));
+		break;
+	case ROLE_Authority:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead SERVER!"));
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am just dead!"));
+		break;
+	}
 }
 
 void UHealthActorComponent::BringToLife(float NewHealthValue)
@@ -88,13 +99,6 @@ void UHealthActorComponent::BringToLife(float NewHealthValue)
 	bIsDead = false;
 	SetHealthValue(NewHealthValue);	
 }
-
-
-void UHealthActorComponent::BringToLife()
-{
-	BringToLife(MaxHealth);
-}
-
 
 void UHealthActorComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
