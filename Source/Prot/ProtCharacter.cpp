@@ -105,6 +105,7 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
+	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnBomb);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
@@ -217,6 +218,35 @@ bool AProtCharacter::WeaponCanFire() const
 {
 	return CurrentWeapon->CanFire();
 }
+
+///
+/// GRENADE & HP
+///
+float AProtCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	HealthComponent->DecreaseHealthValue(Damage);
+
+	//Call the update text on the local client
+	//OnRep_Health will be called in every other client so the character's text
+	//will contain a text with the right values
+	HealthComponent->UpdateCharText();
+
+	return HealthComponent->GetHealthValue();
+}
+
+void AProtCharacter::ServerTakeDamage_Implementation(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+bool AProtCharacter::ServerTakeDamage_Validate(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	//Assume that everything is ok without any further checks and return true
+	return true;
+}
+
 
 ///
 /// FIREARMS
@@ -411,6 +441,9 @@ void AProtCharacter::PreUpdateCamera(float DeltaTime)
 
 	// Will be retrieved by AnimBlueprint...
 	CameraLocalRotation = NewRotation;
+
+	CameraTreshold = 20.f;
+	RecoilOffset = 10.f;
 }
 
 float AProtCharacter::CameraProcessPitch(float Input)
@@ -497,6 +530,7 @@ void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Ou
 	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
 
 	DOREPLIFETIME(AProtCharacter, CurrentWeapon);
+	DOREPLIFETIME(AProtCharacter, CameraLocalRotation);
 }
 
 /////////////////////////////////////////////

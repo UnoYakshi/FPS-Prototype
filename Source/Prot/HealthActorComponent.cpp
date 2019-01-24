@@ -10,11 +10,16 @@ UHealthActorComponent::UHealthActorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicated(true);
+
+	CharText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("DebugText"));
+	CharText->SetRelativeLocation(FVector(0, 0, 100));
+	CharText->SetupAttachment(GetOwner()->GetRootComponent());
 }
 
 void UHealthActorComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	UpdateCharText();
 }
 
 void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -22,7 +27,15 @@ void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-//Checks if Death happened
+void UHealthActorComponent::UpdateCharText()
+{
+	//Create a string that will display the health and bomb count values
+	FString NewText = FString("Health: ") + FString::SanitizeFloat(Health);
+
+	//Set the created string to the text render comp
+	CharText->SetText(FText::FromString(NewText));
+}
+
 void UHealthActorComponent::CheckDeath()
 {
 	if (!bIsDead && Health <= 0.f)
@@ -106,4 +119,17 @@ void UHealthActorComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 	DOREPLIFETIME(UHealthActorComponent, Health);
 	DOREPLIFETIME(UHealthActorComponent, bIsDead);
+}
+
+void UHealthActorComponent::OnRep_Health()
+{
+	UpdateCharText();
+}
+void UHealthActorComponent::OnRep_IsDead()
+{
+	if (bIsDead)
+	{
+		Die();
+		// TODO: Call GetOwner()->OnDeath() or something...
+	}
 }

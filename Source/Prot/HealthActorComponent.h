@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "UObject/ObjectMacros.h"
+#include "Components/TextRenderComponent.h"
 #include "HealthActorComponent.generated.h"
 
 
@@ -24,21 +25,28 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	/** Gets replication properties, i.e., Health in our case */
+	virtual void GetLifetimeReplicatedProps(TArray < class FLifetimeProperty > & OutLifetimeProps) const override;
+
 protected:
 	virtual void BeginPlay() override;
 
 /// PARAMETERS
 protected:
 	/** Current Health value */
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Game|Health")
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_Health, Category = "Game|Health")
 	float Health;
 
 	/** Maximum value of Health */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game|Health")
 	float MaxHealth;
 
+	/** Text render component - used instead of UMG, to keep the tutorial short */
+	UPROPERTY(VisibleAnywhere)
+	UTextRenderComponent* CharText;
+
 	/** States has Death happened or has not */
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Game|Health")
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_IsDead, Category = "Game|Health")
 	bool bIsDead;
 
 	/** Called when Health is equal or below 0 */
@@ -86,7 +94,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
 	bool GetMaxHealth() { return MaxHealth; }
 
-public:
-	/** Gets replication properties, i.e., Health in our case */
-	virtual void GetLifetimeReplicatedProps(TArray < class FLifetimeProperty > & OutLifetimeProps) const override;
+	void UpdateCharText();
+
+	private:
+	UFUNCTION()
+	void OnRep_Health();
+
+	UFUNCTION()
+	void OnRep_IsDead();
+
 };
