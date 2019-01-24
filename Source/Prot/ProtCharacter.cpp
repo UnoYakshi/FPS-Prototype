@@ -67,6 +67,10 @@ AProtCharacter::AProtCharacter()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
 	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
 
+	// Health system...
+	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("Health"));
+	HealthComponent->SetIsReplicated(true);
+
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;

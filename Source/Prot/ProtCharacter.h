@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MyPlayerController.h"
 #include "Weapons/Weapon.h"
+#include "HealthActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "ProtCharacter.generated.h"
@@ -30,6 +31,9 @@ class AProtCharacter : public ACharacter
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
+
+protected:
+	UHealthActorComponent* HealthComponent;
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
