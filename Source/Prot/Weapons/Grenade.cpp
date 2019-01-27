@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Grenade.h"
-#include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+
 
 // Sets default values
 AGrenade::AGrenade()
@@ -17,6 +19,10 @@ AGrenade::AGrenade()
 
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
 	ProjectileMovementComp->bShouldBounce = true;
+
+	ExplosionFX = nullptr;
+	ExplosionDamage = 400.f;
+	ExplosionRadius = 200.f;
 
 	SetReplicates(true);
 }

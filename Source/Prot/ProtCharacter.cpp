@@ -5,6 +5,7 @@
 #include "Weapons/Weapon.h"
 #include "Interactive/InteractiveObject.h"
 
+#include "Engine.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -105,7 +106,7 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
-	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnBomb);
+	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnGrenade);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
@@ -247,6 +248,46 @@ bool AProtCharacter::ServerTakeDamage_Validate(float Damage, struct FDamageEvent
 	return true;
 }
 
+void AProtCharacter::AttempToSpawnGrenade()
+{
+	if (HasGrenades())
+	{
+		if (Role < ROLE_Authority)
+		{
+			ServerSpawnGrenade();
+		}
+		else
+		{
+			SpawnGrenade();
+		}
+	}
+}
+
+void AProtCharacter::SpawnGrenade()
+{
+	--GrenadeCount;
+	HealthComponent->UpdateCharText();
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Instigator = this;
+	SpawnParameters.Owner = GetController();
+
+	GetWorld()->SpawnActor<AGrenade>(
+		GrenadeClass,
+		GetActorLocation() + GetActorForwardVector() * 200,
+		GetActorRotation(),
+		SpawnParameters);
+}
+
+void AProtCharacter::ServerSpawnGrenade_Implementation()
+{
+	SpawnGrenade();
+}
+
+bool AProtCharacter::ServerSpawnGrenade_Validate()
+{
+	return true;
+}
 
 ///
 /// FIREARMS
@@ -521,6 +562,10 @@ void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
 void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
 {
 	SetCurrentWeapon(CurrentWeapon, LastWeapon);
+}
+void AProtCharacter::OnRep_GrenadeCount()
+{
+	HealthComponent->UpdateCharText();
 }
 void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {

@@ -13,7 +13,7 @@ UHealthActorComponent::UHealthActorComponent()
 
 	CharText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("DebugText"));
 	CharText->SetRelativeLocation(FVector(0, 0, 100));
-	CharText->SetupAttachment(GetOwner()->GetRootComponent());
+	//CharText->SetupAttachment(GetOwner()->GetRootComponent());
 }
 
 void UHealthActorComponent::BeginPlay()

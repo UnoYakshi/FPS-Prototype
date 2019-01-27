@@ -83,6 +83,7 @@ private:
 	 * Simulates explosion functions...
 	 * The multicast specifier, indicates that every client will call the SimulateExplosionFX_Implementation.
 	 */
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast, Unreliable)
 	void SimulateExplosionFX();
+	void SimulateExplosionFX_Implementation();
 };

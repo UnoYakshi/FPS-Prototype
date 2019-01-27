@@ -9,6 +9,7 @@
 #include "HealthActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+#include "ParticleDefinitions.h"
 #include "ProtCharacter.generated.h"
 
 // Either print debug-lines on screen or not...
@@ -69,7 +70,9 @@ private:
 	 */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerTakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
-
+	void ServerTakeDamage_Implementation(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	bool ServerTakeDamage_Validate(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	
 	void AttempToSpawnGrenade();
 
 	/** Returns true if we can throw a bomb */
@@ -87,6 +90,8 @@ private:
 	 */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSpawnGrenade();
+	void ServerSpawnGrenade_Implementation();
+	bool ServerSpawnGrenade_Validate();
 
 	UFUNCTION()
 	void OnRep_GrenadeCount();
