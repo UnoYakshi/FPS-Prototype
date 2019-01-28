@@ -100,6 +100,7 @@ void UHealthActorComponent::Die()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am just dead!"));
 		break;
 	}
+	//GetOwner()->OnDeath();
 }
 
 void UHealthActorComponent::BringToLife(float NewHealthValue)
@@ -126,5 +127,9 @@ void UHealthActorComponent::OnRep_IsDead()
 	{
 		Die();
 		// TODO: Call GetOwner()->OnDeath() or something...
+	}
+	else
+	{
+		// Resurrect();
 	}
 }
