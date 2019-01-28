@@ -11,29 +11,16 @@ UHealthActorComponent::UHealthActorComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicated(true);
 
-	CharText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("DebugText"));
-	CharText->SetRelativeLocation(FVector(0, 0, 100));
-	//CharText->SetupAttachment(GetOwner()->GetRootComponent());
 }
 
 void UHealthActorComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	UpdateCharText();
 }
 
 void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
-void UHealthActorComponent::UpdateCharText()
-{
-	//Create a string that will display the health and bomb count values
-	FString NewText = FString("Health: ") + FString::SanitizeFloat(Health);
-
-	//Set the created string to the text render comp
-	CharText->SetText(FText::FromString(NewText));
 }
 
 void UHealthActorComponent::CheckDeath()
@@ -48,6 +35,10 @@ void UHealthActorComponent::CheckDeath()
 
 void UHealthActorComponent::SetHealthValue(const float NewHealthValue)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+		FString::Printf(TEXT("B4 HP: %f"), Health)
+	);
+
 	if (GetOwner()->Role < ROLE_Authority)
 	{
 		Server_SetHealthValue(NewHealthValue);
@@ -67,6 +58,10 @@ void UHealthActorComponent::SetHealthValue(const float NewHealthValue)
 	}
 
 	CheckDeath();
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+		FString::Printf(TEXT("AFTER HP: %f"), Health)
+	);
+
 }
 
 void UHealthActorComponent::Server_SetHealthValue_Implementation(const float NewHealthValue)
@@ -123,7 +118,7 @@ void UHealthActorComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 void UHealthActorComponent::OnRep_Health()
 {
-	UpdateCharText();
+	CheckDeath();
 }
 void UHealthActorComponent::OnRep_IsDead()
 {

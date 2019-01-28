@@ -41,10 +41,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game|Health")
 	float MaxHealth;
 
-	/** Text render component - used instead of UMG, to keep the tutorial short */
-	UPROPERTY(VisibleAnywhere)
-	UTextRenderComponent* CharText;
-
 	/** States has Death happened or has not */
 	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_IsDead, Category = "Game|Health")
 	bool bIsDead;
@@ -93,8 +89,6 @@ public:
 	/** Gets maximum health */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
 	bool GetMaxHealth() { return MaxHealth; }
-
-	void UpdateCharText();
 
 	private:
 	UFUNCTION()
