@@ -79,15 +79,15 @@ public:
 
 public:
 	/** Gets current value of Health */
-	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	UFUNCTION(BlueprintGetter, Category = "Game|Health")
 	float GetHealthValue() const { return Health; }
 
 	/** Tells if dead */
-	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	UFUNCTION(BlueprintGetter, Category = "Game|Health")
 	bool IsDead() { return bIsDead; }
 
 	/** Gets maximum health */
-	UFUNCTION(BlueprintCallable, Category = "Game|Health")
+	UFUNCTION(BlueprintGetter, Category = "Game|Health")
 	bool GetMaxHealth() { return MaxHealth; }
 
 	private:
