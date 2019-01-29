@@ -190,7 +190,7 @@ Runs on Server. Perform "OnUsed" on currently viewed UsableActor if implemented.
 */
 void AProtCharacter::Use_Implementation()
 {
-	if (this->Controller && this->Controller->IsLocalController())
+	if (Controller && Controller->IsLocalController())
 	{
 		AInteractiveObject* Usable = this->GetInteractiveInView();
 		if (Usable)
@@ -208,7 +208,7 @@ void AProtCharacter::Use_Implementation()
 
 bool AProtCharacter::Use_Validate()
 {
-	return true;
+	return HealthComponent->IsAlive();
 }
 
 void AProtCharacter::StopUsing_Implementation()
@@ -227,7 +227,7 @@ bool AProtCharacter::StopUsing_Validate()
 
 bool AProtCharacter::CanFire() const
 {
-	return true;
+	return HealthComponent->IsAlive();
 }
 
 bool AProtCharacter::WeaponCanFire() const
@@ -435,19 +435,25 @@ void AProtCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locatio
 
 void AProtCharacter::TurnAtRate(float Rate)
 {
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	if (HealthComponent->IsAlive())
+	{
+		// calculate delta for this frame from the rate information
+		AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void AProtCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	if (HealthComponent->IsAlive())
+	{
+		AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void AProtCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if ((Controller != NULL) && (Value != 0.0f) && HealthComponent->IsAlive())
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -461,7 +467,7 @@ void AProtCharacter::MoveForward(float Value)
 
 void AProtCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
+	if ((Controller != NULL) && (Value != 0.0f) && HealthComponent->IsAlive())
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -476,7 +482,7 @@ void AProtCharacter::MoveRight(float Value)
 
 void AProtCharacter::PreUpdateCamera(float DeltaTime)
 {
-	if (!FPPCamera || !PC)
+	if (!FPPCamera || !PC || HealthComponent->IsDead())
 	{
 		return;
 	}

@@ -3,6 +3,7 @@
 #include "HealthActorComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 #include "Engine/Engine.h"
 
 
@@ -85,6 +86,12 @@ void UHealthActorComponent::DecreaseHealthValue(float DecreaseValue)
 
 void UHealthActorComponent::Die()
 {
+	ACharacter* Owner = Cast<ACharacter>(GetOwner());
+	if (!Owner)
+	{
+		return;
+	}
+
 	switch (GetOwner()->Role)
 	{
 	case ROLE_SimulatedProxy:
@@ -99,6 +106,11 @@ void UHealthActorComponent::Die()
 	default:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am just dead!"));
 		break;
+	}
+	APlayerController* PC = Cast<APlayerController>(Owner->GetController());
+	if (PC)
+	{
+		Owner->DisableInput(PC);
 	}
 	//GetOwner()->OnDeath();
 }

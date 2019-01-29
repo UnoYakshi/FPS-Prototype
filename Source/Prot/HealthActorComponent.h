@@ -34,7 +34,7 @@ protected:
 /// PARAMETERS
 protected:
 	/** Current Health value */
-	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_Health, Category = "Game|Health")
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_Health, Category = "Game|Health")
 	float Health;
 
 	/** Maximum value of Health */
@@ -42,7 +42,7 @@ protected:
 	float MaxHealth;
 
 	/** States has Death happened or has not */
-	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_IsDead, Category = "Game|Health")
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_IsDead, Category = "Game|Health")
 	bool bIsDead;
 
 	/** Called when Health is equal or below 0 */
@@ -85,6 +85,9 @@ public:
 	/** Tells if dead */
 	UFUNCTION(BlueprintGetter, Category = "Game|Health")
 	bool IsDead() { return bIsDead; }
+	
+	UFUNCTION(BlueprintGetter, Category = "Game|Health")
+	bool IsAlive() { return !bIsDead; }
 
 	/** Gets maximum health */
 	UFUNCTION(BlueprintGetter, Category = "Game|Health")
