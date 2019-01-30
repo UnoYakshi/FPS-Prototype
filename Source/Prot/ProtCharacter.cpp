@@ -280,6 +280,20 @@ void AProtCharacter::AttempToSpawnGrenade()
 
 void AProtCharacter::SpawnGrenade()
 {
+	/*UGameplayStatics::SuggestProjectileVelocity(
+		this,
+		FVector(100.f, 0.f, 0.f),
+		GetActorLocation(),
+		FVector(0.f, 0.f, 0.f),
+		400.f,
+		true,
+		3.f,
+		0,
+		ESuggestProjVelocityTraceOption::TraceFullPath,
+		FCollisionResponseParams::DefaultResponseParam,
+		TArray<AActor*>(),
+		true);
+	*/
 	--GrenadeCount;
 	UpdateCharText();
 
