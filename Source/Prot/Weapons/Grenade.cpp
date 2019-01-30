@@ -4,11 +4,17 @@
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "TimerManager.h"
 
 
 // Sets default values
 AGrenade::AGrenade()
 {
+	ExplosionVFX = nullptr;
+	ExplosionDamage = 400.f;
+	ExplosionRadius = 200.f;
+	ExplosionStrength = 6000.f;
+
 	PrimaryActorTick.bCanEverTick = true;
 
 	SM = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -20,9 +26,9 @@ AGrenade::AGrenade()
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
 	ProjectileMovementComp->bShouldBounce = true;
 
-	ExplosionFX = nullptr;
-	ExplosionDamage = 400.f;
-	ExplosionRadius = 200.f;
+	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComp"));
+	RadialForceComp->Radius = ExplosionRadius;
+	RadialForceComp->ForceStrength = ExplosionStrength;
 
 	SetReplicates(true);
 }
@@ -96,8 +102,17 @@ void AGrenade::Explode()
 	// Do not ignore any actors
 	TArray<AActor*> IgnoreActors;
 
-	//This will eventually call the TakeDamage function that we have overriden in the Character class
+	// Play the sound...
+	if (ExplosionSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(ExplosionSFX, GetRootComponent());
+	}
+
+	// This will eventually call the TakeDamage function that we have overriden in the Character class
 	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, DmgType, IgnoreActors, this, GetInstigatorController());
+
+	// Add radial impulse...
+	RadialForceComp->FireImpulse();
 
 	// Bind Destroy() the actor to timer delegate...
 	FTimerDelegate TimerDel;
@@ -113,9 +128,9 @@ void AGrenade::Explode()
 
 void AGrenade::SimulateExplosionFX_Implementation()
 {
-	if (ExplosionFX)
+	if (ExplosionVFX)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionFX, GetTransform(), true);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetTransform(), true);
 	}
 }
 

@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h" 
 #include "Components/SphereComponent.h"
+#include "PhysicsEngine/RadialForceComponent.h"
+#include "Sound/SoundCue.h"
 #include "Grenade.generated.h"
 
 
@@ -29,32 +31,49 @@ private:
 
 /// PARAMETERS
 protected:
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* ExplosionFX;
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* ExplosionSFX;
 
-	/** The static mesh of the comp */
+	UPROPERTY(EditDefaultsOnly)
+	UParticleSystem* ExplosionVFX;
+
+	/** Static mesh... */
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* SM;
 
-	/** The projectile movement comp */
+	/** The "projectile" movement component; for velocity and bouncing... */
 	UPROPERTY(VisibleAnywhere)
 	UProjectileMovementComponent* ProjectileMovementComp;
 
-	/** Sphere comp used for collision. Movement component need a collision component as root to function properly */
+	UPROPERTY(VisibleAnywhere)
+	URadialForceComponent* RadialForceComp;
+
+	/** 
+	 * Sphere component used for collision...
+	 * Also, movement component need a collision component as root to function properly...
+	 */
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* SphereComp;
 
-	/** The delay until explosion */
-	UPROPERTY(EditDefaultsOnly, Category = BombProps)
+	/** The delay until explosion... */
+	UPROPERTY(EditDefaultsOnly, Category = Props)
 	float FuseTime;
 
-	UPROPERTY(EditDefaultsOnly, Category = BombProps)
+	/** The explosion's radius... */
+	UPROPERTY(EditDefaultsOnly, Category = Props)
 	float ExplosionRadius;
 
-	UPROPERTY(EditDefaultsOnly, Category = BombProps)
+	/** The explosion's damage... */
+	UPROPERTY(EditDefaultsOnly, Category = Props)
 	float ExplosionDamage;
 
+	/** The explosion's strength; in joules?.. */
+	UPROPERTY(EditDefaultsOnly, Category = Props)
+	float ExplosionStrength;
+
+
 private:
+	/** Either grenade's charged or not... */
 	UPROPERTY(ReplicatedUsing = OnRep_IsArmed)
 	bool bIsArmed = false;
 
