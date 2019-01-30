@@ -301,20 +301,21 @@ void AProtCharacter::SpawnGrenade()
 	SpawnParameters.Instigator = this;
 	SpawnParameters.Owner = GetController();
 
+	// Find "crosshair" forward vector...
+	FVector camLoc;
+	FRotator camRot;
+	Controller->GetPlayerViewPoint(camLoc, camRot);
+	const FVector Direction = camRot.Vector();
+
 	AGrenade* NewGrenade = GetWorld()->SpawnActor<AGrenade>(
 		GrenadeClass,
-		GetActorLocation() + GetActorForwardVector() * 200,
+		camLoc,
 		GetActorRotation(),
 		SpawnParameters);
 	if (NewGrenade)
 	{
-		FVector MeshDir = GetActorForwardVector();
-		FVector Direction = FVector(MeshDir.X, MeshDir.Y, 0.5f);
-		NewGrenade->FireInDirection(Direction);
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("NO GRENADE"));
+		// Add speed...
+		NewGrenade->FireInDirection(Direction * 12.f);
 	}
 }
 

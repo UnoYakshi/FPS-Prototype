@@ -28,7 +28,7 @@ AGrenade::AGrenade()
 	ProjectileMovementComp->bShouldBounce = true;
 	//ProjectileMovementComp->Bounciness = 1.0f;
 	//ProjectileMovementComp->bRotationFollowsVelocity = true;
-	ProjectileMovementComp->InitialSpeed = 10.f * 100;
+	ProjectileMovementComp->InitialSpeed = 100.f;
 	ProjectileMovementComp->MaxSpeed = 100000.f;
 
 	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComp"));
