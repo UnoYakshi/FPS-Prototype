@@ -34,7 +34,6 @@ AProtCharacter::AProtCharacter()
 	bReplicates = true;
 	bNetUseOwnerRelevancy = true;
 
-
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -73,29 +72,14 @@ AProtCharacter::AProtCharacter()
 	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("Health"));
 	HealthComponent->SetIsReplicated(true);
 
-	CharText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("DebugText"));
-	CharText->SetRelativeLocation(FVector(0, 0, 100));
-	CharText->SetupAttachment(GetRootComponent());
-
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;
 }
 
-void AProtCharacter::UpdateCharText()
-{
-	//Create a string that will display the health and bomb count values
-	FString NewText = FString("Health: ") + FString::SanitizeFloat(HealthComponent->GetHealthValue());
-
-	//Set the created string to the text render comp
-	CharText->SetText(FText::FromString(NewText));
-}
-
 void AProtCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UpdateCharText();
 
 	WeaponMesh = CurrentWeapon->GetWeaponMesh();
 	WeaponMesh->SetRelativeLocation(FVector::ZeroVector);
@@ -245,11 +229,6 @@ float AProtCharacter::TakeDamage(float Damage, struct FDamageEvent const& Damage
 
 	HealthComponent->DecreaseHealthValue(Damage);
 
-	//Call the update text on the local client
-	//OnRep_Health will be called in every other client so the character's text
-	//will contain a text with the right values
-	UpdateCharText();
-
 	return HealthComponent->GetHealthValue();
 }
 
@@ -296,7 +275,6 @@ void AProtCharacter::SpawnGrenade()
 		true);
 	*/
 	--GrenadeCount;
-	UpdateCharText();
 
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Instigator = this;
@@ -606,7 +584,6 @@ void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
 }
 void AProtCharacter::OnRep_GrenadeCount()
 {
-	UpdateCharText();
 }
 void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {

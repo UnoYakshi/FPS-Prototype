@@ -54,12 +54,6 @@ public:
 	// GRENADE & HP
 	////////////////////////////////
 public:
-	/** Text render component - used instead of UMG, to keep the tutorial short */
-	UPROPERTY(VisibleAnywhere)
-	UTextRenderComponent* CharText;
-	void UpdateCharText();
-
-
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_GrenadeCount, Category = Stats)
 	int32 GrenadeCount;
 
