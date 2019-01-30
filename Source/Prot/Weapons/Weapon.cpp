@@ -337,7 +337,7 @@ void AWeapon::StopReload()
 
 void AWeapon::FireWeapon()
 {
-	if (DEBUG || true)
+	if (DEBUG)
 	{
 		GEngine->AddOnScreenDebugMessage(
 			-1, 5.f, FColor::Red, TEXT("Pew!")
@@ -453,9 +453,12 @@ void AWeapon::GiveAmmo(int AddAmount)
 void AWeapon::UseAmmo()
 {
 	CurrentMag->ConsumeAmmo(WeaponConfig.AmmoPerShot);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
-		TEXT("Ammo: " + FString::FromInt(CurrentMag->Data.CurrentAmmoNum))
-	);
+	if (DEBUG)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
+			TEXT("Ammo: " + FString::FromInt(CurrentMag->Data.CurrentAmmoNum))
+		);
+	}
 }
 
 void AWeapon::HandleFiring()
@@ -689,9 +692,12 @@ float AWeapon::PlayWeaponAnimation(UAnimMontage* Animation)
 	{
 		Duration = MyPawn->PlayAnimMontage(Animation);
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
-			TEXT("ANIM: " + FString::SanitizeFloat(Duration))
-		);
+		if (DEBUG)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
+				TEXT("ANIM: " + FString::SanitizeFloat(Duration))
+			);
+		}
 	}
 
 	return Duration;
