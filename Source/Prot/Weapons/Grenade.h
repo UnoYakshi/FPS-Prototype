@@ -79,6 +79,7 @@ private:
 
 /// FUNCTIONALITY
 public:
+	/** Fires the grenade in the given direction; velocity = direction * init_speed... */
 	void FireInDirection(const FVector& ShootDirection);
 
 private:
