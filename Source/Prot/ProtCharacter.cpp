@@ -1,10 +1,12 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "ProtCharacter.h"
+#include "Prot.h"
 #include "MyPlayerController.h"
 #include "Weapons/Weapon.h"
 #include "Interactive/InteractiveObject.h"
 
+#include "Engine.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -31,7 +33,6 @@ AProtCharacter::AProtCharacter()
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	bReplicates = true;
 	bNetUseOwnerRelevancy = true;
-
 
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -67,6 +68,10 @@ AProtCharacter::AProtCharacter()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
 	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
 
+	// Health system...
+	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("Health"));
+	HealthComponent->SetIsReplicated(true);
+
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;
@@ -101,6 +106,7 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
+	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnGrenade);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
@@ -169,7 +175,7 @@ Runs on Server. Perform "OnUsed" on currently viewed UsableActor if implemented.
 */
 void AProtCharacter::Use_Implementation()
 {
-	if (this->Controller && this->Controller->IsLocalController())
+	if (Controller && Controller->IsLocalController())
 	{
 		AInteractiveObject* Usable = this->GetInteractiveInView();
 		if (Usable)
@@ -187,7 +193,7 @@ void AProtCharacter::Use_Implementation()
 
 bool AProtCharacter::Use_Validate()
 {
-	return true;
+	return HealthComponent->IsAlive();
 }
 
 void AProtCharacter::StopUsing_Implementation()
@@ -206,12 +212,100 @@ bool AProtCharacter::StopUsing_Validate()
 
 bool AProtCharacter::CanFire() const
 {
-	return true;
+	return HealthComponent->IsAlive();
 }
 
 bool AProtCharacter::WeaponCanFire() const
 {
 	return CurrentWeapon->CanFire();
+}
+
+///
+/// GRENADE & HP
+///
+float AProtCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	HealthComponent->DecreaseHealthValue(Damage);
+
+	return HealthComponent->GetHealthValue();
+}
+
+void AProtCharacter::ServerTakeDamage_Implementation(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+bool AProtCharacter::ServerTakeDamage_Validate(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	//Assume that everything is ok without any further checks and return true
+	return true;
+}
+
+void AProtCharacter::AttempToSpawnGrenade()
+{
+	if (HasGrenades())
+	{
+		if (Role < ROLE_Authority)
+		{
+			ServerSpawnGrenade();
+		}
+		else
+		{
+			SpawnGrenade();
+		}
+	}
+}
+
+void AProtCharacter::SpawnGrenade()
+{
+	/*UGameplayStatics::SuggestProjectileVelocity(
+		this,
+		FVector(100.f, 0.f, 0.f),
+		GetActorLocation(),
+		FVector(0.f, 0.f, 0.f),
+		400.f,
+		true,
+		3.f,
+		0,
+		ESuggestProjVelocityTraceOption::TraceFullPath,
+		FCollisionResponseParams::DefaultResponseParam,
+		TArray<AActor*>(),
+		true);
+	*/
+	--GrenadeCount;
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Instigator = this;
+	SpawnParameters.Owner = GetController();
+
+	// Find "crosshair" forward vector...
+	FVector camLoc;
+	FRotator camRot;
+	Controller->GetPlayerViewPoint(camLoc, camRot);
+	const FVector Direction = camRot.Vector();
+
+	AGrenade* NewGrenade = GetWorld()->SpawnActor<AGrenade>(
+		GrenadeClass,
+		camLoc,
+		GetActorRotation(),
+		SpawnParameters);
+	if (NewGrenade)
+	{
+		// Add speed...
+		NewGrenade->FireInDirection(Direction * 12.f);
+	}
+}
+
+void AProtCharacter::ServerSpawnGrenade_Implementation()
+{
+	SpawnGrenade();
+}
+
+bool AProtCharacter::ServerSpawnGrenade_Validate()
+{
+	return true;
 }
 
 ///
@@ -371,7 +465,7 @@ void AProtCharacter::MoveForward(float Value)
 
 void AProtCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
+	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -386,7 +480,7 @@ void AProtCharacter::MoveRight(float Value)
 
 void AProtCharacter::PreUpdateCamera(float DeltaTime)
 {
-	if (!FPPCamera || !PC)
+	if (!FPPCamera || !PC || HealthComponent->IsDead())
 	{
 		return;
 	}
@@ -407,6 +501,9 @@ void AProtCharacter::PreUpdateCamera(float DeltaTime)
 
 	// Will be retrieved by AnimBlueprint...
 	CameraLocalRotation = NewRotation;
+
+	CameraTreshold = 20.f;
+	RecoilOffset = 10.f;
 }
 
 float AProtCharacter::CameraProcessPitch(float Input)
@@ -485,6 +582,9 @@ void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
 {
 	SetCurrentWeapon(CurrentWeapon, LastWeapon);
 }
+void AProtCharacter::OnRep_GrenadeCount()
+{
+}
 void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -493,6 +593,7 @@ void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Ou
 	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
 
 	DOREPLIFETIME(AProtCharacter, CurrentWeapon);
+	DOREPLIFETIME(AProtCharacter, CameraLocalRotation);
 }
 
 /////////////////////////////////////////////

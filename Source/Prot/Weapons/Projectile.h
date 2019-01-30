@@ -27,7 +27,14 @@ UCLASS(config=Game)
 class PROT_API AProjectile : public AActor
 {
 	GENERATED_BODY()
-	
+
+	/** initial setup */
+	virtual void PostInitializeComponents() override;
+
+	/** handle hit */
+	UFUNCTION()
+	void OnImpact(const FHitResult& HitResult);
+
 public:	
 	// Sets default values for this actor's properties
 	AProjectile();
@@ -40,8 +47,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	//UFUNCTION()
+	//void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	void InitVelocity(const FVector ShootDirection);
 
@@ -79,6 +86,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	UCapsuleComponent* CollisionComp;
 
+	/** controller that fired me (cache for damage calculations) */
+	TWeakObjectPtr<AController> MyController;
+
+	/** did it explode? */
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Exploded)
+	bool bExploded;
+
 	/** Projectile's speed, in m/s... */
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	float Speed = 735.f;
@@ -86,4 +100,26 @@ protected:
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	class UProjectileMovementComponent* ProjectileMovement;
+
+protected:
+	/** trigger explosion */
+	void Explode(const FHitResult& Impact);
+
+	/** shutdown projectile and prepare for destruction */
+	void DisableAndDestroy();
+
+	/// REPLICATION
+	/** [client] explosion happened */
+	UFUNCTION()
+	void OnRep_Exploded();
+
+	/** Update velocity on client... */
+	virtual void PostNetReceiveVelocity(const FVector& NewVelocity) override;
+
+
+protected:
+	/** Returns MovementComp subobject **/
+	FORCEINLINE UProjectileMovementComponent* GetMovementComp() const { return ProjectileMovement; }
+	/** Returns CollisionComp subobject **/
+	FORCEINLINE UCapsuleComponent* GetCollisionComp() const { return CollisionComp; }
 };
