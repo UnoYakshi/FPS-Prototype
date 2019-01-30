@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HealthActorComponent.h"
+#include "Prot.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
@@ -36,9 +37,12 @@ void UHealthActorComponent::CheckDeath()
 
 void UHealthActorComponent::SetHealthValue(const float NewHealthValue)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
-		FString::Printf(TEXT("B4 HP: %f"), Health)
-	);
+	if (DEBUG)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+			FString::Printf(TEXT("B4 HP: %f"), Health)
+		);
+	}
 
 	if (GetOwner()->Role < ROLE_Authority)
 	{
@@ -59,10 +63,12 @@ void UHealthActorComponent::SetHealthValue(const float NewHealthValue)
 	}
 
 	CheckDeath();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
-		FString::Printf(TEXT("AFTER HP: %f"), Health)
-	);
-
+	if (DEBUG)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
+			FString::Printf(TEXT("AFTER HP: %f"), Health)
+		);
+	}
 }
 
 void UHealthActorComponent::Server_SetHealthValue_Implementation(const float NewHealthValue)
@@ -92,20 +98,23 @@ void UHealthActorComponent::Die()
 		return;
 	}
 
-	switch (GetOwner()->Role)
+	if (DEBUG)
 	{
-	case ROLE_SimulatedProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead SIMULATED_PROXY!"));
-		break;
-	case ROLE_AutonomousProxy:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead AUTONOMOUS_PROXY!"));
-		break;
-	case ROLE_Authority:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead SERVER!"));
-		break;
-	default:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am just dead!"));
-		break;
+		switch (GetOwner()->Role)
+		{
+		case ROLE_SimulatedProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead SIMULATED_PROXY!"));
+			break;
+		case ROLE_AutonomousProxy:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead AUTONOMOUS_PROXY!"));
+			break;
+		case ROLE_Authority:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead SERVER!"));
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am just dead!"));
+			break;
+		}
 	}
 	APlayerController* PC = Cast<APlayerController>(Owner->GetController());
 	if (PC)
