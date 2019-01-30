@@ -461,25 +461,19 @@ void AProtCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locatio
 
 void AProtCharacter::TurnAtRate(float Rate)
 {
-	if (HealthComponent->IsAlive())
-	{
-		// calculate delta for this frame from the rate information
-		AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-	}
+	// calculate delta for this frame from the rate information
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AProtCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	if (HealthComponent->IsAlive())
-	{
-		AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-	}
+	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AProtCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f) && HealthComponent->IsAlive())
+	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -493,7 +487,7 @@ void AProtCharacter::MoveForward(float Value)
 
 void AProtCharacter::MoveRight(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f) && HealthComponent->IsAlive())
+	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
