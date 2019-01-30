@@ -78,8 +78,10 @@ private:
 	bool bIsArmed = false;
 
 /// FUNCTIONALITY
-private:
+public:
+	void FireInDirection(const FVector& ShootDirection);
 
+private:
 	/** Called when bIsArmed gets updated */
 	UFUNCTION()
 	void OnRep_IsArmed();

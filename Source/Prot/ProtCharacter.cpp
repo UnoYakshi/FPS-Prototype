@@ -301,11 +301,21 @@ void AProtCharacter::SpawnGrenade()
 	SpawnParameters.Instigator = this;
 	SpawnParameters.Owner = GetController();
 
-	GetWorld()->SpawnActor<AGrenade>(
+	AGrenade* NewGrenade = GetWorld()->SpawnActor<AGrenade>(
 		GrenadeClass,
 		GetActorLocation() + GetActorForwardVector() * 200,
 		GetActorRotation(),
 		SpawnParameters);
+	if (NewGrenade)
+	{
+		FVector MeshDir = GetActorForwardVector();
+		FVector Direction = FVector(MeshDir.X, MeshDir.Y, 0.5f);
+		NewGrenade->FireInDirection(Direction);
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("NO GRENADE"));
+	}
 }
 
 void AProtCharacter::ServerSpawnGrenade_Implementation()

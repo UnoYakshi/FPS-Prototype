@@ -24,7 +24,12 @@ AGrenade::AGrenade()
 	SphereComp->SetupAttachment(RootComponent);
 
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
+	//ProjectileMovementComp->SetUpdatedComponent(SphereComp);
 	ProjectileMovementComp->bShouldBounce = true;
+	//ProjectileMovementComp->Bounciness = 1.0f;
+	//ProjectileMovementComp->bRotationFollowsVelocity = true;
+	ProjectileMovementComp->InitialSpeed = 10.f * 100;
+	ProjectileMovementComp->MaxSpeed = 100000.f;
 
 	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComp"));
 	RadialForceComp->Radius = ExplosionRadius;
@@ -47,6 +52,11 @@ void AGrenade::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AGrenade::FireInDirection(const FVector& ShootDirection)
+{
+	ProjectileMovementComp->Velocity = ShootDirection * ProjectileMovementComp->InitialSpeed;
 }
 
 void AGrenade::ArmBomb()
