@@ -17,10 +17,14 @@ EBTNodeResult::Type UBTRunPointSelect::ExecuteTask(UBehaviorTreeComponent & Owne
 		AActor* Bot = Cast<AActor>(BlackboardComponent->GetValueAsObject("SelfActor"));
 		if (Player && Bot)
 		{
-			float angle = FMath::RandRange(-135.f, 135.f);
-			FVector direction = UKismetMathLibrary::GetDirectionUnitVector(Player->GetActorLocation(), Bot->GetActorLocation());
-			direction = direction.RotateAngleAxis(angle, FVector(0, 0, 1));
-			BlackboardComponent->SetValueAsVector("RunLocation", Bot->GetActorLocation() + direction * RunDistance);
+			// Random angle from -135 to 135 degrees
+			float Angle = FMath::RandRange(-135.f, 135.f);
+			// Direction from Player to Bot
+			FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(Player->GetActorLocation(), Bot->GetActorLocation());
+			// Rotate direction so Bot will run away from Player not towards
+			Direction = Direction.RotateAngleAxis(Angle, FVector(0, 0, 1));
+			// Create a point where Bot will run from Player
+			BlackboardComponent->SetValueAsVector("RunLocation", Bot->GetActorLocation() + Direction * KeepAwayRange);
 			return EBTNodeResult::Succeeded;
 		}
 	}

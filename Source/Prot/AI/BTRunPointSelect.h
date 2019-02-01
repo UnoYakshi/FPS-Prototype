@@ -19,5 +19,5 @@ class PROT_API UBTRunPointSelect : public UBTTaskNode
 public:
 	// The distance for Bot to run from Player
 	UPROPERTY(Category = Node, EditAnywhere, meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float RunDistance;
+	float KeepAwayRange;
 };
