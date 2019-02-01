@@ -30,7 +30,10 @@ public:
 	class UBehaviorTree* BehaviorTree;
 
 	// Points that Bot will patrol in the same order as they are in the array
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	TArray<ATargetPoint*> PatrolPoints;
 
+	//Is patrolling order random?
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	bool bPatrolRandomly;
 };
