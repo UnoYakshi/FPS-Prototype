@@ -25,7 +25,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	//The class of Behavior Tree that describes Bot's logic
+	// The class of Behavior Tree that describes Bot's logic
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBehaviorTree* BehaviorTree;
 
@@ -33,7 +33,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	TArray<ATargetPoint*> PatrolPoints;
 
-	//Is patrolling order random?
+	// Is patrolling order random?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	bool bPatrolRandomly;
 };
