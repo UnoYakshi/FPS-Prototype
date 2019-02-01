@@ -14,5 +14,4 @@ There are a several main project's ideas:
 # Current Team
 * @UnoYakshi – project management, game design, technical director
 * @oninbo — bots
-* @ziadxkabakibi — weapon system
 * @andrew-it — shaders
