@@ -16,10 +16,22 @@ EBTNodeResult::Type UBTTargetPointSelection::ExecuteTask(UBehaviorTreeComponent 
 		//Update the Target Point in the Blackboard so the bot can move to the next Target Point
 		int PointIndex = BlackboardComponent->GetValueAsInt("PointIndex");
 		BlackboardComponent->SetValueAsObject("LocationToGo", AIController->GetTargetPointByIndex(PointIndex));
-		PointIndex++;
-		if (PointIndex > AIController->GetTargetPointsNumber())
+		if (AIController->PatrolRandomly())
 		{
-			PointIndex = 0;
+			int32 RandomIndex;
+			do
+			{
+				RandomIndex = FMath::RandRange(0, AIController->GetTargetPointsNumber() - 1);
+			} while (PointIndex == RandomIndex);
+			PointIndex = RandomIndex;
+		}
+		else
+		{
+			PointIndex++;
+			if (PointIndex > AIController->GetTargetPointsNumber() - 1)
+			{
+				PointIndex = 0;
+			}
 		}
 		BlackboardComponent->SetValueAsInt("PointIndex", PointIndex);
 

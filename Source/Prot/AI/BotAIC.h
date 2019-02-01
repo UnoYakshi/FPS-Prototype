@@ -55,4 +55,7 @@ public:
 
 	//Gets number of Target Points in Bot's array
 	virtual int GetTargetPointsNumber();
+
+	//Is patrolling order of Bot random?
+	virtual bool PatrolRandomly();
 };

@@ -71,6 +71,15 @@ int ABotAIC::GetTargetPointsNumber()
 	return 0;
 }
 
+bool ABotAIC::PatrolRandomly()
+{
+	if (Bot)
+	{
+		return Bot->bPatrolRandomly;
+	}
+	return false;
+}
+
 void ABotAIC::OnBotUnSee()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Can't see you!"));
