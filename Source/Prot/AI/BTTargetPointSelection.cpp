@@ -7,14 +7,14 @@
 
 EBTNodeResult::Type UBTTargetPointSelection::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
-	//AI Contoller that owns the Behavior Tree from which this Task Node is executed
+	// AI Contoller that owns the Behavior Tree from which this Task Node is executed
 	ABotAIC* AIController = Cast<ABotAIC>(OwnerComp.GetAIOwner());
 	if (AIController)
 	{
 		UBlackboardComponent* BlackboardComponent = AIController->GetBlackboardComponent();
 
-		//Update the Target Point in the Blackboard so the bot can move to the next Target Point
-		int PointIndex = BlackboardComponent->GetValueAsInt("PointIndex");
+		// Update the Target Point in the Blackboard so the bot can move to the next Target Point
+		int32 PointIndex = BlackboardComponent->GetValueAsInt("PointIndex");
 		BlackboardComponent->SetValueAsObject("LocationToGo", AIController->GetTargetPointByIndex(PointIndex));
 		if (AIController->PatrolRandomly())
 		{
@@ -27,15 +27,15 @@ EBTNodeResult::Type UBTTargetPointSelection::ExecuteTask(UBehaviorTreeComponent 
 		}
 		else
 		{
-			PointIndex++;
-			if (PointIndex > AIController->GetTargetPointsNumber() - 1)
+			++PointIndex;
+			if (PointIndex >= 0 && PointIndex > AIController->GetTargetPointsNumber() - 1)
 			{
 				PointIndex = 0;
 			}
 		}
 		BlackboardComponent->SetValueAsInt("PointIndex", PointIndex);
 
-		//At this point, the task has been successfully completed
+		// At this point, the task has been successfully completed
 		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;

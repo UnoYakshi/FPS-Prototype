@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "MyPlayerController.h"
 #include "Weapons/Weapon.h"
+#include "Weapons/Grenade.h"
+#include "HealthActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+#include "ParticleDefinitions.h"
 #include "ProtCharacter.generated.h"
-
-// Either print debug-lines on screen or not...
-#define DEBUG false
 
 // Forward declarations...
 class AInteractiveObject;
@@ -32,6 +32,13 @@ class AProtCharacter : public ACharacter
 	virtual void Tick(float DeltaTime) override;
 
 public:
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Replicated)
+	UHealthActorComponent* HealthComponent;
+
+public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -40,11 +47,54 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-public:
 	/** Returns Aim Offsets?.. */
 	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
 	FRotator GetAimOffsets() const;
 
+	// GRENADE & HP
+	////////////////////////////////
+public:
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_GrenadeCount, Category = Stats)
+	int32 GrenadeCount;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AGrenade> GrenadeClass;
+
+private:
+	/**
+	 * TakeDamage Server version. Call this instead of TakeDamage when you're a client
+	 * You don't have to generate an implementation. It will automatically call the ServerTakeDamage_Implementation function
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerTakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	void ServerTakeDamage_Implementation(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	bool ServerTakeDamage_Validate(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	
+	void AttempToSpawnGrenade();
+
+	/** Returns true if we can throw a bomb */
+	bool HasGrenades() const { return true; }
+
+	/**
+	 * Spawns a bomb. Call this function when you're authorized to.
+	 * In case you're not authorized, use the ServerSpawnBomb function.
+	 */
+	void SpawnGrenade();
+
+	/**
+	 * SpawnGrenade Server version. Call this instead of SpawnGrenade when you're a client
+	 * You don't have to generate an implementation for this. It will automatically call the ServerSpawnGrenade_Implementation function
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSpawnGrenade();
+	void ServerSpawnGrenade_Implementation();
+	bool ServerSpawnGrenade_Validate();
+
+	UFUNCTION()
+	void OnRep_GrenadeCount();
+	////////////////////////////////
+
+	public:
 	/** Weapon's mesh to hold in hands... */
 	// TODO: Rework as CurrentWeapon of Weapon class...
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
@@ -167,11 +217,11 @@ protected:
 	/* True first person set-up... */
 	AMyPlayerController* PC;
 
-	float CameraTreshold = 20.f;
+	float CameraTreshold;
 
-	float RecoilOffset = 10.f;
+	float RecoilOffset;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	FRotator CameraLocalRotation = FRotator(0.f);
 
 	virtual void PreUpdateCamera(float DeltaTime);
