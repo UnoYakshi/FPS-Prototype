@@ -44,6 +44,8 @@ class PROT_API ABotAIC : public AAIController
 	UFUNCTION()
 	virtual void OnBotSee(APawn* SeenPawn);
 
+	bool isSeen;
+
 public:
 	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const 
 	{
@@ -55,7 +57,4 @@ public:
 
 	//Gets number of Target Points in Bot's array
 	virtual int GetTargetPointsNumber();
-
-	//Is patrolling order of Bot random?
-	virtual bool PatrolRandomly();
 };

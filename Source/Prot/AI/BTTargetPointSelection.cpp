@@ -7,35 +7,33 @@
 
 EBTNodeResult::Type UBTTargetPointSelection::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
-	ABotAIC* AICon = Cast<ABotAIC>(OwnerComp.GetAIOwner());
-
-	/*If the Controller is valid:
-	1)Get the Blackboard Component and the Current Point of the bot
-	2)Search for the next point, which will be different from the Current Point*/
-	if (AICon)
+	//AI Contoller that owns the Behavior Tree from which this Task Node is executed
+	ABotAIC* AIController = Cast<ABotAIC>(OwnerComp.GetAIOwner());
+	if (AIController)
 	{
+		UBlackboardComponent* BlackboardComponent = AIController->GetBlackboardComponent();
 
-		UBlackboardComponent* BlackboardComp = AICon->GetBlackboardComp();
-		ATargetPoint* CurrentPoint = Cast<ATargetPoint>(BlackboardComp->GetValueAsObject("LocationToGo"));
-
-		TArray<AActor*> AvailableTargetPoints = AICon->GetAvailableTargetPoints();
-
-		//This variable will contain a random index in order to determine the next possible point
-		int32 RandomIndex;
-
-		//Here, we store the possible next target point
-		ATargetPoint* NextTargetPoint = nullptr;
-
-		//Find a next point which is different from the current one
-		do
+		//Update the Target Point in the Blackboard so the bot can move to the next Target Point
+		int PointIndex = BlackboardComponent->GetValueAsInt("PointIndex");
+		BlackboardComponent->SetValueAsObject("LocationToGo", AIController->GetTargetPointByIndex(PointIndex));
+		if (AIController->PatrolRandomly())
 		{
-			RandomIndex = FMath::RandRange(0, AvailableTargetPoints.Num() - 1);
-			//Remember that the Array provided by the Controller function contains AActor* objects so we need to cast.
-			NextTargetPoint = Cast<ATargetPoint>(AvailableTargetPoints[RandomIndex]);
-		} while (CurrentPoint == NextTargetPoint);
-
-		//Update the next location in the Blackboard so the bot can move to the next Blackboard value
-		BlackboardComp->SetValueAsObject("LocationToGo", NextTargetPoint);
+			int32 RandomIndex;
+			do
+			{
+				RandomIndex = FMath::RandRange(0, AIController->GetTargetPointsNumber() - 1);
+			} while (PointIndex == RandomIndex);
+			PointIndex = RandomIndex;
+		}
+		else
+		{
+			PointIndex++;
+			if (PointIndex > AIController->GetTargetPointsNumber() - 1)
+			{
+				PointIndex = 0;
+			}
+		}
+		BlackboardComponent->SetValueAsInt("PointIndex", PointIndex);
 
 		//At this point, the task has been successfully completed
 		return EBTNodeResult::Succeeded;
