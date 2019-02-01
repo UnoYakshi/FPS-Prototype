@@ -44,6 +44,8 @@ class PROT_API ABotAIC : public AAIController
 	UFUNCTION()
 	virtual void OnBotSee(APawn* SeenPawn);
 
+	bool isSeen;
+
 public:
 	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const 
 	{
