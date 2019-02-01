@@ -1,17 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BotAIC.h"
+#include "Engine/Engine.h"
+#include "Prot.h"
 #include "Bot.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BehaviorTreeComponent.h"
-#include "BehaviorTree/BlackboardData.h"
-#include "BehaviorTree/BlackboardData.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Engine/TargetPoint.h"
 #include "Perception/PawnSensingComponent.h"
-#include "GameFramework/Pawn.h"
-#include "Engine/Engine.h"
+#include "Kismet/GameplayStatics.h"
 
 ABotAIC::ABotAIC()
 {
@@ -47,7 +42,10 @@ void ABotAIC::Possess(APawn* Pawn)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Blackboard was not valid"));
+			if (DEBUG)
+			{ 
+				UE_LOG(LogTemp, Error, TEXT("Blackboard was not valid"));
+			}
 		}
 
 	}
@@ -82,7 +80,10 @@ bool ABotAIC::PatrolRandomly()
 
 void ABotAIC::OnBotUnSee()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Can't see you!"));
+	if (DEBUG)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Can't see you!"));
+	}
 	BlackboardComponent->SetValueAsObject("TargetPlayer", nullptr);
 }
 
@@ -93,7 +94,10 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 	{
 		World->GetTimerManager().SetTimer(SeenTimerHandle, this, &ABotAIC::OnBotUnSee,
 			SensingInterval + 0.1f, false);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));
+		if (DEBUG)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));
+		}
 		BlackboardComponent->SetValueAsObject("TargetPlayer", SeenPawn);
 	}
 }

@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "Bot.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardData.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Engine/TargetPoint.h"
-#include "GameFramework/Pawn.h"
 #include "BotAIC.generated.h"
 
 //Bot Controller class that is used to get access for Bot's data from Behavior Tree 
