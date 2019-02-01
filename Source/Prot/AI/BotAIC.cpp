@@ -10,7 +10,7 @@
 
 ABotAIC::ABotAIC()
 {
-	//Initialize BehaviorTreeComponent, BlackboardComponent
+	// Initialize BehaviorTreeComponent, BlackboardComponent
 	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorComp"));
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 }
@@ -19,17 +19,17 @@ void ABotAIC::Possess(APawn* Pawn)
 {
 	Super::Possess(Pawn);
 
-	//Get the possessed Pawn and check if it's Bot
+	// Get the possessed Pawn and check if it's Bot
 	Bot = Cast<ABot>(Pawn);
 	if (Bot)
 	{
-		//If the blackboard is valid initialize the blackboard for the corresponding behavior tree
+		// If the blackboard is valid initialize the blackboard for the corresponding behavior tree
 		if (Bot->BehaviorTree->BlackboardAsset)
 		{
 			BlackboardComponent->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
 			BlackboardComponent->SetValueAsInt("PointIndex", 0);
 
-			//Start the behavior tree which corresponds to the specific character
+			// Start the behavior tree which corresponds to the specific character
 			BehaviorTreeComponent->StartTree(*Bot->BehaviorTree);
 
 			UPawnSensingComponent* SensingComponent =
