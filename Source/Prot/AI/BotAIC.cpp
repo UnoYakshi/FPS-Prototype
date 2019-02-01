@@ -33,6 +33,7 @@ void ABotAIC::Possess(APawn* Pawn)
 		{
 			BlackboardComponent->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
 			BlackboardComponent->SetValueAsInt("PointIndex", 0);
+			BlackboardComponent->SetValueAsObject("SelfActor", Bot);
 
 			//Start the behavior tree which corresponds to the specific character
 			BehaviorTreeComponent->StartTree(*Bot->BehaviorTree);
@@ -93,7 +94,7 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 	{
 		World->GetTimerManager().SetTimer(SeenTimerHandle, this, &ABotAIC::OnBotUnSee,
 			SensingInterval + 0.1f, false);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("I can see you!"));
 		BlackboardComponent->SetValueAsObject("TargetPlayer", SeenPawn);
 	}
 }
