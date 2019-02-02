@@ -28,6 +28,8 @@ void ABotAIC::Possess(APawn* Pawn)
 		{
 			BlackboardComponent->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
 			BlackboardComponent->SetValueAsInt("PointIndex", 0);
+
+			// Set Bot that uses the blackboard
 			BlackboardComponent->SetValueAsObject("SelfActor", Bot);
 
 			// Start the behavior tree which corresponds to the specific character
