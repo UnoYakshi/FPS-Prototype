@@ -3,7 +3,6 @@
 #include "BTRunPointSelect.h"
 #include "GameFramework/Actor.h"
 #include "BotAIC.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -24,7 +23,7 @@ EBTNodeResult::Type UBTRunPointSelect::ExecuteTask(UBehaviorTreeComponent & Owne
 			// Rotate direction so Bot will run away from Player not towards
 			Direction = Direction.RotateAngleAxis(Angle, FVector(0, 0, 1));
 			// Create a point where Bot will run from Player
-			BlackboardComponent->SetValueAsVector("RunLocation", Bot->GetActorLocation() + Direction * KeepAwayRange);
+			BlackboardComponent->SetValueAsVector("RunLocation", Bot->GetActorLocation() + Direction * RunDistance);
 			return EBTNodeResult::Succeeded;
 		}
 	}

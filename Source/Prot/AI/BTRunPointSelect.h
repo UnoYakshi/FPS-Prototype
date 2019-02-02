@@ -9,7 +9,7 @@
 /**
  * Used for finding the point to run to from Player
  */
-UCLASS()
+UCLASS(config = Game)
 class PROT_API UBTRunPointSelect : public UBTTaskNode
 {
 	GENERATED_BODY()
@@ -18,6 +18,6 @@ class PROT_API UBTRunPointSelect : public UBTTaskNode
 
 public:
 	// The distance for Bot to run from Player
-	UPROPERTY(Category = Node, EditAnywhere, meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float KeepAwayRange;
+	UPROPERTY(config, Category = Node, EditAnywhere, meta = (ClampMin = "0.0", UIMin = "0.0", MakeStructureDefaultValue = "2000.0"))
+	float RunDistance;
 };
