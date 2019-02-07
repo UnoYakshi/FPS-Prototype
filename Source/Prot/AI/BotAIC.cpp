@@ -3,10 +3,8 @@
 #include "BotAIC.h"
 #include "Engine/Engine.h"
 #include "Prot.h"
-#include "Bot.h"
 #include "Engine/TargetPoint.h"
 #include "Perception/PawnSensingComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 ABotAIC::ABotAIC()
 {
@@ -92,8 +90,11 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 	UWorld* World = GetWorld();
 	if (World) 
 	{
-		World->GetTimerManager().SetTimer(SeenTimerHandle, this, &ABotAIC::OnBotUnSee,
-			SensingInterval + 0.1f, false);
+		World->GetTimerManager().SetTimer(SeenTimerHandle,
+			this,
+			&ABotAIC::OnBotUnSee,
+			SensingInterval + 0.1f,
+			false);
 		if (DEBUG)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));
