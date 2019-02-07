@@ -24,7 +24,7 @@ void ABotAIC::Possess(APawn* Pawn)
 	if (Bot)
 	{
 		// If the blackboard is valid initialize the blackboard for the corresponding behavior tree
-		if (Bot->BehaviorTree->BlackboardAsset)
+		if (Bot->BehaviorTree && Bot->BehaviorTree->BlackboardAsset)
 		{
 			BlackboardComponent->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
 			BlackboardComponent->SetValueAsInt("PointIndex", 0);
