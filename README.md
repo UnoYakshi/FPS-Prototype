@@ -1,18 +1,25 @@
 [![Coverage Status](https://coveralls.io/repos/github/UnoYakshi/FPS-Prototype/badge.svg?branch=master)](https://coveralls.io/github/UnoYakshi/FPS-Prototype?branch=master)
 [![CodeFactor](https://www.codefactor.io/repository/github/unoyakshi/fps-prototype/badge)](https://www.codefactor.io/repository/github/unoyakshi/fps-prototype)
 
-# FPS PvE Prototype
-There are a several main project's ideas:
-1. Magazine-based weapons system with multiple firing modes (single, burst, auto).
-2. ArchViz-like level design for a shooting range level.
-3. Proof of interactive-world-concept.
-4. Test out visual (CameraShake, true FPS view, AimOffset, etc.) and sound FXs' power on flow-feel.
-5. Player vs. Environment matchmaking (standard client-server architecture).
-6. C++-centered codebase (against BP-biased).
+# R.O.C.
+R.O.C. is intended to be PvE co-op true first-person shooter with modern Russia setting where Orthodox Church has taken over the government. You play the role of both bounty and monster hunter.
 
+Aside from practice and making cool game, there are some main project's ideas:
 
-# Current Team
-* @UnoYakshi – project management, game design, technical director
-* @oninbo — bots
-* @ziadxkabakibi — weapon system
-* @andrew-it — shaders
+Gameplay features are:
+* you are hunting slavic mythical creatures and Orthodox heretics
+* projectile- and magazine-based gunplay with somewhat realistic damage
+* somewhat somberly humorous dialogues
+* multiple factions and enemies
+* stronger bots are smarter and well-equiped not just sponges for bullets 
+
+Meta/Tech features:
+* Player vs. Environment only
+* true first-person camera — a single mesh per character, the camera is in the eyes, attached to the head
+* MMO/session game:
+  * limited number of player per server
+  * server's lobby is MMO
+  * server's missons are isolated (think of dungeons)
+
+## Tools
+* [Unreal Engine 4](https://www.unrealengine.com/)
