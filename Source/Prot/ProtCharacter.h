@@ -24,9 +24,9 @@ class AProtCharacter : public ACharacter
 	/** For first person (attached to eyes)... */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
-
+public:
 	AProtCharacter();
-
+protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
