@@ -37,4 +37,6 @@ public:
 	// Is patrolling order random?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	bool bPatrolRandomly;
+
+	AWeapon* GetCurrentWeapon() { return CurrentWeapon; }
 };
