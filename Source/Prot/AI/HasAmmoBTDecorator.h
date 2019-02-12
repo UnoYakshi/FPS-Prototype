@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTDecorator.h"
-#include "HasWeaponBTDecorator.generated.h"
+#include "HasAmmoBTDecorator.generated.h"
 
 /**
- * Decorator that tells if Bot has a weapon
+ * Decorator that tells if Bot's weapon is loaded
  */
 UCLASS()
-class PROT_API UHasWeaponBTDecorator : public UBTDecorator
+class PROT_API UHasAmmoBTDecorator : public UBTDecorator
 {
 	GENERATED_BODY()
 public:
