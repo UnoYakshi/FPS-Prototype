@@ -12,7 +12,7 @@
 #include "Engine/TargetPoint.h"
 #include "BotAIC.generated.h"
 
-// Bot Controller class that is used to get access for Bot's data from Behavior Tree 
+// Bot Controller class that is used to get access for Bot's data from Behavior Tree.
 UCLASS()
 class PROT_API ABotAIC : public AAIController
 {
@@ -48,8 +48,12 @@ class PROT_API ABotAIC : public AAIController
 	UFUNCTION()
 	virtual void OnBotSee(APawn* SeenPawn);
 
+	// Stops Bot's BehaviorTree
+	UFUNCTION()
+	virtual void StopBotBehaviorTree(AActor* DeadBot);
+
 public:
-	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const 
+	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const
 	{
 		return BlackboardComponent;
 	}

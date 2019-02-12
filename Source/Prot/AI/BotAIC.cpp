@@ -7,6 +7,7 @@
 #include "Engine/TargetPoint.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "HealthActorComponent.h"
 
 ABotAIC::ABotAIC()
 {
@@ -34,6 +35,13 @@ void ABotAIC::Possess(APawn* Pawn)
 
 			// Start the behavior tree which corresponds to the specific character
 			BehaviorTreeComponent->StartTree(*Bot->BehaviorTree);
+
+			UHealthActorComponent* BotHealhComponent =
+				Cast<UHealthActorComponent>(Bot->GetComponentByClass(UHealthActorComponent::StaticClass()));
+			if (BotHealhComponent)
+			{
+				BotHealhComponent->OnDeath.AddDynamic(this, &ABotAIC::StopBotBehaviorTree);
+			}
 
 			UPawnSensingComponent* SensingComponent =
 				Cast<UPawnSensingComponent>(Bot->GetComponentByClass(UPawnSensingComponent::StaticClass()));
@@ -102,5 +110,13 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));
 		}
 		BlackboardComponent->SetValueAsObject("TargetPlayer", SeenPawn);
+	}
+}
+
+void ABotAIC::StopBotBehaviorTree(AActor* DeadBot)
+{
+	if (BehaviorTreeComponent)
+	{
+		BehaviorTreeComponent->StopTree();
 	}
 }
