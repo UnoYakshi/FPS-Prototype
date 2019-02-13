@@ -15,9 +15,16 @@ UCLASS()
 class PROT_API UFireBTTaskNode : public UBTTaskNode
 {
 	GENERATED_BODY()
+
 	// Handle to manage bot shooting timer
 	FTimerHandle FireTimerHandle;
+
+	// Bot that executes Task
 	ABot* Bot;
+
+	// Tells Bot to stop shooting
 	virtual void StopShooting();
+
+	// Called when Task is executed in BehaviorTree
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

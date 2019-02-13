@@ -8,10 +8,10 @@ EBTNodeResult::Type UFireBTTaskNode::ExecuteTask(UBehaviorTreeComponent & OwnerC
 	UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
 	if (BlackboardComponent)
 	{
-		ABot* Bot = Cast<ABot>(BlackboardComponent->GetValueAsObject("SelfActor"));
-		if (Bot)
+		ABot* ShootingBot = Cast<ABot>(BlackboardComponent->GetValueAsObject("SelfActor"));
+		if (ShootingBot)
 		{
-			this->Bot = Bot;
+			Bot = ShootingBot;
 			AWeapon* Weapon = Bot->GetCurrentWeapon();
 			if (Weapon && Weapon->CanFire())
 			{

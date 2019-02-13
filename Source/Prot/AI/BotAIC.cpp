@@ -36,6 +36,7 @@ void ABotAIC::Possess(APawn* Pawn)
 			// Start the behavior tree which corresponds to the specific character
 			BehaviorTreeComponent->StartTree(*Bot->BehaviorTree);
 
+			// Make BehaviorTree stop when Bot is dead
 			UHealthActorComponent* BotHealhComponent =
 				Cast<UHealthActorComponent>(Bot->GetComponentByClass(UHealthActorComponent::StaticClass()));
 			if (BotHealhComponent)
@@ -54,11 +55,10 @@ void ABotAIC::Possess(APawn* Pawn)
 		else
 		{
 			if (DEBUG)
-			{ 
+			{
 				UE_LOG(LogTemp, Error, TEXT("Blackboard was not valid"));
 			}
 		}
-
 	}
 }
 
@@ -101,7 +101,7 @@ void ABotAIC::OnBotUnSee()
 void ABotAIC::OnBotSee(APawn* SeenPawn)
 {
 	UWorld* World = GetWorld();
-	if (World) 
+	if (World)
 	{
 		World->GetTimerManager().SetTimer(SeenTimerHandle, this, &ABotAIC::OnBotUnSee,
 			SensingInterval + 0.1f, false);

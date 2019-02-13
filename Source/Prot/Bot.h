@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "ProtCharacter.h"
-#include "GameFramework/Character.h"
 #include "NavigationPath.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -37,6 +36,4 @@ public:
 	// Is patrolling order random?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	bool bPatrolRandomly;
-
-	AWeapon* GetCurrentWeapon() { return CurrentWeapon; }
 };
