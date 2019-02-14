@@ -27,6 +27,9 @@ void ABotAIC::Possess(APawn* Pawn)
 			BlackboardComponent->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
 			BlackboardComponent->SetValueAsInt("PointIndex", 0);
 
+			// Set Bot that uses the blackboard
+			BlackboardComponent->SetValueAsObject("SelfActor", Bot);
+
 			// Start the behavior tree which corresponds to the specific character
 			BehaviorTreeComponent->StartTree(*Bot->BehaviorTree);
 
@@ -41,11 +44,10 @@ void ABotAIC::Possess(APawn* Pawn)
 		else
 		{
 			if (DEBUG)
-			{ 
+			{
 				UE_LOG(LogTemp, Error, TEXT("Blackboard was not valid"));
 			}
 		}
-
 	}
 }
 
@@ -88,7 +90,7 @@ void ABotAIC::OnBotUnSee()
 void ABotAIC::OnBotSee(APawn* SeenPawn)
 {
 	UWorld* World = GetWorld();
-	if (World) 
+	if (World)
 	{
 		World->GetTimerManager().SetTimer(SeenTimerHandle,
 			this,
