@@ -6,7 +6,6 @@
 #include "AIController.h"
 #include "Bot.h"
 #include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Engine/TargetPoint.h"
