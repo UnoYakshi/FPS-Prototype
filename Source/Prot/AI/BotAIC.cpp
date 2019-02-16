@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BotAIC.h"
-#include "Engine/Engine.h"
 #include "Prot.h"
-#include "Bot.h"
+#include "Engine/Engine.h"
 #include "Engine/TargetPoint.h"
-#include "Perception/PawnSensingComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Perception/PawnSensingComponent.h"
 #include "HealthActorComponent.h"
+
 
 ABotAIC::ABotAIC()
 {
@@ -25,7 +25,7 @@ void ABotAIC::Possess(APawn* Pawn)
 	if (Bot)
 	{
 		// If the blackboard is valid initialize the blackboard for the corresponding behavior tree
-		if (Bot->BehaviorTree->BlackboardAsset)
+		if (Bot->BehaviorTree && Bot->BehaviorTree->BlackboardAsset)
 		{
 			BlackboardComponent->InitializeBlackboard(*(Bot->BehaviorTree->BlackboardAsset));
 			BlackboardComponent->SetValueAsInt("PointIndex", 0);
@@ -103,8 +103,12 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		World->GetTimerManager().SetTimer(SeenTimerHandle, this, &ABotAIC::OnBotUnSee,
-			SensingInterval + 0.1f, false);
+		World->GetTimerManager().SetTimer(
+                	SeenTimerHandle,
+			this,
+			&ABotAIC::OnBotUnSee,
+			SensingInterval + 0.1f,
+			false);
 		if (DEBUG)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));

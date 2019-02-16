@@ -30,5 +30,4 @@ public:
 	bool TurnOff();
 	bool TurnOff_Implementation();
 
-	
 };
