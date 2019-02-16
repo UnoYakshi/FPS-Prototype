@@ -45,16 +45,16 @@ protected:
 	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_IsDead, Category = "Game|Health")
 	bool bIsDead;
 
-	/** Called when Health is equal or below 0 */
-	UPROPERTY(BlueprintAssignable, Category = "Game|Health")
-	FDeathSignature OnDeath;
-
 /// FUNCTIONALITY
 protected:
 	/** Checks if Death happened */
 	virtual void CheckDeath();
 
 public:
+	/** Called when Health is equal or below 0 */
+	UPROPERTY(BlueprintAssignable, Category = "Game|Health")
+	FDeathSignature OnDeath;
+
 	/** Sets new current value of Health */
 	UFUNCTION(BlueprintCallable, Category = "Game|Health")
 	void SetHealthValue(const float NewHealthValue);

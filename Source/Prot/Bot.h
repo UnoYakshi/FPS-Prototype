@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "ProtCharacter.h"
 #include "NavigationPath.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -12,7 +12,7 @@
 
 //This class is used to create Bots that can patrol Target Points
 UCLASS()
-class PROT_API ABot : public ACharacter
+class PROT_API ABot : public AProtCharacter
 {
 	GENERATED_BODY()
 

@@ -24,9 +24,9 @@ class AProtCharacter : public ACharacter
 	/** For first person (attached to eyes)... */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
-
+public:
 	AProtCharacter();
-
+protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
@@ -244,14 +244,14 @@ protected:
 	FName WeaponAttachPoint;
 
 	/** Currently equipped weapon... */
-	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon)
+	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
 	class AWeapon* CurrentWeapon;
 
-protected:
 	/** Updates current weapon...*/
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
 
+protected:
 	/** CurrentWeapon replication handler... */
 	UFUNCTION()
 	void OnRep_CurrentWeapon(class AWeapon* LastWeapon);
@@ -265,5 +265,7 @@ public:
 	/** Returns Weapon attach point... */
 	FName GetWeaponAttachPoint() const;
 
+	// Gets current weapon
+	UFUNCTION(BlueprintGetter)
+	AWeapon* GetCurrentWeapon() { return CurrentWeapon; }
 };
-
