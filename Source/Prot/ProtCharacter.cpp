@@ -52,14 +52,15 @@ AProtCharacter::AProtCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	// Create and set-up FPP camera...
-	// TODO: Make blendspace to make pitch more seamless...
+	// Create and set-up TFP camera...
 	FPPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPPCamera"));
-	FPPCamera->SetupAttachment(GetMesh(), "eyes");
-	FPPCamera->bUsePawnControlRotation = true;
+	FPPCamera->SetupAttachment(GetMesh(), FName("eyes"));
+	FPPCamera->bUsePawnControlRotation = false;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+	CameraTreshold = 20.f;
+	RecoilOffset = 10.f;
 
 	// Handle Weapon settings...
 	WeaponAttachPoint = FName("weapon_socket_right");
@@ -480,35 +481,60 @@ void AProtCharacter::MoveRight(float Value)
 
 void AProtCharacter::PreUpdateCamera(float DeltaTime)
 {
-	if (!FPPCamera || !PC || HealthComponent->IsDead())
+	if (!FPPCamera || !Controller || HealthComponent->IsDead())
 	{
 		return;
 	}
+
+	// Will be retrieved by AnimBlueprint for 2D AimOffset...
+	CameraLocalRotation = (GetBaseAimRotation() - GetActorRotation()).GetNormalized();
+
 	//-------------------------------------------------------
-	// Compute the rotation for Mesh AimOffset...
-	//-------------------------------------------------------
-	FRotator ControllerRotation = PC->GetControlRotation();
-	FRotator NewRotation = ControllerRotation;
+	// Blend Pitch to 0.0 if we are performing a montage (input are disabled)
+	/*-------------------------------------------------------
+	if (IsPerformingMontage())
+	{
+		//Reset camera rotation to 0 for when the Montage finish
+		FRotator TargetControl = EPC->GetControlRotation();
+		TargetControl.Pitch = 0.0f;
 
-	// Get current controller rotation and process it to match the Character
-	NewRotation.Yaw = CameraProcessYaw(ControllerRotation.Yaw);
-	NewRotation.Pitch = CameraProcessPitch(ControllerRotation.Pitch + RecoilOffset);
-	NewRotation.Normalize();
+		float BlenSpeed = 300.0f;
 
-	// Clamp new rotation
-	NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch, -90.0f + CameraTreshold, 90.0f - CameraTreshold);
-	NewRotation.Yaw = FMath::Clamp(NewRotation.Yaw, -91.0f, 91.0f);
+		TargetControl = FMath::RInterpConstantTo(EPC->GetControlRotation(), TargetControl, DeltaTime, BlenSpeed);
 
-	// Will be retrieved by AnimBlueprint...
-	CameraLocalRotation = NewRotation;
+		EPC->SetControlRotation(TargetControl);
+	}
+	//*/
+}
 
-	CameraTreshold = 20.f;
-	RecoilOffset = 10.f;
+float AProtCharacter::CameraProcessYaw(float Input)
+{
+	// Get direction vectors from Character and PC...
+	FVector ActorDir = GetActorRotation().Vector();
+	FVector PCDir = FRotator(0.f, Input, 0.f).Vector();
+
+	// Compute the Angle difference between the two direction
+	float Angle = FMath::Acos(FVector::DotProduct(ActorDir, PCDir));
+	Angle = FMath::RadiansToDegrees(Angle);
+
+	// Find on which side is the angle difference (left or right)
+	FRotator Temp = GetActorRotation() - FRotator(0.f, 90.f, 0.f);
+	FVector Direction3 = Temp.Vector();
+
+	float Dot = FVector::DotProduct(Direction3, PCDir);
+
+	// Invert angle to switch side
+	if (Dot > 0.f)
+	{
+		Angle *= -1;
+	}
+
+	return Angle;
 }
 
 float AProtCharacter::CameraProcessPitch(float Input)
 {
-	//Recenter value
+	// Recenter value
 	if (Input > 269.99f)
 	{
 		Input -= 270.0f;
@@ -601,29 +627,4 @@ void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Ou
 FName AProtCharacter::GetWeaponAttachPoint() const
 {
 	return WeaponAttachPoint;
-}
-
-float AProtCharacter::CameraProcessYaw(float Input)
-{
-	// Get direction vectors from Character and PC...
-	FVector ActorDir = GetActorRotation().Vector();
-	FVector PCDir = FRotator(0.f, Input, 0.f).Vector();
-
-	// Compute the Angle difference between the two direction
-	float Angle = FMath::Acos(FVector::DotProduct(ActorDir, PCDir));
-	Angle = FMath::RadiansToDegrees(Angle);
-
-	// Find on which side is the angle difference (left or right)
-	FRotator Temp = GetActorRotation() - FRotator(0.f, 90.f, 0.f);
-	FVector Direction3 = Temp.Vector();
-
-	float Dot = FVector::DotProduct(Direction3, PCDir);
-
-	// Invert angle to switch side
-	if (Dot > 0.f)
-	{
-		Angle *= -1;
-	}
-
-	return Angle;
 }
