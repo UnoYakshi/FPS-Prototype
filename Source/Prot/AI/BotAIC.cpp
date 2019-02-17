@@ -124,3 +124,27 @@ void ABotAIC::StopBotBehaviorTree(AActor* DeadBot)
 		BehaviorTreeComponent->StopTree();
 	}
 }
+
+void ABotAIC::SetStopShootingTimer()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->GetTimerManager().SetTimer(FireTimerHandle, this, &ABotAIC::StopShooting,
+			0.1f, false);
+	}
+}
+
+void ABotAIC::StopShooting()
+{
+	ABot* Bot = Cast<ABot>(GetPawn());
+	if (Bot && Bot->GetCurrentWeapon())
+	{
+		Bot->TryStopFire();
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->GetTimerManager().ClearTimer(FireTimerHandle);
+		}
+	}
+}

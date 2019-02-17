@@ -40,6 +40,9 @@ class PROT_API ABotAIC : public AAIController
 	// Handle to manage bot seeing timer
 	FTimerHandle SeenTimerHandle;
 
+	// Handle to manage bot shooting timer
+	FTimerHandle FireTimerHandle;
+
 	// Called when bot stops seeing the player
 	virtual void OnBotUnSee();
 
@@ -50,6 +53,9 @@ class PROT_API ABotAIC : public AAIController
 	// Stops Bot's BehaviorTree
 	UFUNCTION()
 	virtual void StopBotBehaviorTree(AActor* DeadBot);
+
+	// Stops Bot shooting
+	void StopShooting();
 
 public:
 	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const
@@ -65,4 +71,7 @@ public:
 
 	// Is patrolling order of Bot random?
 	virtual bool PatrolRandomly();
+
+	// Set timer that stops Bot shooting
+	void SetStopShootingTimer();
 };
