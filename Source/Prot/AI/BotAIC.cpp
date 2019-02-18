@@ -130,12 +130,12 @@ void ABotAIC::SetStopShootingTimer()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		World->GetTimerManager().SetTimer(FireTimerHandle, this, &ABotAIC::StopShooting,
+		World->GetTimerManager().SetTimer(FireTimerHandle, this, &ABotAIC::StopBotShooting,
 			0.1f, false);
 	}
 }
 
-void ABotAIC::StopShooting()
+void ABotAIC::StopBotShooting()
 {
 	ABot* Bot = Cast<ABot>(GetPawn());
 	if (Bot && Bot->GetCurrentWeapon())

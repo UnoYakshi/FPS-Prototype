@@ -55,7 +55,7 @@ class PROT_API ABotAIC : public AAIController
 	virtual void StopBotBehaviorTree(AActor* DeadBot);
 
 	// Stops Bot shooting
-	void StopShooting();
+	virtual void StopBotShooting();
 
 public:
 	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const
@@ -73,5 +73,5 @@ public:
 	virtual bool PatrolRandomly();
 
 	// Set timer that stops Bot shooting
-	void SetStopShootingTimer();
+	virtual void SetStopShootingTimer();
 };
