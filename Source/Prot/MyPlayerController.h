@@ -17,7 +17,6 @@ class PROT_API AMyPlayerController : public APlayerController
 public:
 	virtual void UpdateRotation(float DeltaTime);
 
-
 /* Custom input manipulation... */
 public:
 	FVector GetPlayerCameraInput();
