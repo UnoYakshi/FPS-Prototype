@@ -3,15 +3,15 @@
 #include "WeaponComponent.h"
 
 #include "Prot.h"
-#include "ProtCharacter.h"
 #include "Projectile.h"
 #include "MyPlayerController.h"
 
-#include "Particles/ParticleSystemComponent.h"
-#include "Components/AudioComponent.h"
+#include "GameFramework/Pawn.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
 
 
 UWeaponComponent::UWeaponComponent()
@@ -26,7 +26,6 @@ UWeaponComponent::UWeaponComponent()
 	Mesh->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Block);
 	Mesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	Mesh->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
-	RootComponent = Mesh;
 
 	bLoopedMuzzleFX = false;
 	bLoopedFireAnim = false;
@@ -43,14 +42,17 @@ UWeaponComponent::UWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
 
-	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
-	SetReplicates(true);
-	bNetUseOwnerRelevancy = true;
-	NetUpdateFrequency = 66.0f;
-	MinNetUpdateFrequency = 33.0f;
+	//SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	//SetReplicates(true);
+	//bNetUseOwnerRelevancy = true;
+	//NetUpdateFrequency = 66.0f;
+	//MinNetUpdateFrequency = 33.0f;
+	
+
+	MyPawn = Cast<APawn>(GetOwner());
 }
 
-void UWeaponComponent::Tick(float DeltaTime)
+void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -62,26 +64,32 @@ void UWeaponComponent::Tick(float DeltaTime)
 
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
 
-	DrawDebugLine(
-		GetWorld(),
-		Origin, EndTrace,
-		FColor(255, 0, 0),
-		false, -1, 0, 3
-	);
+	if (DEBUG || true)  // TODO: Remove `|| true`...
+	{
+		DrawDebugLine(
+			GetWorld(),
+			Origin, EndTrace,
+			FColor(255, 0, 0),
+			false,
+			-1,
+			0,
+			3
+		);
+	}
 }
 
-void UWeaponComponent::PostInitializeComponents()
+void UWeaponComponent::PostInitProperties()
 {
-	Super::PostInitializeComponents();
+	Super::PostInitProperties();
 
 	// TODO: Handle initial ammo in the CurrentMagazine...
 
 	DetachMeshFromPawn();
 }
 
-void UWeaponComponent::Destroyed()
+void UWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	Super::Destroyed();
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
 	StopSimulatingWeaponFire();
 }
@@ -108,7 +116,7 @@ void UWeaponComponent::OnEquip(const UWeaponComponent* LastWeapon)
 		EquipStartedTime = GetWorld()->GetTimeSeconds();
 		EquipDuration = Duration;
 
-		GetWorldTimerManager().SetTimer(TimerHandle_OnEquipFinished, this, &UWeaponComponent::OnEquipFinished, Duration, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_OnEquipFinished, this, &UWeaponComponent::OnEquipFinished, Duration, false);
 	}
 	else
 	{
@@ -149,8 +157,8 @@ void UWeaponComponent::OnUnEquip()
 		StopWeaponAnimation(ReloadAnim);
 		bPendingReload = false;
 
-		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
-		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_StopReload);
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
 	}
 
 	if (bPendingEquip)
@@ -158,13 +166,13 @@ void UWeaponComponent::OnUnEquip()
 		StopWeaponAnimation(EquipAnim);
 		bPendingEquip = false;
 
-		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
 	}
 
 	DetermineWeaponState();
 }
 
-void UWeaponComponent::OnEnterInventory(AProtCharacter* NewOwner)
+void UWeaponComponent::OnEnterInventory(APawn* NewOwner)
 {
 	SetOwningPawn(NewOwner);
 }
@@ -304,10 +312,10 @@ void UWeaponComponent::StartReload(bool bFromReplication)
 		{
 			AnimDuration = WeaponConfig.NoAnimReloadDuration;
 		}
-		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &UWeaponComponent::StopReload, AnimDuration, false);
-		if (GetOwneRole() == ROLE_Authority)
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_StopReload, this, &UWeaponComponent::StopReload, AnimDuration, false);
+		if (GetOwnerRole() == ROLE_Authority)
 		{
-			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &UWeaponComponent::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &UWeaponComponent::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		}
 
 		if (MyPawn && MyPawn->IsLocallyControlled())
@@ -351,7 +359,7 @@ void UWeaponComponent::FireWeapon()
 
 	if (ProjectileClass)
 	{
-		UWorld* World = MyPawn->GetWorld();
+		UWorld* World = GetWorld();
 		AProjectile* NewProjectile = World->SpawnActor<AProjectile>(
 			ProjectileClass,
 			Origin, Mesh->GetForwardVector().Rotation()
@@ -512,7 +520,7 @@ void UWeaponComponent::HandleFiring()
 		bRefiring = (CurrentState == EWeaponState::Firing && WeaponConfig.TimeBetweenShots > 0.0f);
 		if (bRefiring)
 		{
-			GetWorldTimerManager().SetTimer(
+			GetWorld()->GetTimerManager().SetTimer(
 				TimerHandle_HandleFiring, this, &UWeaponComponent::HandleFiring,
 				WeaponConfig.TimeBetweenShots, false
 			);
@@ -641,7 +649,7 @@ void UWeaponComponent::OnBurstStarted()
 	if (LastFireTime > 0 && WeaponConfig.TimeBetweenShots > 0.0f &&
 		LastFireTime + WeaponConfig.TimeBetweenShots > GameTime)
 	{
-		GetWorldTimerManager().SetTimer(
+		GetWorld()->GetTimerManager().SetTimer(
 			TimerHandle_HandleFiring,
 			this,
 			&UWeaponComponent::HandleFiring,
@@ -666,7 +674,7 @@ void UWeaponComponent::OnBurstFinished()
 		StopSimulatingWeaponFire();
 	}
 
-	GetWorldTimerManager().ClearTimer(TimerHandle_HandleFiring);
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_HandleFiring);
 	bRefiring = false;
 }
 
@@ -705,15 +713,19 @@ float UWeaponComponent::PlayWeaponAnimation(UAnimMontage* Animation)
 
 void UWeaponComponent::StopWeaponAnimation(UAnimMontage* Animation)
 {
-	if (MyPawn && Animation)
-	{
-		MyPawn->StopAnimMontage(Animation);
-	}
+	//if (MyPawn && Animation)
+	//{
+	//	// MyPawn->StopAnimMontage(Animation);
+	//}
+	//if (MyPawn->GetClass()->ImplementsInterface(UAnimMontageInterface::StaticClass()))
+	//{
+	//	UAnimMontageInterface::Execute_StopAnimMontage(Animation);
+	//}
 }
 
 FVector UWeaponComponent::GetCameraAim() const
 {
-	AMyPlayerController* const PlayerController = Instigator ? Cast<AMyPlayerController>(Instigator->Controller) : NULL;
+	AMyPlayerController* const PlayerController = MyPawn->Instigator ? Cast<AMyPlayerController>(MyPawn->GetInstigatorController()) : nullptr;
 	FVector FinalAim = FVector::ZeroVector;
 
 	if (PlayerController)
@@ -723,9 +735,9 @@ FVector UWeaponComponent::GetCameraAim() const
 		PlayerController->GetPlayerViewPoint(CamLoc, CamRot);
 		FinalAim = CamRot.Vector();
 	}
-	else if (Instigator)
+	else if (MyPawn->Instigator)
 	{
-		FinalAim = Instigator->GetBaseAimRotation().Vector();
+		FinalAim = MyPawn->Instigator->GetBaseAimRotation().Vector();
 	}
 
 	return FinalAim;
@@ -733,7 +745,7 @@ FVector UWeaponComponent::GetCameraAim() const
 
 FVector UWeaponComponent::GetAdjustedAim() const
 {
-	AMyPlayerController* const PlayerController = Instigator ? Cast<AMyPlayerController>(Instigator->Controller) : nullptr;
+	AMyPlayerController* const PlayerController = MyPawn->Instigator ? Cast<AMyPlayerController>(MyPawn->Instigator->Controller) : nullptr;
 	FVector FinalAim = FVector::ZeroVector;
 	// If we have a player controller use it for the aim
 	if (PlayerController)
@@ -743,7 +755,7 @@ FVector UWeaponComponent::GetAdjustedAim() const
 		PlayerController->GetPlayerViewPoint(CamLoc, CamRot);
 		FinalAim = CamRot.Vector();
 	}
-	/*else if (Instigator)
+	/*else if (MyPawn->Instigator)
 	{
 		// Now see if we have an AI controller - we will want to get the aim from there if we do
 		AShooterAIController* AIController = MyPawn ? Cast<AShooterAIController>(MyPawn->Controller) : NULL;
@@ -753,7 +765,7 @@ FVector UWeaponComponent::GetAdjustedAim() const
 		}
 		else
 		{
-			FinalAim = Instigator->GetBaseAimRotation().Vector();
+			FinalAim = MyPawn->Instigator->GetBaseAimRotation().Vector();
 		}
 	}*/
 
@@ -762,8 +774,8 @@ FVector UWeaponComponent::GetAdjustedAim() const
 
 FVector UWeaponComponent::GetCameraDamageStartLocation(const FVector& AimDir) const
 {
-	AMyPlayerController* PC = MyPawn ? Cast<AMyPlayerController>(MyPawn->Controller) : NULL;
-	//AShooterAIController* AIPC = MyPawn ? Cast<AShooterAIController>(MyPawn->Controller) : NULL;
+	AMyPlayerController* PC = MyPawn ? Cast<AMyPlayerController>(MyPawn->Controller) : nullptr;
+	//ABotAIC* AIPC = MyPawn ? Cast<ABotAIC>(MyPawn->Controller) : nullptr;
 	FVector OutStartTrace = FVector::ZeroVector;
 
 	if (PC)
@@ -773,7 +785,7 @@ FVector UWeaponComponent::GetCameraDamageStartLocation(const FVector& AimDir) co
 		PC->GetPlayerViewPoint(OutStartTrace, UnusedRot);
 
 		// Adjust trace so there is nothing blocking the ray between the camera and the pawn, and calculate distance from adjusted start
-		OutStartTrace = OutStartTrace + AimDir * ((Instigator->GetActorLocation() - OutStartTrace) | AimDir);
+		OutStartTrace = OutStartTrace + AimDir * ((MyPawn->Instigator->GetActorLocation() - OutStartTrace) | AimDir);
 	}
 	/*
 	else if (AIPC)
@@ -799,9 +811,8 @@ FVector UWeaponComponent::GetMuzzleDirection() const
 
 FHitResult UWeaponComponent::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
 {
-
 	// Perform trace to retrieve hit info
-	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, Instigator);
+	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, MyPawn->Instigator);
 	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = true;
 
@@ -811,14 +822,11 @@ FHitResult UWeaponComponent::WeaponTrace(const FVector& StartTrace, const FVecto
 	return Hit;
 }
 
-void UWeaponComponent::SetOwningPawn(AProtCharacter* NewOwner)
+void UWeaponComponent::SetOwningPawn(APawn* NewOwner)
 {
 	if (MyPawn != NewOwner)
 	{
-		Instigator = NewOwner;
 		MyPawn = NewOwner;
-		// net owner for RPC calls
-		SetOwner(NewOwner);
 	}
 }
 
@@ -877,7 +885,7 @@ void UWeaponComponent::SimulateWeaponFire()
 
 	if (bLoopedFireSound)
 	{
-		if (FireAC == NULL)
+		if (!FireAC)
 		{
 			FireAC = PlayWeaponSound(FireLoopSound);
 		}
@@ -914,7 +922,7 @@ void UWeaponComponent::StopSimulatingWeaponFire()
 	}
 }
 
-void UWeaponComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+void UWeaponComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -927,11 +935,6 @@ void UWeaponComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 USkeletalMeshComponent* UWeaponComponent::GetWeaponMesh() const
 {
 	return Mesh;
-}
-
-class AProtCharacter* UWeaponComponent::GetPawnOwner() const
-{
-	return MyPawn;
 }
 
 bool UWeaponComponent::IsEquipped() const

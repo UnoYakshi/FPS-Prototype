@@ -79,6 +79,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -101,6 +103,10 @@ protected:
 	/** current weapon state */
 	EWeaponState CurrentState;
 
+	/** GetOwner() casted to APawn...*/
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_MyPawn)
+	APawn* MyPawn;
+
 protected:
 	/** update weapon state */
 	void SetWeaponState(EWeaponState NewState);
@@ -119,11 +125,11 @@ protected:
 
 	/** play weapon animations */
 	UFUNCTION(BlueprintCallable)
-		float PlayWeaponAnimation(UAnimMontage* Animation);
+	float PlayWeaponAnimation(UAnimMontage* Animation);
 
 	/** stop playing weapon animations */
 	UFUNCTION(BlueprintCallable)
-		void StopWeaponAnimation(UAnimMontage* Animation);
+	void StopWeaponAnimation(UAnimMontage* Animation);
 
 	/** Get the aim of the weapon, allowing for adjustments to be made by the weapon */
 	virtual FVector GetAdjustedAim() const;
@@ -142,6 +148,9 @@ protected:
 
 	/** find hit */
 	FHitResult WeaponTrace(const FVector& TraceFrom, const FVector& TraceTo) const;
+
+	UFUNCTION()
+	void OnRep_MyPawn();
 
 	/** Returns Mesh subobject **/
 	FORCEINLINE USkeletalMeshComponent* GetMesh() const { return Mesh; }
@@ -335,13 +344,13 @@ protected:
 
 protected:
 	UFUNCTION(Reliable, Server, WithValidation)
-		void ServerStartFire();
+	void ServerStartFire();
 
 	UFUNCTION(Reliable, Server, WithValidation)
-		void ServerStopFire();
+	void ServerStopFire();
 
 	UFUNCTION()
-		void OnRep_BurstCounter();
+	void OnRep_BurstCounter();
 
 	/** Called in network play to do the cosmetic fx for firing */
 	virtual void SimulateWeaponFire();
@@ -370,5 +379,63 @@ protected:
 public:
 	/** check if weapon can fire */
 	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
-		bool CanFire() const;
+	bool CanFire() const;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Equip
+protected:
+	/** equip sound */
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* EquipSound;
+
+	/** equip animations */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation)
+	UAnimMontage* EquipAnim;
+	
+	/** is weapon currently equipped? */
+	bool bIsEquipped;
+
+	/** is equip animation playing? */
+	bool bPendingEquip;
+
+	/** last time when this weapon was switched to */
+	float EquipStartedTime;
+
+	/** how much time weapon needs to be equipped */
+	float EquipDuration;
+
+	/** Handle for efficient management of OnEquipFinished timer */
+	FTimerHandle TimerHandle_OnEquipFinished;
+
+public:
+	/** weapon is being equipped by owner pawn */
+	virtual void OnEquip(const UWeaponComponent* LastWeapon);
+
+	/** weapon is now equipped by owner pawn */
+	virtual void OnEquipFinished();
+
+	/** weapon is holstered by owner pawn */
+	virtual void OnUnEquip();
+
+	/** [server] weapon was added to pawn's inventory */
+	virtual void OnEnterInventory(APawn* NewOwner);
+
+	/** [server] weapon was removed from pawn's inventory */
+	virtual void OnLeaveInventory();
+
+	/** check if it's currently equipped */
+	bool IsEquipped() const;
+
+	/** check if mesh is already attached */
+	bool IsAttachedToPawn() const;
+
+	/** set the weapon's owning pawn */
+	void SetOwningPawn(APawn* NewPawn);
+
+	/** gets last time when this weapon was switched to */
+	float GetEquipStartedTime() const;
+
+	/** gets the duration of equipping weapon*/
+	float GetEquipDuration() const;
 };
