@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Projectile.h"
+#include "Magazine.h"
 
 #include "WeaponComponent.generated.h"
 
@@ -197,7 +198,7 @@ public:
 	/** Returns the number of projectiles in current magazine (if some)... */
 	virtual int32 GetAmmoNum() const
 	{
-		return CurrentMag ? CurrentMag->GetAmmoNum() : 0;
+		return CurrentMag ? CurrentMag->GetCurrentAmmo() : 0;
 	}
 
 	/** Check if weapon has magazine and ammo... */
