@@ -65,7 +65,7 @@ public:
 	virtual void AddAmmo(int32 NumToAdd);
 
 	/* Returns ProjectileType's display name... */
-	UFUNCTION(BlueprintCallablem, BlueprintPure, Category = "Ammo")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
 	FName GetProjectileTypeName() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")

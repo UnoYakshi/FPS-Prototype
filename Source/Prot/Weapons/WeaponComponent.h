@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Projectile.h"
 #include "Magazine.h"
 
@@ -20,7 +20,7 @@ class USoundCue;
 
 
 UENUM(BlueprintType)  //"BlueprintType" is essential to include
-enum class EWeaponState : uint8
+enum class EWeaponState2 : uint8
 {
 	Idle,
 	Reloading,
@@ -70,7 +70,7 @@ struct FWeaponData2
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PROT_API UWeaponComponent : public UActorComponent
+class PROT_API UWeaponComponent : public UPrimitiveComponent
 {
 	GENERATED_BODY()
 
@@ -102,7 +102,7 @@ protected:
 	FName MuzzleAttachPoint;
 
 	/** current weapon state */
-	EWeaponState CurrentState;
+	EWeaponState2 CurrentState;
 
 	/** GetOwner() casted to APawn...*/
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_MyPawn)
@@ -110,7 +110,7 @@ protected:
 
 protected:
 	/** update weapon state */
-	void SetWeaponState(EWeaponState NewState);
+	void SetWeaponState(EWeaponState2 NewState);
 
 	/** determine current weapon state */
 	void DetermineWeaponState();
@@ -158,7 +158,7 @@ protected:
 
 public:
 	/** get current weapon state */
-	EWeaponState GetCurrentState() const;
+	EWeaponState2 GetCurrentState() const;
 
 	/** get weapon mesh (needs pawn owner to determine variant) */
 	USkeletalMeshComponent* GetWeaponMesh() const;

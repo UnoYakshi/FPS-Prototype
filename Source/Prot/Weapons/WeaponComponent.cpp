@@ -34,7 +34,7 @@ UWeaponComponent::UWeaponComponent()
 	bWantsToFire = false;
 	bPendingReload = false;
 	bPendingEquip = false;
-	CurrentState = EWeaponState::Idle;
+	CurrentState = EWeaponState2::Idle;
 
 	BurstCounter = 0;
 	LastFireTime = 0.0f;
@@ -47,7 +47,6 @@ UWeaponComponent::UWeaponComponent()
 	//bNetUseOwnerRelevancy = true;
 	//NetUpdateFrequency = 66.0f;
 	//MinNetUpdateFrequency = 33.0f;
-	
 
 	MyPawn = Cast<APawn>(GetOwner());
 }
@@ -78,12 +77,18 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 
-void UWeaponComponent::PostInitProperties()
+//void UWeaponComponent::PostInitProperties()
+//{
+//	Super::PostInitProperties();
+//
+//	// TODO: Handle initial ammo in the CurrentMagazine...
+//
+//	DetachMeshFromPawn();
+//}
+
+void UWeaponComponent::BeginPlay()
 {
-	Super::PostInitProperties();
-
-	// TODO: Handle initial ammo in the CurrentMagazine...
-
+	Super::BeginPlay();
 	DetachMeshFromPawn();
 }
 
@@ -199,8 +204,10 @@ void UWeaponComponent::AttachMeshToPawn()
 
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, 
 		// bOwnerNoSee flags deal with visibility.
-		FName AttachPoint = MyPawn->GetWeaponAttachPoint();
-		USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
+		//FName AttachPoint = MyPawn->GetWeaponAttachPoint();
+		//USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
+		FName AttachPoint = FName("");
+		USkeletalMeshComponent* PawnMesh = nullptr;
 		if (MyPawn->IsLocallyControlled())
 		{
 			Mesh->SetHiddenInGame(false);
@@ -218,7 +225,7 @@ void UWeaponComponent::AttachMeshToPawn()
 void UWeaponComponent::DetachMeshFromPawn()
 {
 	Mesh->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-	Mesh->SetHiddenInGame(true);
+	Mesh->SetHiddenInGame(false);
 }
 
 
@@ -295,7 +302,10 @@ void UWeaponComponent::StopFire()
 
 void UWeaponComponent::StartReload(bool bFromReplication)
 {
-	UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload"));
+	if (DEBUG)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload"));
+	}
 
 	if (!bFromReplication && GetOwnerRole() < ROLE_Authority)
 	{
@@ -322,24 +332,33 @@ void UWeaponComponent::StartReload(bool bFromReplication)
 		{
 			PlayWeaponSound(ReloadSound);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload END"));
+		if (DEBUG)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload END"));
+		}
 	}
 }
 
 void UWeaponComponent::StopReload()
 {
-	UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload"));
+	if (DEBUG)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload"));
+	}
 
 	if (CurrentMag)
 	{
 
 	}
-	if (CurrentState == EWeaponState::Reloading)
+	if (CurrentState == EWeaponState2::Reloading)
 	{
 		bPendingReload = false;
 		DetermineWeaponState();
 		StopWeaponAnimation(ReloadAnim);
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload END"));
+		if (DEBUG)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload END"));
+		}
 	}
 }
 
@@ -403,7 +422,10 @@ bool UWeaponComponent::ServerStartReload_Validate()
 
 void UWeaponComponent::ServerStartReload_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("WEAP::ServerStartReload"));
+	if (DEBUG)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WEAP::ServerStartReload"));
+	}
 	StartReload();
 }
 
@@ -427,8 +449,12 @@ void UWeaponComponent::ClientStartReload_Implementation()
 
 bool UWeaponComponent::CanFire() const
 {
-	bool bCanFire = MyPawn && MyPawn->CanFire();
-	bool bStateOKToFire = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
+	/*if (MyPawn->GetClass()->ImplementsInterface(UAnimMontageInterface::StaticClass()))
+	{
+		bool bCanFire = MyPawn && UAnimMontageInterface::Execute_CanFire();
+	}*/
+	bool bCanFire = true;
+	bool bStateOKToFire = ((CurrentState == EWeaponState2::Idle) || (CurrentState == EWeaponState2::Firing));
 	return (bCanFire && bStateOKToFire && !bPendingReload);
 }
 
@@ -437,7 +463,6 @@ bool UWeaponComponent::HasAmmo() const
 	return CurrentMag && CurrentMag->Data.CurrentAmmoNum > 0;
 }
 
-
 bool UWeaponComponent::CanReload() const
 {
 	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
@@ -445,7 +470,7 @@ bool UWeaponComponent::CanReload() const
 	bool bCanReload = (MyPawn);
 	bool bGotAmmo = true;
 
-	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
+	bool bStateOKToReload = ((CurrentState == EWeaponState2::Idle) || (CurrentState == EWeaponState2::Firing));
 	return (bCanReload && bGotAmmo && bStateOKToReload);
 }
 
@@ -517,7 +542,7 @@ void UWeaponComponent::HandleFiring()
 		}
 
 		// setup refire timer
-		bRefiring = (CurrentState == EWeaponState::Firing && WeaponConfig.TimeBetweenShots > 0.0f);
+		bRefiring = (CurrentState == EWeaponState2::Firing && WeaponConfig.TimeBetweenShots > 0.0f);
 		if (bRefiring)
 		{
 			GetWorld()->GetTimerManager().SetTimer(
@@ -584,7 +609,10 @@ void UWeaponComponent::ChangeMagazine(AMagazine* NewMagazine)
 	bPendingReload = true;
 	if (NewMagazine)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::ChangeMag"));
+		if (DEBUG)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("WEAP::ChangeMag"));
+		}
 	}
 
 	RemoveMagazine();
@@ -595,18 +623,18 @@ void UWeaponComponent::ChangeMagazine(AMagazine* NewMagazine)
 	StartReload();
 }
 
-void UWeaponComponent::SetWeaponState(EWeaponState NewState)
+void UWeaponComponent::SetWeaponState(EWeaponState2 NewState)
 {
-	const EWeaponState PrevState = CurrentState;
+	const EWeaponState2 PrevState = CurrentState;
 
-	if (PrevState == EWeaponState::Firing && NewState != EWeaponState::Firing)
+	if (PrevState == EWeaponState2::Firing && NewState != EWeaponState2::Firing)
 	{
 		OnBurstFinished();
 	}
 
 	CurrentState = NewState;
 
-	if (PrevState != EWeaponState::Firing && NewState == EWeaponState::Firing)
+	if (PrevState != EWeaponState2::Firing && NewState == EWeaponState2::Firing)
 	{
 		OnBurstStarted();
 	}
@@ -614,7 +642,7 @@ void UWeaponComponent::SetWeaponState(EWeaponState NewState)
 
 void UWeaponComponent::DetermineWeaponState()
 {
-	EWeaponState NewState = EWeaponState::Idle;
+	EWeaponState2 NewState = EWeaponState2::Idle;
 
 	if (bIsEquipped)
 	{
@@ -626,17 +654,17 @@ void UWeaponComponent::DetermineWeaponState()
 			}
 			else
 			{
-				NewState = EWeaponState::Reloading;
+				NewState = EWeaponState2::Reloading;
 			}
 		}
 		else if (!bPendingReload && bWantsToFire && CanFire())
 		{
-			NewState = EWeaponState::Firing;
+			NewState = EWeaponState2::Firing;
 		}
 	}
 	else if (bPendingEquip)
 	{
-		NewState = EWeaponState::Equipping;
+		NewState = EWeaponState2::Equipping;
 	}
 
 	SetWeaponState(NewState);
@@ -646,8 +674,9 @@ void UWeaponComponent::OnBurstStarted()
 {
 	// start firing, can be delayed to satisfy TimeBetweenShots
 	const float GameTime = GetWorld()->GetTimeSeconds();
-	if (LastFireTime > 0 && WeaponConfig.TimeBetweenShots > 0.0f &&
-		LastFireTime + WeaponConfig.TimeBetweenShots > GameTime)
+	if (LastFireTime > 0 
+		&& WeaponConfig.TimeBetweenShots > 0.0f
+		&& LastFireTime + WeaponConfig.TimeBetweenShots > GameTime)
 	{
 		GetWorld()->GetTimerManager().SetTimer(
 			TimerHandle_HandleFiring,
@@ -698,8 +727,11 @@ float UWeaponComponent::PlayWeaponAnimation(UAnimMontage* Animation)
 	float Duration = 0.0f;
 	if (MyPawn && Animation)
 	{
-		Duration = MyPawn->PlayAnimMontage(Animation);
-
+		//Duration = MyPawn->PlayAnimMontage(Animation);
+		//if (MyPawn->GetClass()->ImplementsInterface(UAnimMontageInterface::StaticClass()))
+		//{
+		//	UAnimMontageInterface::Execute_PlayAnimMontage(Animation);
+		//}
 		if (DEBUG)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
@@ -947,7 +979,7 @@ bool UWeaponComponent::IsAttachedToPawn() const
 	return bIsEquipped || bPendingEquip;
 }
 
-EWeaponState UWeaponComponent::GetCurrentState() const
+EWeaponState2 UWeaponComponent::GetCurrentState() const
 {
 	return CurrentState;
 }
