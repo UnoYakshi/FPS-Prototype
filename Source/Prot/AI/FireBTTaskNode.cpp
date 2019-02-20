@@ -8,36 +8,22 @@ EBTNodeResult::Type UFireBTTaskNode::ExecuteTask(UBehaviorTreeComponent & OwnerC
 	UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
 	if (BlackboardComponent)
 	{
-		ABot* ShootingBot = Cast<ABot>(BlackboardComponent->GetValueAsObject("SelfActor"));
-		if (ShootingBot)
+		ABot* Bot = Cast<ABot>(BlackboardComponent->GetValueAsObject("SelfActor"));
+		if (Bot)
 		{
-			Bot = ShootingBot;
 			AWeapon* Weapon = Bot->GetCurrentWeapon();
 			if (Weapon && Weapon->CanFire())
 			{
 				Bot->TryStartFire();
 				UWorld* World = GetWorld();
-				if (World)
+				ABotAIC* BotController = Cast<ABotAIC>(OwnerComp.GetAIOwner());
+				if (World && BotController)
 				{
-					World->GetTimerManager().SetTimer(FireTimerHandle, this, &UFireBTTaskNode::StopShooting,
-						1.f, false);
+					BotController->SetStopShootingTimer();
 				}
 				return EBTNodeResult::Succeeded;
 			}
 		}
 	}
 	return EBTNodeResult::Failed;
-}
-
-void UFireBTTaskNode::StopShooting()
-{
-	if (Bot && Bot->GetCurrentWeapon())
-	{
-		Bot->TryStopFire();
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			World->GetTimerManager().ClearTimer(FireTimerHandle);
-		}
-	}
 }
