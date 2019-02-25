@@ -1,3 +1,8 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "BaseCharacter.h"
+
+// Sets default values
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "ProtCharacter.h"
@@ -19,9 +24,9 @@
 
 
 //////////////////////////////////////////////////////////////////////////
-// AProtCharacter
+// ABaseCharacter
 
-AProtCharacter::AProtCharacter()
+ABaseCharacter::ABaseCharacter()
 {
 	// Enable ticking...
 	PrimaryActorTick.bCanEverTick = true;
@@ -76,20 +81,15 @@ AProtCharacter::AProtCharacter()
 	CurrentInteractive = nullptr;
 }
 
-void AProtCharacter::BeginPlay()
+void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (CurrentWeapon && CurrentWeapon->GetWeaponMesh())
-	{
-		CurrentWeapon->GetWeaponMesh()->SetRelativeLocation(FVector::ZeroVector);
-		CurrentWeapon->OnEquip(nullptr);
-	}
 	if (CurrentWeaponComp && CurrentWeaponComp->GetWeaponMesh())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BEGIN WITH COMP"));
 		CurrentWeaponComp->GetWeaponMesh()->SetRelativeLocation(FVector::ZeroVector);
-		//CurrentWeaponComp->OnEquip(nullptr);
+		CurrentWeaponComp->OnEquip(nullptr);
 		UE_LOG(LogTemp, Warning, TEXT("BEGIN WITH COMP 2"));
 	}
 	if (CurrentWeaponComp && !CurrentWeaponComp->GetWeaponMesh())
@@ -100,13 +100,13 @@ void AProtCharacter::BeginPlay()
 
 //////////////////////////////////////////////////////////////////////////
 // Input
-void AProtCharacter::Tick(float DeltaTime)
+void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//PreUpdateCamera(DeltaTime);
 }
 
-void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
@@ -114,40 +114,40 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::TryStartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
-	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
-	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnGrenade);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABaseCharacter::TryStartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABaseCharacter::TryStopFire);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABaseCharacter::StartAim);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABaseCharacter::StopAim);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::Reload);
+	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &ABaseCharacter::AttempToSpawnGrenade);
 
-	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
-	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
+	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &ABaseCharacter::Use);
+	PlayerInputComponent->BindAction("Use", IE_Released, this, &ABaseCharacter::StopUsing);
 
 	//PlayerInputComponent->BindAxis("MoveForward", PC, &AMyPlayerController::InputMovementFront);
 	//PlayerInputComponent->BindAxis("MoveRight", PC, &AMyPlayerController::InputMovementSide);
 	PlayerInputComponent->BindAxis("CameraRotationVertical", PC, &AMyPlayerController::InputCameraAddPitch);
 	PlayerInputComponent->BindAxis("CameraRotationHorizontal", PC, &AMyPlayerController::InputCameraAddYaw);
-	PlayerInputComponent->BindAxis("MoveForward", this, &AProtCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AProtCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("MoveForward", this, &ABaseCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ABaseCharacter::MoveRight);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AProtCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("TurnRate", this, &ABaseCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AProtCharacter::LookUpAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &ABaseCharacter::LookUpAtRate);
 
 	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AProtCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AProtCharacter::TouchStopped);
+	PlayerInputComponent->BindTouch(IE_Pressed, this, &ABaseCharacter::TouchStarted);
+	PlayerInputComponent->BindTouch(IE_Released, this, &ABaseCharacter::TouchStopped);
 
 	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AProtCharacter::OnResetVR);
+	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ABaseCharacter::OnResetVR);
 }
 
-FRotator AProtCharacter::GetAimOffsets() const
+FRotator ABaseCharacter::GetAimOffsets() const
 {
 	const FVector AimDirWS = GetBaseAimRotation().Vector();
 	const FVector AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);
@@ -156,7 +156,7 @@ FRotator AProtCharacter::GetAimOffsets() const
 	return AimRotLS;
 }
 
-AInteractiveObject* AProtCharacter::GetInteractiveInView()
+AInteractiveObject* ABaseCharacter::GetInteractiveInView()
 {
 	FVector camLoc;
 	FRotator camRot;
@@ -186,7 +186,7 @@ AInteractiveObject* AProtCharacter::GetInteractiveInView()
 /*
 Runs on Server. Perform "OnUsed" on currently viewed UsableActor if implemented.
 */
-void AProtCharacter::Use_Implementation()
+void ABaseCharacter::Use_Implementation()
 {
 	if (Controller && Controller->IsLocalController())
 	{
@@ -204,12 +204,12 @@ void AProtCharacter::Use_Implementation()
 
 }
 
-bool AProtCharacter::Use_Validate()
+bool ABaseCharacter::Use_Validate()
 {
 	return HealthComponent->IsAlive();
 }
 
-void AProtCharacter::StopUsing_Implementation()
+void ABaseCharacter::StopUsing_Implementation()
 {
 	if (CurrentInteractive)
 	{
@@ -218,25 +218,25 @@ void AProtCharacter::StopUsing_Implementation()
 	}
 }
 
-bool AProtCharacter::StopUsing_Validate()
+bool ABaseCharacter::StopUsing_Validate()
 {
 	return true;
 }
 
-bool AProtCharacter::CanFire_Implementation() const
+bool ABaseCharacter::CanFire_Implementation() const
 {
 	return HealthComponent->IsAlive();
 }
 
-bool AProtCharacter::WeaponCanFire() const
+bool ABaseCharacter::WeaponCanFire() const
 {
-	return CurrentWeapon->CanFire();
+	return CurrentWeaponComp->CanFire();
 }
 
 ///
 /// GRENADE & HP
 ///
-float AProtCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float ABaseCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
@@ -245,18 +245,18 @@ float AProtCharacter::TakeDamage(float Damage, struct FDamageEvent const& Damage
 	return HealthComponent->GetHealthValue();
 }
 
-void AProtCharacter::ServerTakeDamage_Implementation(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void ABaseCharacter::ServerTakeDamage_Implementation(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 }
 
-bool AProtCharacter::ServerTakeDamage_Validate(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+bool ABaseCharacter::ServerTakeDamage_Validate(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	//Assume that everything is ok without any further checks and return true
 	return true;
 }
 
-void AProtCharacter::AttempToSpawnGrenade()
+void ABaseCharacter::AttempToSpawnGrenade()
 {
 	if (HasGrenades())
 	{
@@ -271,7 +271,7 @@ void AProtCharacter::AttempToSpawnGrenade()
 	}
 }
 
-void AProtCharacter::SpawnGrenade()
+void ABaseCharacter::SpawnGrenade()
 {
 	/*UGameplayStatics::SuggestProjectileVelocity(
 		this,
@@ -311,12 +311,12 @@ void AProtCharacter::SpawnGrenade()
 	}
 }
 
-void AProtCharacter::ServerSpawnGrenade_Implementation()
+void ABaseCharacter::ServerSpawnGrenade_Implementation()
 {
 	SpawnGrenade();
 }
 
-bool AProtCharacter::ServerSpawnGrenade_Validate()
+bool ABaseCharacter::ServerSpawnGrenade_Validate()
 {
 	return true;
 }
@@ -324,7 +324,7 @@ bool AProtCharacter::ServerSpawnGrenade_Validate()
 ///
 /// FIREARMS
 ///
-void AProtCharacter::TryStartFire_Implementation()
+void ABaseCharacter::TryStartFire_Implementation()
 {
 	if (DEBUG)
 	{
@@ -349,7 +349,7 @@ void AProtCharacter::TryStartFire_Implementation()
 	JustFire();
 }
 
-void AProtCharacter::TryStopFire_Implementation()
+void ABaseCharacter::TryStopFire_Implementation()
 {
 	if (DEBUG)
 	{
@@ -373,15 +373,11 @@ void AProtCharacter::TryStopFire_Implementation()
 	JustFireEnd();
 }
 
-void AProtCharacter::JustFire_Implementation()
+void ABaseCharacter::JustFire_Implementation()
 {
 	if (!bWantsToFire)
 	{
 		bWantsToFire = true;
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->StartFire();
-		}
 		if (CurrentWeaponComp)
 		{
 			CurrentWeaponComp->StartFire();
@@ -389,15 +385,11 @@ void AProtCharacter::JustFire_Implementation()
 	}
 }
 
-void AProtCharacter::JustFireEnd_Implementation()
+void ABaseCharacter::JustFireEnd_Implementation()
 {
 	if (bWantsToFire)
 	{
 		bWantsToFire = false;
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->StopFire();
-		}
 		if (CurrentWeaponComp)
 		{
 			CurrentWeaponComp->StopFire();
@@ -405,7 +397,7 @@ void AProtCharacter::JustFireEnd_Implementation()
 	}
 }
 
-void AProtCharacter::Reload_Implementation()
+void ABaseCharacter::Reload_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("RELOAD"));
 
@@ -424,54 +416,54 @@ void AProtCharacter::Reload_Implementation()
 	}
 }
 
-void AProtCharacter::StartAim_Implementation()
+void ABaseCharacter::StartAim_Implementation()
 {
 
 }
 
-bool AProtCharacter::StartAim_Validate()
-{
-	return true;
-}
-
-void AProtCharacter::StopAim_Implementation()
-{
-
-}
-
-bool AProtCharacter::StopAim_Validate()
+bool ABaseCharacter::StartAim_Validate()
 {
 	return true;
 }
 
-void AProtCharacter::OnResetVR()
+void ABaseCharacter::StopAim_Implementation()
+{
+
+}
+
+bool ABaseCharacter::StopAim_Validate()
+{
+	return true;
+}
+
+void ABaseCharacter::OnResetVR()
 {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
-void AProtCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
+void ABaseCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 		Jump();
 }
 
-void AProtCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
+void ABaseCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
 		StopJumping();
 }
 
-void AProtCharacter::TurnAtRate(float Rate)
+void ABaseCharacter::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
-void AProtCharacter::LookUpAtRate(float Rate)
+void ABaseCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
-void AProtCharacter::MoveForward(float Value)
+void ABaseCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
@@ -485,7 +477,7 @@ void AProtCharacter::MoveForward(float Value)
 	}
 }
 
-void AProtCharacter::MoveRight(float Value)
+void ABaseCharacter::MoveRight(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
@@ -500,7 +492,7 @@ void AProtCharacter::MoveRight(float Value)
 	}
 }
 
-void AProtCharacter::PreUpdateCamera(float DeltaTime)
+void ABaseCharacter::PreUpdateCamera(float DeltaTime)
 {
 	if (!FPPCamera || !PC || HealthComponent->IsDead())
 	{
@@ -528,7 +520,7 @@ void AProtCharacter::PreUpdateCamera(float DeltaTime)
 	RecoilOffset = 10.f;
 }
 
-float AProtCharacter::CameraProcessPitch(float Input)
+float ABaseCharacter::CameraProcessPitch(float Input)
 {
 	//Recenter value
 	if (Input > 269.99f)
@@ -541,13 +533,13 @@ float AProtCharacter::CameraProcessPitch(float Input)
 	return Input;
 }
 
-void AProtCharacter::EquipWeapon(AWeapon* Weapon)
+void ABaseCharacter::EquipWeapon(UWeaponComponent* Weapon)
 {
 	if (Weapon)
 	{
 		if (Role == ROLE_Authority)
 		{
-			SetCurrentWeapon(Weapon, CurrentWeapon);
+			SetCurrentWeapon(Weapon, CurrentWeaponComp);
 		}
 		else
 		{
@@ -556,27 +548,27 @@ void AProtCharacter::EquipWeapon(AWeapon* Weapon)
 	}
 }
 
-bool AProtCharacter::ServerEquipWeapon_Validate(AWeapon* Weapon)
+bool ABaseCharacter::ServerEquipWeapon_Validate(UWeaponComponent* Weapon)
 {
 	return true;
 }
 
-void AProtCharacter::ServerEquipWeapon_Implementation(AWeapon* Weapon)
+void ABaseCharacter::ServerEquipWeapon_Implementation(UWeaponComponent* Weapon)
 {
 	EquipWeapon(Weapon);
 }
 
-void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
+void ABaseCharacter::SetCurrentWeapon(UWeaponComponent* NewWeapon, UWeaponComponent* LastWeapon)
 {
-	AWeapon* LocalLastWeapon = nullptr;
+	UWeaponComponent* LocalLastWeapon = nullptr;
 
 	if (LastWeapon)
 	{
 		LocalLastWeapon = LastWeapon;
 	}
-	else if (NewWeapon != CurrentWeapon)
+	else if (NewWeapon != CurrentWeaponComp)
 	{
-		LocalLastWeapon = CurrentWeapon;
+		LocalLastWeapon = CurrentWeaponComp;
 	}
 
 	// Unequip previous weapon if any...
@@ -585,7 +577,7 @@ void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
 		LocalLastWeapon->OnUnEquip();
 	}
 
-	CurrentWeapon = NewWeapon;
+	CurrentWeaponComp = NewWeapon;
 
 	// Equip a new one...
 	if (NewWeapon)
@@ -600,28 +592,32 @@ void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
 /////////////////////////////////////////////
 // REPLICATION
 
-void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
+void ABaseCharacter::OnRep_CurrentWeapon(UWeaponComponent* LastWeapon)
 {
-	SetCurrentWeapon(CurrentWeapon, LastWeapon);
+	SetCurrentWeapon(CurrentWeaponComp, LastWeapon);
 }
-void AProtCharacter::OnRep_GrenadeCount()
+void ABaseCharacter::OnRep_GrenadeCount()
 {
 }
-void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+void ABaseCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	/// only to local owner: weapon change requests are locally instigated, other clients don't need it
 	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
 
-	DOREPLIFETIME(AProtCharacter, CurrentWeapon);
-	DOREPLIFETIME(AProtCharacter, CameraLocalRotation);
+	DOREPLIFETIME(ABaseCharacter, CurrentWeaponComp);
+	DOREPLIFETIME(ABaseCharacter, CameraLocalRotation);
 }
 
 /////////////////////////////////////////////
 // UTILITY
+FName ABaseCharacter::GetWeaponAttachPoint() const
+{
+	return WeaponAttachPoint;
+}
 
-float AProtCharacter::CameraProcessYaw(float Input)
+float ABaseCharacter::CameraProcessYaw(float Input)
 {
 	// Get direction vectors from Character and PC...
 	FVector ActorDir = GetActorRotation().Vector();
@@ -645,3 +641,4 @@ float AProtCharacter::CameraProcessYaw(float Input)
 
 	return Angle;
 }
+

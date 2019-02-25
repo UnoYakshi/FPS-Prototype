@@ -1,24 +1,27 @@
-// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MyPlayerController.h"
-#include "Weapons/Weapon.h"
-#include "Weapons/WeaponComponent.h"
-#include "Weapons/Grenade.h"
-#include "HealthActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+
+#include "Weapons/WeaponComponent.h"
 #include "Weapons/FireInterface.h"
-#include "ProtCharacter.generated.h"
+
+#include "Interactive/InteractiveObject.h"
+#include "MyPlayerController.h"
+#include "HealthActorComponent.h"
+#include "Weapons/Grenade.h"
+
+#include "BaseCharacter.generated.h"
 
 // Forward declarations...
 class AInteractiveObject;
 
 
-UCLASS(Abstract, config=Game)
-class AProtCharacter : public ACharacter, public IFireInterface
+UCLASS()
+class PROT_API ABaseCharacter : public ACharacter, public IFireInterface
 {
 	GENERATED_BODY()
 
@@ -26,7 +29,7 @@ class AProtCharacter : public ACharacter, public IFireInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
 public:
-	AProtCharacter();
+	ABaseCharacter();
 protected:
 	virtual void BeginPlay() override;
 
@@ -238,30 +241,27 @@ protected:
 	*
 	* @param Weapon	Weapon to equip
 	*/
-	void EquipWeapon(class AWeapon* Weapon);
+	void EquipWeapon(class UWeaponComponent* Weapon);
 
 	/** equip weapon */
 	UFUNCTION(Reliable, Server, WithValidation)
-	void ServerEquipWeapon(class AWeapon* NewWeapon);
+	void ServerEquipWeapon(class UWeaponComponent* NewWeapon);
 
 protected:
 	FName WeaponAttachPoint;
 
 	/** Currently equipped weapon... */
-	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
-	class AWeapon* CurrentWeapon;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
 	UWeaponComponent* CurrentWeaponComp;
 
 	/** Updates current weapon...*/
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
+	void SetCurrentWeapon(class UWeaponComponent* NewWeapon, class UWeaponComponent* LastWeapon = nullptr);
 
 protected:
 	/** CurrentWeapon replication handler... */
 	UFUNCTION()
-	void OnRep_CurrentWeapon(class AWeapon* LastWeapon);
+	void OnRep_CurrentWeapon(class UWeaponComponent* LastWeapon);
 
 ///////////////////////////////
 // Getters...
@@ -270,10 +270,9 @@ public:
 	FORCEINLINE class UCameraComponent* GetFPPCamera() const { return FPPCamera; }
 
 	/** Returns Weapon attach point... */
-	UFUNCTION(BlueprintGetter)
-	FName GetWeaponAttachPoint() const { return WeaponAttachPoint; }
+	FName GetWeaponAttachPoint() const;
 
 	// Gets current weapon
 	UFUNCTION(BlueprintGetter)
-	AWeapon* GetCurrentWeapon() { return CurrentWeapon; }
+	UWeaponComponent* GetCurrentWeapon() { return CurrentWeaponComp; }
 };

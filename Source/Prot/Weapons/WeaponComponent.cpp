@@ -5,6 +5,7 @@
 #include "Prot.h"
 #include "Projectile.h"
 #include "MyPlayerController.h"
+#include "ProtCharacter.h"
 
 #include "GameFramework/Pawn.h"
 #include "Net/UnrealNetwork.h"
@@ -16,16 +17,19 @@
 
 UWeaponComponent::UWeaponComponent()
 {
-	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh1P"));
-	Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
-	Mesh->bReceivesDecals = true;
-	Mesh->CastShadow = true;
-	Mesh->SetCollisionObjectType(ECC_WorldDynamic);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Mesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Mesh->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Block);
-	Mesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	Mesh->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
+	MeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	//MeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+	//MeshComp->bReceivesDecals = true;
+	MeshComp->CastShadow = true;
+	//MeshComp->SetCollisionObjectType(ECC_WorldDynamic);
+	//MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//MeshComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	//MeshComp->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Block);
+	//MeshComp->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	//MeshComp->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
+	//MeshComp->AttachToComponent(GetAttachmentRoot(), FAttachmentTransformRules::KeepRelativeTransform);
+	MeshComp->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+	//GetRootComponent()
 
 	bLoopedMuzzleFX = false;
 	bLoopedFireAnim = false;
@@ -58,7 +62,7 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	const FVector Origin = GetMuzzleLocation();
 	// Should be GetForwardVector()...	
 	// But we have the weapon rotated by 90 degrees counter-clockwise...
-	const FVector Direciton = Mesh->GetRightVector();
+	const FVector Direciton = MeshComp->GetRightVector();
 	const float ProjectileAdjustRange = 10000.0f;
 
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
@@ -77,19 +81,13 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 
-//void UWeaponComponent::PostInitProperties()
-//{
-//	Super::PostInitProperties();
-//
-//	// TODO: Handle initial ammo in the CurrentMagazine...
-//
-//	DetachMeshFromPawn();
-//}
-
 void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	DetachMeshFromPawn();
+	//DetachMeshFromPawn();
+	//bIsEquipped = true;
+	//AttachMeshToPawn();
+	//DetermineWeaponState();
 }
 
 void UWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
@@ -104,7 +102,7 @@ void UWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 
 void UWeaponComponent::OnEquip(const UWeaponComponent* LastWeapon)
 {
-	AttachMeshToPawn();
+	//AttachMeshToPawn();
 
 	bPendingEquip = true;
 	DetermineWeaponState();
@@ -200,18 +198,18 @@ void UWeaponComponent::AttachMeshToPawn()
 	if (MyPawn)
 	{
 		// Remove and hide both first and third person meshes
-		DetachMeshFromPawn();
+		//DetachMeshFromPawn();
 
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, 
 		// bOwnerNoSee flags deal with visibility.
 		//FName AttachPoint = MyPawn->GetWeaponAttachPoint();
 		//USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
-		FName AttachPoint = FName("");
-		USkeletalMeshComponent* PawnMesh = nullptr;
+		FName AttachPoint = Cast<AProtCharacter>(MyPawn)->GetWeaponAttachPoint();
+		USkeletalMeshComponent* PawnMesh = Cast<AProtCharacter>(MyPawn)->GetMesh();
 		if (MyPawn->IsLocallyControlled())
 		{
-			Mesh->SetHiddenInGame(false);
-			Mesh->AttachToComponent(PawnMesh, FAttachmentTransformRules::KeepRelativeTransform, AttachPoint);
+			MeshComp->SetHiddenInGame(false);
+			MeshComp->AttachToComponent(PawnMesh, FAttachmentTransformRules::KeepRelativeTransform, AttachPoint);
 		}
 		else
 		{
@@ -224,8 +222,8 @@ void UWeaponComponent::AttachMeshToPawn()
 
 void UWeaponComponent::DetachMeshFromPawn()
 {
-	Mesh->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-	Mesh->SetHiddenInGame(false);
+	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+	MeshComp->SetHiddenInGame(false);
 }
 
 
@@ -304,7 +302,7 @@ void UWeaponComponent::StartReload(bool bFromReplication)
 {
 	if (DEBUG)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload"));
+		UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::StartReload"));
 	}
 
 	if (!bFromReplication && GetOwnerRole() < ROLE_Authority)
@@ -334,7 +332,7 @@ void UWeaponComponent::StartReload(bool bFromReplication)
 		}
 		if (DEBUG)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload END"));
+			UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::StartReload END"));
 		}
 	}
 }
@@ -343,7 +341,7 @@ void UWeaponComponent::StopReload()
 {
 	if (DEBUG)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload"));
+		UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::StopReload"));
 	}
 
 	if (CurrentMag)
@@ -357,7 +355,7 @@ void UWeaponComponent::StopReload()
 		StopWeaponAnimation(ReloadAnim);
 		if (DEBUG)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("WEAP::StopReload END"));
+			UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::StopReload END"));
 		}
 	}
 }
@@ -372,7 +370,7 @@ void UWeaponComponent::FireWeapon()
 	}
 
 	const FVector Origin = GetMuzzleLocation();
-	const FVector Direciton = Mesh->GetRightVector();
+	const FVector Direciton = MeshComp->GetRightVector();
 	const float ProjectileAdjustRange = 10000.0f;
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
 
@@ -381,7 +379,7 @@ void UWeaponComponent::FireWeapon()
 		UWorld* World = GetWorld();
 		AProjectile* NewProjectile = World->SpawnActor<AProjectile>(
 			ProjectileClass,
-			Origin, Mesh->GetForwardVector().Rotation()
+			Origin, MeshComp->GetForwardVector().Rotation()
 			);
 		if (NewProjectile)
 		{
@@ -424,7 +422,7 @@ void UWeaponComponent::ServerStartReload_Implementation()
 {
 	if (DEBUG)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::ServerStartReload"));
+		UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::ServerStartReload"));
 	}
 	StartReload();
 }
@@ -601,6 +599,8 @@ void UWeaponComponent::RemoveMagazine()
 
 void UWeaponComponent::ChangeMagazine(AMagazine* NewMagazine)
 {
+	UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::Reload"));
+
 	if (NewMagazine->Data.ProjectileType != WeaponConfig.WeaponProjectileType)
 	{
 		return;
@@ -619,6 +619,11 @@ void UWeaponComponent::ChangeMagazine(AMagazine* NewMagazine)
 	if (NewMagazine != CurrentMag)
 	{
 		CurrentMag = NewMagazine;
+	}
+
+	if (CurrentMag)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::Magazine"));
 	}
 	StartReload();
 }
@@ -905,7 +910,7 @@ void UWeaponComponent::SimulateWeaponFire()
 {
 	if (MuzzleFX)
 	{
-		MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, Mesh, MuzzleAttachPoint);
+		MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, MeshComp, MuzzleAttachPoint);
 	}
 
 	//if (!bLoopedFireAnim || !bPlayingFireAnim)
@@ -966,7 +971,7 @@ void UWeaponComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& O
 
 USkeletalMeshComponent* UWeaponComponent::GetWeaponMesh() const
 {
-	return Mesh;
+	return MeshComp;
 }
 
 bool UWeaponComponent::IsEquipped() const

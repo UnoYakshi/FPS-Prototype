@@ -90,15 +90,15 @@ public:
 	// Util
 protected:
 	/** Weapon's mesh... VisibleDefaultsOnly*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh)
-	USkeletalMeshComponent* Mesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	USkeletalMeshComponent* MeshComp;
 
 	/** Weapon's data... */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Config)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Config")
 	FWeaponData2 WeaponConfig;
 
 	/** Socket's name for muzzle in the weapon's mesh... */
-	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	FName MuzzleAttachPoint;
 
 	/** current weapon state */
@@ -154,7 +154,7 @@ protected:
 	void OnRep_MyPawn();
 
 	/** Returns Mesh subobject **/
-	FORCEINLINE USkeletalMeshComponent* GetMesh() const { return Mesh; }
+	FORCEINLINE USkeletalMeshComponent* GetMesh() const { return MeshComp; }
 
 public:
 	/** get current weapon state */
@@ -238,19 +238,16 @@ protected:
 	void OnRep_Reload();
 
 public:
-	/** [local + server] start weapon fire */
-	virtual void StartFire();
-
-	/** [local + server] stop weapon fire */
-	virtual void StopFire();
-
 	/** [all] start weapon reload */
+	UFUNCTION(BlueprintCallable)
 	virtual void StartReload(bool bFromReplication = false);
 
 	/** [local + server] interrupt weapon reload */
+	UFUNCTION(BlueprintCallable)
 	virtual void StopReload();
 
 	/** [server] performs actual reload */
+	UFUNCTION(BlueprintCallable)
 	virtual void ReloadWeapon();
 
 	/** trigger reload from server */
@@ -277,55 +274,55 @@ public:
 protected:
 	/** firing audio (bLoopedFireSound set) */
 	UPROPERTY(Transient)
-		UAudioComponent* FireAC;
+	UAudioComponent* FireAC;
 
 	/** FX for muzzle flash */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		UParticleSystem* MuzzleFX;
+	UParticleSystem* MuzzleFX;
 
 	/** spawned component for muzzle FX */
 	UPROPERTY(Transient)
-		UParticleSystemComponent* MuzzlePSC;
+	UParticleSystemComponent* MuzzlePSC;
 
 	/** camera shake on firing */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		TSubclassOf<UCameraShake> FireCameraShake;
+	TSubclassOf<UCameraShake> FireCameraShake;
 
 	/** force feedback effect to play when the weapon is fired */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		UForceFeedbackEffect *FireForceFeedback;
+	UForceFeedbackEffect *FireForceFeedback;
 
 	/** single fire sound (bLoopedFireSound not set) */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* FireSound;
+	USoundCue* FireSound;
 
 	/** looped fire sound (bLoopedFireSound set) */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* FireLoopSound;
+	USoundCue* FireLoopSound;
 
 	/** finished burst sound (bLoopedFireSound set) */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		USoundCue* FireFinishSound;
+	USoundCue* FireFinishSound;
 
 	/** fire animations */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation)
-		UAnimMontage* FireAnim;
+	UAnimMontage* FireAnim;
 
 	/** is muzzle FX looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-		bool bLoopedMuzzleFX;
+	bool bLoopedMuzzleFX;
 
 	/** is fire sound looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
-		bool bLoopedFireSound;
+	bool bLoopedFireSound;
 
 	/** is fire animation looped? */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
-		bool bLoopedFireAnim;
+	bool bLoopedFireAnim;
 
 	/** is fire animation playing? */
 	UPROPERTY(BlueprintReadOnly)
-		bool bPlayingFireAnim;
+	bool bPlayingFireAnim;
 
 	/** is weapon fire active? */
 	bool bWantsToFire;
@@ -338,7 +335,7 @@ protected:
 
 	/** burst counter, used for replicating fire events to remote clients */
 	UPROPERTY(VisibleAnywhere, Transient, ReplicatedUsing = OnRep_BurstCounter)
-		int32 BurstCounter;
+	int32 BurstCounter;
 
 	/** Handle for efficient management of HandleFiring timer */
 	FTimerHandle TimerHandle_HandleFiring;
@@ -378,6 +375,14 @@ protected:
 	virtual void OnBurstFinished();
 
 public:
+	/** [local + server] start weapon fire */
+	UFUNCTION(BlueprintCallable)
+	virtual void StartFire();
+
+	/** [local + server] stop weapon fire */
+	UFUNCTION(BlueprintCallable)
+	virtual void StopFire();
+
 	/** check if weapon can fire */
 	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
 	bool CanFire() const;
