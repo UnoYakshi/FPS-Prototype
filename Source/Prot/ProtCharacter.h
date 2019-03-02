@@ -18,15 +18,17 @@ class AInteractiveObject;
 
 
 UCLASS(Abstract, config=Game)
-class AProtCharacter : public ACharacter, public IFireInterface
+class AProtCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 	/** For first person (attached to eyes)... */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
+
 public:
 	AProtCharacter();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -97,62 +99,57 @@ private:
 
 public:
 	/** Either player pressed Fire action or not (i.e., LMB is pressed)... */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	bool bWantsToFire;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	//bool bWantsToFire;
 
 	/// //////////////////////////////////////////
 	/// FIRE
-	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Game|Weapon")
+	/*UFUNCTION(BlueprintPure, Category = "Game|Weapon")
 	bool CanFire() const;
 
 	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
-	bool WeaponCanFire() const;
+	bool WeaponCanFire() const;*/
 
 	//////////////////////////////////////////////
 	// Handles Character's side start firing...
 	//
 	/** Player pressed StartFire action (LMB pressed)... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void TryStartFire();
-	virtual void TryStartFire_Implementation() override;
+	//UFUNCTION(BlueprintCallable)
+	//void TryStartFire();
 
-	/** Starts weapon fire... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void JustFire();
-	virtual void JustFire_Implementation() override;
+	///** Starts weapon fire... */
+	//UFUNCTION(BlueprintCallable)
+	//void JustFire();
 	
 	//////////////////////////////////////////////
 	// Handles Character's side stop firing...
 	//
 	/** Player pressed StartFire action (LMB released)... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void TryStopFire();
-	virtual void TryStopFire_Implementation() override;
+	//UFUNCTION(BlueprintCallable)
+	//void TryStopFire();
 
-	/** Stops weapon fire... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void JustFireEnd();
-	virtual void JustFireEnd_Implementation() override;
+	///** Stops weapon fire... */
+	//UFUNCTION(BlueprintCallable)
+	//void JustFireEnd();
 
 	/// //////////////////////////////////////////
 	/// RELOAD
 	//////////////////////////////////////////////
 	// Handles Character's side start reloading...
 	//
-	/** Player pressed Reload action (R pressed)... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Reload();
-	virtual void Reload_Implementation() override;
+	///** Player pressed Reload action (R pressed)... */
+	//UFUNCTION(BlueprintCallable)
+	//void Reload();
 
-	UPROPERTY(EditDefaultsOnly, Category = Ammo)
+	/*UPROPERTY(EditDefaultsOnly, Category = Ammo)
 	TSubclassOf<class AMagazine> MagClassToSpawn;
-
+*/
 	/// //////////////////////////////////////////
 	/// AIM
 	//////////////////////////////////////////////
 	// Handles camera manipulations for aiming (RMB)...
 	//
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
+	/*UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
 	virtual void StartAim();
 	virtual void StartAim_Implementation();
 	bool StartAim_Validate();
@@ -160,7 +157,7 @@ public:
 	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
 	virtual void StopAim();
 	virtual void StopAim_Implementation();
-	bool StopAim_Validate();
+	bool StopAim_Validate();*/
 
 public:
 	/** Current InteractiveObject... */
@@ -244,8 +241,7 @@ protected:
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerEquipWeapon(class AWeapon* NewWeapon);
 
-protected:
-	FName WeaponAttachPoint;
+public:
 
 	/** Currently equipped weapon... */
 	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
@@ -255,8 +251,8 @@ protected:
 	UWeaponComponent* CurrentWeaponComp;
 
 	/** Updates current weapon...*/
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
+	//UFUNCTION(BlueprintCallable)
+	//void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
 
 protected:
 	/** CurrentWeapon replication handler... */
@@ -268,10 +264,6 @@ protected:
 public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFPPCamera() const { return FPPCamera; }
-
-	/** Returns Weapon attach point... */
-	UFUNCTION(BlueprintGetter)
-	FName GetWeaponAttachPoint() const { return WeaponAttachPoint; }
 
 	// Gets current weapon
 	UFUNCTION(BlueprintGetter)

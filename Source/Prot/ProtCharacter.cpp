@@ -59,9 +59,6 @@ AProtCharacter::AProtCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-
-	// Handle Weapon settings...
-	WeaponAttachPoint = FName("weapon_socket_right");
 	
 	// Health system...
 	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("Health"));
@@ -69,7 +66,9 @@ AProtCharacter::AProtCharacter()
 
 	// Create weapon component...
 	CurrentWeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComp"));
-	CurrentWeaponComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
+	CurrentWeaponComp->WeaponAttachPoint = FName("weapon_socket_right");
+	CurrentWeaponComp->SetIsReplicated(true);
+	CurrentWeaponComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, CurrentWeaponComp->WeaponAttachPoint);
 
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
@@ -83,18 +82,7 @@ void AProtCharacter::BeginPlay()
 	if (CurrentWeapon && CurrentWeapon->GetWeaponMesh())
 	{
 		CurrentWeapon->GetWeaponMesh()->SetRelativeLocation(FVector::ZeroVector);
-		CurrentWeapon->OnEquip(nullptr);
-	}
-	if (CurrentWeaponComp && CurrentWeaponComp->GetWeaponMesh())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BEGIN WITH COMP"));
-		CurrentWeaponComp->GetWeaponMesh()->SetRelativeLocation(FVector::ZeroVector);
-		//CurrentWeaponComp->OnEquip(nullptr);
-		UE_LOG(LogTemp, Warning, TEXT("BEGIN WITH COMP 2"));
-	}
-	if (CurrentWeaponComp && !CurrentWeaponComp->GetWeaponMesh())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BEGIN WITH COMP wo MESH"));
+		//CurrentWeapon->OnEquip(nullptr);
 	}
 }
 
@@ -114,11 +102,11 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::TryStartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
-	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
+	//PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::TryStartFire);
+	//PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
+	//PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
+	//PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
+	//PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
 	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnGrenade);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
@@ -223,15 +211,7 @@ bool AProtCharacter::StopUsing_Validate()
 	return true;
 }
 
-bool AProtCharacter::CanFire_Implementation() const
-{
-	return HealthComponent->IsAlive();
-}
 
-bool AProtCharacter::WeaponCanFire() const
-{
-	return CurrentWeapon->CanFire();
-}
 
 ///
 /// GRENADE & HP
@@ -321,128 +301,6 @@ bool AProtCharacter::ServerSpawnGrenade_Validate()
 	return true;
 }
 
-///
-/// FIREARMS
-///
-void AProtCharacter::TryStartFire_Implementation()
-{
-	if (DEBUG)
-	{
-		switch (Role)
-		{
-		case ROLE_SimulatedProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::SimProxy!"));
-			break;
-		case ROLE_AutonomousProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Client!"));
-			break;
-		case ROLE_Authority:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Server!"));
-			break;
-		default:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::NANI!"));
-			break;
-		}
-	}
-	// TODO: Check if character CanFire()...
-
-	JustFire();
-}
-
-void AProtCharacter::TryStopFire_Implementation()
-{
-	if (DEBUG)
-	{
-		switch (Role)
-		{
-		case ROLE_SimulatedProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::SimProxy!"));
-			break;
-		case ROLE_AutonomousProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Client!"));
-			break;
-		case ROLE_Authority:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Server!"));
-			break;
-		default:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::NANI!"));
-			break;
-		}
-	}
-
-	JustFireEnd();
-}
-
-void AProtCharacter::JustFire_Implementation()
-{
-	if (!bWantsToFire)
-	{
-		bWantsToFire = true;
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->StartFire();
-		}
-		if (CurrentWeaponComp)
-		{
-			CurrentWeaponComp->StartFire();
-		}
-	}
-}
-
-void AProtCharacter::JustFireEnd_Implementation()
-{
-	if (bWantsToFire)
-	{
-		bWantsToFire = false;
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->StopFire();
-		}
-		if (CurrentWeaponComp)
-		{
-			CurrentWeaponComp->StopFire();
-		}
-	}
-}
-
-void AProtCharacter::Reload_Implementation()
-{
-	UE_LOG(LogTemp, Warning, TEXT("RELOAD"));
-
-	UWorld* World = GetWorld();
-	AMagazine* NewMag = World->SpawnActor<AMagazine>(
-		MagClassToSpawn,
-		GetActorLocation(),
-		GetActorRotation()
-		);
-	if (NewMag)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CHAR::Reload"));
-		NewMag->SetActorHiddenInGame(false);
-		//CurrentWeapon->ChangeMagazine(NewMag);
-		CurrentWeaponComp->ChangeMagazine(NewMag);
-	}
-}
-
-void AProtCharacter::StartAim_Implementation()
-{
-
-}
-
-bool AProtCharacter::StartAim_Validate()
-{
-	return true;
-}
-
-void AProtCharacter::StopAim_Implementation()
-{
-
-}
-
-bool AProtCharacter::StopAim_Validate()
-{
-	return true;
-}
 
 void AProtCharacter::OnResetVR()
 {
@@ -541,17 +399,18 @@ float AProtCharacter::CameraProcessPitch(float Input)
 	return Input;
 }
 
+
 void AProtCharacter::EquipWeapon(AWeapon* Weapon)
 {
 	if (Weapon)
 	{
 		if (Role == ROLE_Authority)
 		{
-			SetCurrentWeapon(Weapon, CurrentWeapon);
+			//SetCurrentWeapon(Weapon, CurrentWeapon);
 		}
 		else
 		{
-			ServerEquipWeapon(Weapon);
+			//ServerEquipWeapon(Weapon);
 		}
 	}
 }
@@ -566,43 +425,14 @@ void AProtCharacter::ServerEquipWeapon_Implementation(AWeapon* Weapon)
 	EquipWeapon(Weapon);
 }
 
-void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
-{
-	AWeapon* LocalLastWeapon = nullptr;
 
-	if (LastWeapon)
-	{
-		LocalLastWeapon = LastWeapon;
-	}
-	else if (NewWeapon != CurrentWeapon)
-	{
-		LocalLastWeapon = CurrentWeapon;
-	}
-
-	// Unequip previous weapon if any...
-	if (LocalLastWeapon)
-	{
-		LocalLastWeapon->OnUnEquip();
-	}
-
-	CurrentWeapon = NewWeapon;
-
-	// Equip a new one...
-	if (NewWeapon)
-	{
-		NewWeapon->SetOwningPawn(this);	// Make sure weapon's MyPawn is pointing back to us. 
-		// During replication, we can't guarantee APawn::CurrentWeapon will rep after AWeapon::MyPawn!
-		
-		NewWeapon->OnEquip(LastWeapon);
-	}
-}
 
 /////////////////////////////////////////////
 // REPLICATION
 
 void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
 {
-	SetCurrentWeapon(CurrentWeapon, LastWeapon);
+	//SetCurrentWeapon(CurrentWeapon, LastWeapon);
 }
 void AProtCharacter::OnRep_GrenadeCount()
 {

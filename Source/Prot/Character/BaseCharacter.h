@@ -40,6 +40,9 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Replicated)
+	UWeaponComponent* WeaponComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Replicated)
 	UHealthActorComponent* HealthComponent;
 
 public:
@@ -99,71 +102,8 @@ private:
 	////////////////////////////////
 
 public:
-	/** Either player pressed Fire action or not (i.e., LMB is pressed)... */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	bool bWantsToFire;
-
-	/// //////////////////////////////////////////
-	/// FIRE
-	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Game|Weapon")
-	bool CanFire() const;
-
-	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
-	bool WeaponCanFire() const;
-
-	//////////////////////////////////////////////
-	// Handles Character's side start firing...
-	//
-	/** Player pressed StartFire action (LMB pressed)... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void TryStartFire();
-	virtual void TryStartFire_Implementation() override;
-
-	/** Starts weapon fire... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void JustFire();
-	virtual void JustFire_Implementation() override;
-	
-	//////////////////////////////////////////////
-	// Handles Character's side stop firing...
-	//
-	/** Player pressed StartFire action (LMB released)... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void TryStopFire();
-	virtual void TryStopFire_Implementation() override;
-
-	/** Stops weapon fire... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void JustFireEnd();
-	virtual void JustFireEnd_Implementation() override;
-
-	/// //////////////////////////////////////////
-	/// RELOAD
-	//////////////////////////////////////////////
-	// Handles Character's side start reloading...
-	//
-	/** Player pressed Reload action (R pressed)... */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Reload();
-	virtual void Reload_Implementation() override;
-
-	UPROPERTY(EditDefaultsOnly, Category = Ammo)
-	TSubclassOf<class AMagazine> MagClassToSpawn;
-
-	/// //////////////////////////////////////////
-	/// AIM
-	//////////////////////////////////////////////
-	// Handles camera manipulations for aiming (RMB)...
-	//
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StartAim();
-	virtual void StartAim_Implementation();
-	bool StartAim_Validate();
-
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StopAim();
-	virtual void StopAim_Implementation();
-	bool StopAim_Validate();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UWeaponComponent* WeaponComp;
 
 public:
 	/** Current InteractiveObject... */
@@ -235,33 +175,6 @@ protected:
 	virtual float CameraProcessYaw(float Input);
 	virtual float CameraProcessPitch(float Input);
 
-protected:
-	/**
-	* [server + local] equips weapon from inventory
-	*
-	* @param Weapon	Weapon to equip
-	*/
-	void EquipWeapon(class UWeaponComponent* Weapon);
-
-	/** equip weapon */
-	UFUNCTION(Reliable, Server, WithValidation)
-	void ServerEquipWeapon(class UWeaponComponent* NewWeapon);
-
-protected:
-	FName WeaponAttachPoint;
-
-	/** Currently equipped weapon... */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
-	UWeaponComponent* CurrentWeaponComp;
-
-	/** Updates current weapon...*/
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentWeapon(class UWeaponComponent* NewWeapon, class UWeaponComponent* LastWeapon = nullptr);
-
-protected:
-	/** CurrentWeapon replication handler... */
-	UFUNCTION()
-	void OnRep_CurrentWeapon(class UWeaponComponent* LastWeapon);
 
 ///////////////////////////////
 // Getters...
@@ -269,10 +182,4 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFPPCamera() const { return FPPCamera; }
 
-	/** Returns Weapon attach point... */
-	FName GetWeaponAttachPoint() const;
-
-	// Gets current weapon
-	UFUNCTION(BlueprintGetter)
-	UWeaponComponent* GetCurrentWeapon() { return CurrentWeaponComp; }
 };

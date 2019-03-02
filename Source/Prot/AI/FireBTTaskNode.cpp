@@ -15,7 +15,7 @@ EBTNodeResult::Type UFireBTTaskNode::ExecuteTask(UBehaviorTreeComponent & OwnerC
 			AWeapon* Weapon = Bot->GetCurrentWeapon();
 			if (Weapon && Weapon->CanFire())
 			{
-				Bot->TryStartFire();
+				Bot->CurrentWeaponComp->TryStartFire();
 				UWorld* World = GetWorld();
 				if (World)
 				{
@@ -33,7 +33,7 @@ void UFireBTTaskNode::StopShooting()
 {
 	if (Bot && Bot->GetCurrentWeapon())
 	{
-		Bot->TryStopFire();
+		Bot->CurrentWeaponComp->TryStopFire();
 		UWorld* World = GetWorld();
 		if (World)
 		{

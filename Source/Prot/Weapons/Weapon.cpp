@@ -5,6 +5,7 @@
 #include "Prot.h"
 #include "ProtCharacter.h"
 #include "Projectile.h"
+#include "WeaponComponent.h"
 #include "MyPlayerController.h"
 
 #include "Particles/ParticleSystemComponent.h"
@@ -164,7 +165,7 @@ void AWeapon::OnUnEquip()
 	DetermineWeaponState();
 }
 
-void AWeapon::OnEnterInventory(AProtCharacter* NewOwner)
+void AWeapon::OnEnterInventory(ACharacter* NewOwner)
 {
 	SetOwningPawn(NewOwner);
 }
@@ -191,7 +192,7 @@ void AWeapon::AttachMeshToPawn()
 
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, 
 		// bOwnerNoSee flags deal with visibility.
-		FName AttachPoint = MyPawn->GetWeaponAttachPoint();
+		FName AttachPoint = ParentWeaponComp->GetCurrentWeaponAttachPoint();
 		USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
 		if (MyPawn->IsLocallyControlled())
 		{
@@ -419,7 +420,7 @@ void AWeapon::ClientStartReload_Implementation()
 
 bool AWeapon::CanFire() const
 {
-	bool bCanFire = MyPawn && MyPawn->CanFire();
+	bool bCanFire = MyPawn && MyPawn->FindComponentByClass<UWeaponComponent>()->CanFire();
 	bool bStateOKToFire = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanFire && bStateOKToFire && !bPendingReload);
 }
@@ -434,7 +435,7 @@ bool AWeapon::CanReload() const
 {
 	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
 	// TODO: Check if MyPawn has magazines...
-	bool bCanReload = (MyPawn);
+	bool bCanReload = MyPawn && MyPawn->FindComponentByClass<UWeaponComponent>()->CanReload();
 	bool bGotAmmo = true;
 
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
@@ -811,12 +812,13 @@ FHitResult AWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTra
 	return Hit;
 }
 
-void AWeapon::SetOwningPawn(AProtCharacter* NewOwner)
+void AWeapon::SetOwningPawn(ACharacter* NewOwner)
 {
 	if (MyPawn != NewOwner)
 	{
 		Instigator = NewOwner;
 		MyPawn = NewOwner;
+		ParentWeaponComp = NewOwner->FindComponentByClass<UWeaponComponent>();;
 		// net owner for RPC calls
 		SetOwner(NewOwner);
 	}
@@ -834,6 +836,18 @@ void AWeapon::OnRep_MyPawn()
 	else
 	{
 		OnLeaveInventory();
+	}
+}
+
+void AWeapon::OnRep_MyParent()
+{
+	if (ParentWeaponComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ParentWeaponComponent::Instance"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ParentWeaponComponent::nullptr"));
 	}
 }
 
@@ -929,7 +943,7 @@ USkeletalMeshComponent* AWeapon::GetWeaponMesh() const
 	return Mesh;
 }
 
-class AProtCharacter* AWeapon::GetPawnOwner() const
+class ACharacter* AWeapon::GetPawnOwner() const
 {
 	return MyPawn;
 }

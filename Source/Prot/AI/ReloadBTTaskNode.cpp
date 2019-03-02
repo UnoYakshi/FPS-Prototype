@@ -12,7 +12,7 @@ EBTNodeResult::Type UReloadBTTaskNode::ExecuteTask(UBehaviorTreeComponent & Owne
 		ABot* Bot = Cast<ABot>(BlackboardComponent->GetValueAsObject("SelfActor"));
 		if (Bot && Bot->GetCurrentWeapon())
 		{
-			Bot->Reload();
+			Bot->CurrentWeaponComp->Reload();
 			return EBTNodeResult::Succeeded;
 		}
 	}
