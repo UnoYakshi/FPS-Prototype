@@ -28,6 +28,7 @@ bool AInteractiveObject::OnUse_Implementation(AActor* Initiator)
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(TEXT("INTERACTION %s"), TEXT("OnUse")));
 	bIsUsed = true;
+	OnUseWithDelegates.Broadcast(Initiator);
 	return bIsUsed;
 }
 

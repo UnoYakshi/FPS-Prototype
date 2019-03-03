@@ -80,3 +80,6 @@ DerivedDataCache/*
 # Content packages...
 Content/StarterContent/*
 Content/FPS_Weapon_Bundle/*
+
+# Utilities
+*.bat
