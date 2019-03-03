@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "UObject/ObjectMacros.h"
 #include "InteractiveObject.generated.h"
 
 /** Adding an ability to assign delegates that will be called

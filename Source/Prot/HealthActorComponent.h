@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "UObject/ObjectMacros.h"
 #include "Components/TextRenderComponent.h"
 #include "HealthActorComponent.generated.h"
 

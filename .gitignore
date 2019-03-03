@@ -83,3 +83,6 @@ Content/FPS_Weapon_Bundle/*
 
 # Utilities
 *.bat
+
+# Temporary files
+enc_temp_folder
