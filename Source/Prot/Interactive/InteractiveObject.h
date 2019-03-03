@@ -37,6 +37,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Game|Interaction")
 	FUseSignature OnUseWithDelegates;
 
+	/** Called when the object is stopped being used */
+	UPROPERTY(BlueprintAssignable, Category = "Game|Interaction")
+	FUseSignature OnStopUsingWithDelegates;
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	bool OnStopUsing(AActor* Initiator);
 	bool OnStopUsing_Implementation(AActor* Initiator);
