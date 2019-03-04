@@ -13,4 +13,4 @@
 #define COLLISION_PICKUP		ECC_GameTraceChannel3
 
 // Either print debug-lines on screen or not...
-#define DEBUG true
+#define DEBUG false
