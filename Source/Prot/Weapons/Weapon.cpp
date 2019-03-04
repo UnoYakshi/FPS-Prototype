@@ -56,9 +56,7 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	const FVector Origin = GetMuzzleLocation();
-	// Should be GetForwardVector()...	
-	// But we have the weapon rotated by 90 degrees counter-clockwise...
-	const FVector Direciton = Mesh->GetRightVector();
+	const FVector Direciton = Mesh->GetForwardVector();
 	const float ProjectileAdjustRange = 10000.0f;
 
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
@@ -346,7 +344,7 @@ void AWeapon::FireWeapon()
 	}
 
 	const FVector Origin = GetMuzzleLocation();
-	const FVector Direciton = Mesh->GetRightVector();
+	const FVector Direciton = Mesh->GetForwardVector();
 	const float ProjectileAdjustRange = 10000.0f;
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
 
