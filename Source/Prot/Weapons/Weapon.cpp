@@ -51,6 +51,13 @@ AWeapon::AWeapon()
 	MinNetUpdateFrequency = 33.0f;
 }
 
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetActorRelativeLocation(FVector::ZeroVector);
+}
+
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

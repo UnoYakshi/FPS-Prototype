@@ -72,6 +72,9 @@ class PROT_API AWeapon : public AActor
 public:
 	AWeapon();
 
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	virtual void Tick(float DeltaTime);
 

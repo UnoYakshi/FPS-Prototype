@@ -58,12 +58,11 @@ void UWeaponComponent::BeginPlay()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BeginPlay::NoPlayerInputComponent"));
 	}
-
 	
-	if (CurrentWeapon && CurrentWeapon->GetWeaponMesh())
+	if (CurrentWeapon)
 	{
-		CurrentWeapon->GetWeaponMesh()->SetRelativeLocation(FVector::ZeroVector);
-		//CurrentWeapon->OnEquip(nullptr);
+		CurrentWeapon->SetActorRelativeLocation(FVector::ZeroVector);
+		CurrentWeapon->OnEquip(nullptr);
 	}
 }
 
