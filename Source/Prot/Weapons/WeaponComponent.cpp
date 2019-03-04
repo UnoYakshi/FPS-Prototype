@@ -4,30 +4,19 @@
 
 #include "Prot.h"
 #include "Projectile.h"
-#include "MyPlayerController.h"
+//#include "MyPlayerController.h"
 #include "ProtCharacter.h"
 
-#include "GameFramework/Pawn.h"
+//#include "GameFramework/Pawn.h"
 #include "Net/UnrealNetwork.h"
-#include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "Components/AudioComponent.h"
 
 
 UWeaponComponent::UWeaponComponent()
 {
-	// AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
-
-
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
 
-	//SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
-	//SetReplicates(true);
-	//bNetUseOwnerRelevancy = true;
-	//NetUpdateFrequency = 66.0f;
-	//MinNetUpdateFrequency = 33.0f;
+	IronsightSocketName = FName("Ironsight");
 
 	//MyPawn = Cast<APawn>(GetOwner());
 }
@@ -36,6 +25,23 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (bIsAiming && CurrentWeapon)
+	{
+		UCameraComponent* Camera = GetOwner()->FindComponentByClass<UCameraComponent>();
+		
+		// Set weapon location aligned with the ironsight...
+		FVector CameraLoc = Camera->RelativeLocation;
+		FVector NewWeaponLoc = CameraLoc + (CurrentWeapon->GetActorLocation() - GetIronsightSocketLocaction());
+		CurrentWeapon->SetActorRelativeLocation(NewWeaponLoc);
+
+		// Set weapon rotation aligned with the camera...
+		FRotator CameraRot = Camera->RelativeRotation;
+		CurrentWeapon->SetActorRotation(CameraRot);
+	}
+	if (!bIsAiming)
+	{
+		CurrentWeapon->SetActorRelativeLocation(FVector::ZeroVector);
+	}
 }
 
 void UWeaponComponent::BeginPlay()
@@ -43,11 +49,9 @@ void UWeaponComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// "Automatically" bind inputs...
-	//ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	UInputComponent* OwnerInput = GetOwner()->InputComponent;
 	if (OwnerInput)
 	{
-
 		OwnerInput->BindAction("Fire", IE_Pressed, this, &UWeaponComponent::TryStartFire);
 		OwnerInput->BindAction("Fire", IE_Released, this, &UWeaponComponent::TryStopFire);
 		OwnerInput->BindAction("Aim", IE_Pressed, this, &UWeaponComponent::StartAim);
@@ -191,7 +195,7 @@ bool UWeaponComponent::CanReload()
 
 void UWeaponComponent::StartAim_Implementation()
 {
-
+	bIsAiming = true;
 }
 
 bool UWeaponComponent::StartAim_Validate()
@@ -201,13 +205,22 @@ bool UWeaponComponent::StartAim_Validate()
 
 void UWeaponComponent::StopAim_Implementation()
 {
-
+	bIsAiming = false;
+	SetRelativeLocation(FVector::ZeroVector);
 }
 
 bool UWeaponComponent::StopAim_Validate()
 {
 	return true;
 }
+
+FVector UWeaponComponent::GetIronsightSocketLocaction() const
+{
+	return (CurrentWeapon && CurrentWeapon->GetWeaponMesh()) 
+	? CurrentWeapon->GetWeaponMesh()->GetSocketLocation(IronsightSocketName) 
+	: FVector::ZeroVector;
+}
+
 
 
 void UWeaponComponent::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)

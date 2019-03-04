@@ -92,16 +92,30 @@ public:
 	//////////////////////////////////////////////
 	// Handles camera manipulations for aiming (RMB)...
 	//
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Aim")
+	bool bIsAiming;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Aim")
+	FName IronsightSocketName;
+
+public:
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Aim")
 	virtual void StartAim();
 	virtual void StartAim_Implementation();
 	bool StartAim_Validate();
 
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
+	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Aim")
 	virtual void StopAim();
 	virtual void StopAim_Implementation();
 	bool StopAim_Validate();
 
+public:
+	FVector GetIronsightSocketLocaction() const;
+
+	/// //////////////////////////////////////////
+	/// USAGE
+	/// ///////////////////////////////////////////
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
 	FName WeaponAttachPoint;
@@ -111,7 +125,9 @@ protected:
 	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
 	AWeapon* CurrentWeapon;
 
-	// INVENTORY
+	/// //////////////////////////////////////////
+	/// INVENTORY
+	/// ///////////////////////////////////////////
 protected:
 	/**
 	* [server + local] equips weapon from inventory
@@ -134,7 +150,9 @@ public:
 	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
 
 
-	// UTILITY
+	/// //////////////////////////////////////////
+	/// UTILITY
+	/// //////////////////////////////////////////
 public:
 	/** Returns Weapon attach point... */
 	FName GetCurrentWeaponAttachPoint() const { return WeaponAttachPoint; }
