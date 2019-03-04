@@ -28,19 +28,17 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if (bIsAiming && CurrentWeapon)
 	{
 		UCameraComponent* Camera = GetOwner()->FindComponentByClass<UCameraComponent>();
+		FMinimalViewInfo CamData;
+		Camera->GetCameraView(DeltaTime, CamData);
 		
 		// Set weapon location aligned with the ironsight...
-		FVector CameraLoc = Camera->RelativeLocation;
+		FVector CameraLoc = CamData.Location;
 		FVector NewWeaponLoc = CameraLoc + (CurrentWeapon->GetActorLocation() - GetIronsightSocketLocaction());
-		CurrentWeapon->SetActorRelativeLocation(NewWeaponLoc);
+		CurrentWeapon->SetActorLocation(NewWeaponLoc);
 
 		// Set weapon rotation aligned with the camera...
-		FRotator CameraRot = Camera->RelativeRotation;
+		FRotator CameraRot = CamData.Rotation;
 		CurrentWeapon->SetActorRotation(CameraRot);
-	}
-	if (!bIsAiming)
-	{
-		CurrentWeapon->SetActorRelativeLocation(FVector::ZeroVector);
 	}
 }
 
@@ -206,7 +204,11 @@ bool UWeaponComponent::StartAim_Validate()
 void UWeaponComponent::StopAim_Implementation()
 {
 	bIsAiming = false;
-	SetRelativeLocation(FVector::ZeroVector);
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->SetActorRelativeLocation(FVector::ZeroVector);
+		CurrentWeapon->SetActorRelativeRotation(FRotator::ZeroRotator);
+	}
 }
 
 bool UWeaponComponent::StopAim_Validate()
