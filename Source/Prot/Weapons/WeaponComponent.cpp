@@ -16,6 +16,7 @@ UWeaponComponent::UWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
 
+	WeaponAttachPoint = FName("");
 	IronsightSocketName = FName("Ironsight");
 
 	//MyPawn = Cast<APawn>(GetOwner());
@@ -169,8 +170,6 @@ void UWeaponComponent::JustFireEnd()
 
 void UWeaponComponent::Reload()
 {
-	UE_LOG(LogTemp, Warning, TEXT("RELOAD"));
-
 	UWorld* World = GetWorld();
 	AMagazine* NewMag = World->SpawnActor<AMagazine>(
 		MagClassToSpawn,
@@ -179,7 +178,7 @@ void UWeaponComponent::Reload()
 		);
 	if (NewMag)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("CHAR::Reload"));
+		UE_LOG(LogTemp, Warning, TEXT("UWeaponComponent::Reload"));
 		NewMag->SetActorHiddenInGame(false);
 		CurrentWeapon->ChangeMagazine(NewMag);
 	}
@@ -222,7 +221,6 @@ FVector UWeaponComponent::GetIronsightSocketLocaction() const
 	? CurrentWeapon->GetWeaponMesh()->GetSocketLocation(IronsightSocketName) 
 	: FVector::ZeroVector;
 }
-
 
 
 void UWeaponComponent::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)

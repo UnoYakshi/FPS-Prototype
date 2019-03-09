@@ -10,7 +10,6 @@
 #include "HealthActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
-#include "Weapons/FireInterface.h"
 #include "ProtCharacter.generated.h"
 
 // Forward declarations...

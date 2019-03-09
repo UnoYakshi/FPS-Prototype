@@ -401,7 +401,7 @@ bool AWeapon::ServerStartReload_Validate()
 
 void AWeapon::ServerStartReload_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("WEAP::ServerStartReload"));
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::ServerStartReload"));
 	StartReload();
 }
 
@@ -440,8 +440,9 @@ bool AWeapon::CanReload() const
 {
 	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
 	// TODO: Check if MyPawn has magazines...
-	bool bCanReload = MyPawn && MyPawn->FindComponentByClass<UWeaponComponent>()->CanReload();
-	bool bGotAmmo = true;
+	// bool bCanReload = MyPawn && MyPawn->FindComponentByClass<UWeaponComponent>()->CanReload();
+	bool bCanReload = true;
+	bool bGotAmmo = (CurrentMag && CurrentMag->Data.CurrentAmmoNum > 0);
 
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanReload && bGotAmmo && bStateOKToReload);
@@ -568,7 +569,7 @@ void AWeapon::RemoveMagazine()
 	{
 		// TODO: Add animation?..
 		CurrentMag = nullptr;
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::RemoveOldMag"));
+		UE_LOG(LogTemp, Warning, TEXT("AWeapon::RemoveOldMag"));
 	}
 }
 
@@ -805,7 +806,6 @@ FVector AWeapon::GetMuzzleDirection() const
 
 FHitResult AWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
 {
-
 	// Perform trace to retrieve hit info
 	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, Instigator);
 	TraceParams.bTraceAsyncScene = true;
@@ -880,7 +880,7 @@ void AWeapon::OnRep_Reload()
 	}
 }
 
-void AWeapon::SimulateWeaponFire()
+void AWeapon::SimulateWeaponFire_Implementation()
 {
 	if (MuzzleFX)
 	{
@@ -907,7 +907,7 @@ void AWeapon::SimulateWeaponFire()
 	}
 }
 
-void AWeapon::StopSimulatingWeaponFire()
+void AWeapon::StopSimulatingWeaponFire_Implementation()
 {
 	if (bLoopedMuzzleFX)
 	{
