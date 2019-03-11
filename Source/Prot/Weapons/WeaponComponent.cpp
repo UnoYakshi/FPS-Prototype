@@ -16,7 +16,7 @@ UWeaponComponent::UWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
 
-	WeaponAttachPoint = FName("");
+	WeaponAttachPoint = FName("weapon_socket_right");
 	IronsightSocketName = FName("Ironsight");
 
 	//MyPawn = Cast<APawn>(GetOwner());

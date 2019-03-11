@@ -197,6 +197,10 @@ void AWeapon::AttachMeshToPawn()
 
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, 
 		// bOwnerNoSee flags deal with visibility.
+		if (!ParentWeaponComp)
+		{
+			return;
+		}
 		FName AttachPoint = ParentWeaponComp->GetCurrentWeaponAttachPoint();
 		USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
 		if (MyPawn->IsLocallyControlled())
