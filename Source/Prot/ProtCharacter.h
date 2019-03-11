@@ -42,12 +42,20 @@ protected:
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
 	float BaseTurnRate;
 
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
 	float BaseLookUpRate;
+
+	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
+	float CurTurnRate;
+
+	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
+	float CurLookUpRate;
 
 	/** Returns Aim Offsets?.. */
 	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
@@ -94,69 +102,7 @@ private:
 
 	UFUNCTION()
 	void OnRep_GrenadeCount();
-	////////////////////////////////
 
-public:
-	/** Either player pressed Fire action or not (i.e., LMB is pressed)... */
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	//bool bWantsToFire;
-
-	/// //////////////////////////////////////////
-	/// FIRE
-	/*UFUNCTION(BlueprintPure, Category = "Game|Weapon")
-	bool CanFire() const;
-
-	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
-	bool WeaponCanFire() const;*/
-
-	//////////////////////////////////////////////
-	// Handles Character's side start firing...
-	//
-	/** Player pressed StartFire action (LMB pressed)... */
-	//UFUNCTION(BlueprintCallable)
-	//void TryStartFire();
-
-	///** Starts weapon fire... */
-	//UFUNCTION(BlueprintCallable)
-	//void JustFire();
-	
-	//////////////////////////////////////////////
-	// Handles Character's side stop firing...
-	//
-	/** Player pressed StartFire action (LMB released)... */
-	//UFUNCTION(BlueprintCallable)
-	//void TryStopFire();
-
-	///** Stops weapon fire... */
-	//UFUNCTION(BlueprintCallable)
-	//void JustFireEnd();
-
-	/// //////////////////////////////////////////
-	/// RELOAD
-	//////////////////////////////////////////////
-	// Handles Character's side start reloading...
-	//
-	///** Player pressed Reload action (R pressed)... */
-	//UFUNCTION(BlueprintCallable)
-	//void Reload();
-
-	/*UPROPERTY(EditDefaultsOnly, Category = Ammo)
-	TSubclassOf<class AMagazine> MagClassToSpawn;
-*/
-	/// //////////////////////////////////////////
-	/// AIM
-	//////////////////////////////////////////////
-	// Handles camera manipulations for aiming (RMB)...
-	//
-	/*UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StartAim();
-	virtual void StartAim_Implementation();
-	bool StartAim_Validate();
-
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StopAim();
-	virtual void StopAim_Implementation();
-	bool StopAim_Validate();*/
 
 public:
 	/** Current InteractiveObject... */
@@ -197,11 +143,17 @@ protected:
 	 */
 	void TurnAtRate(float Rate);
 
+	UFUNCTION(Server, WithValidation, Reliable)
+	void TurnAtRateServer(float Rate);
+
 	/**
 	 * Called via input to turn look up/down at a given rate. 
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
+
+	UFUNCTION(Server, WithValidation, Reliable)
+	void LookUpAtRateServer(float Rate);
 
 	/** Handler for when a touch input begins. */
 	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);

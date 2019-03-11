@@ -66,7 +66,6 @@ AProtCharacter::AProtCharacter()
 
 	// Create weapon component...
 	CurrentWeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComp"));
-	CurrentWeaponComp->WeaponAttachPoint = FName("weapon_socket_right");
 	CurrentWeaponComp->SetIsReplicated(true);
 	CurrentWeaponComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, CurrentWeaponComp->WeaponAttachPoint);
 
@@ -319,14 +318,50 @@ void AProtCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locatio
 
 void AProtCharacter::TurnAtRate(float Rate)
 {
+	if (Role < ROLE_Authority)
+	{
+		FRotator ControlRot = GetControlRotation();
+		FRotator ActorRot = GetActorRotation();
+		FRotator Res = UKismetMathLibrary::NormalizedDeltaRotator(ControlRot, ActorRot);
+		TurnAtRateServer(Rate);
+	}
+
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
+void AProtCharacter::TurnAtRateServer_Implementation(float Rate)
+{
+	CurTurnRate = Rate;
+}
+
+bool AProtCharacter::TurnAtRateServer_Validate(float Rate)
+{
+	return true;
+}
+
 void AProtCharacter::LookUpAtRate(float Rate)
 {
+	if (Role < ROLE_Authority)
+	{
+		FRotator ControlRot = GetControlRotation();
+		FRotator ActorRot = GetActorRotation();
+		FRotator Res = UKismetMathLibrary::NormalizedDeltaRotator(ControlRot, ActorRot);
+		LookUpAtRateServer(Res.Pitch);
+	}
+
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AProtCharacter::LookUpAtRateServer_Implementation(float Rate)
+{
+	CurLookUpRate = Rate;
+}
+
+bool AProtCharacter::LookUpAtRateServer_Validate(float Rate)
+{
+	return true;
 }
 
 void AProtCharacter::MoveForward(float Value)
