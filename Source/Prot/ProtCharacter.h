@@ -173,10 +173,12 @@ protected:
 
 	float RecoilOffset;
 
+
+	virtual void PreUpdateCamera(float DeltaTime);
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	FRotator CameraLocalRotation = FRotator(0.f);
 
-	virtual void PreUpdateCamera(float DeltaTime);
 	virtual float CameraProcessYaw(float Input);
 	virtual float CameraProcessPitch(float Input);
 

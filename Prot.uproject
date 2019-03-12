@@ -18,6 +18,11 @@
 		{
 			"Name": "ApexDestruction",
 			"Enabled": true
+		},
+		{
+			"Name": "MissionObjectives",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/8e224992c9414507b16c97f6793681c0"
 		}
 	]
 }
