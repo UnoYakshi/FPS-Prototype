@@ -366,7 +366,7 @@ bool AProtCharacter::LookUpAtRateServer_Validate(float Rate)
 
 void AProtCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if (Controller && Value)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
