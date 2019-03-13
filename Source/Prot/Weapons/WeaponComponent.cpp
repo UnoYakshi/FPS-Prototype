@@ -73,7 +73,10 @@ void UWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
-	//StopSimulatingWeaponFire();
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StopSimulatingWeaponFire();
+	}
 }
 
 bool UWeaponComponent::CanFire() const

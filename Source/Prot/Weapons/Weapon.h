@@ -372,6 +372,7 @@ protected:
 	UFUNCTION()
 	void OnRep_Reload();
 
+public:
 	/** Called in network play to do the cosmetic fx for firing */
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void SimulateWeaponFire();
