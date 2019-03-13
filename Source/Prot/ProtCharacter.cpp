@@ -78,11 +78,6 @@ void AProtCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (CurrentWeapon && CurrentWeapon->GetWeaponMesh())
-	{
-		CurrentWeapon->GetWeaponMesh()->SetRelativeLocation(FVector::ZeroVector);
-		//CurrentWeapon->OnEquip(nullptr);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,18 +96,11 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	//PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::TryStartFire);
-	//PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
-	//PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
-	//PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
-	//PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
 	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnGrenade);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
 
-	//PlayerInputComponent->BindAxis("MoveForward", PC, &AMyPlayerController::InputMovementFront);
-	//PlayerInputComponent->BindAxis("MoveRight", PC, &AMyPlayerController::InputMovementSide);
 	PlayerInputComponent->BindAxis("CameraRotationVertical", PC, &AMyPlayerController::InputCameraAddPitch);
 	PlayerInputComponent->BindAxis("CameraRotationHorizontal", PC, &AMyPlayerController::InputCameraAddYaw);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProtCharacter::MoveForward);
@@ -435,33 +423,6 @@ float AProtCharacter::CameraProcessPitch(float Input)
 }
 
 
-void AProtCharacter::EquipWeapon(AWeapon* Weapon)
-{
-	if (Weapon)
-	{
-		if (Role == ROLE_Authority)
-		{
-			//SetCurrentWeapon(Weapon, CurrentWeapon);
-		}
-		else
-		{
-			//ServerEquipWeapon(Weapon);
-		}
-	}
-}
-
-bool AProtCharacter::ServerEquipWeapon_Validate(AWeapon* Weapon)
-{
-	return true;
-}
-
-void AProtCharacter::ServerEquipWeapon_Implementation(AWeapon* Weapon)
-{
-	EquipWeapon(Weapon);
-}
-
-
-
 /////////////////////////////////////////////
 // REPLICATION
 
@@ -479,7 +440,6 @@ void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Ou
 	/// only to local owner: weapon change requests are locally instigated, other clients don't need it
 	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
 
-	DOREPLIFETIME(AProtCharacter, CurrentWeapon);
 	DOREPLIFETIME(AProtCharacter, CameraLocalRotation);
 }
 

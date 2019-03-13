@@ -182,30 +182,10 @@ public:
 	virtual float CameraProcessYaw(float Input);
 	virtual float CameraProcessPitch(float Input);
 
-protected:
-	/**
-	* [server + local] equips weapon from inventory
-	*
-	* @param Weapon	Weapon to equip
-	*/
-	void EquipWeapon(class AWeapon* Weapon);
-
-	/** equip weapon */
-	UFUNCTION(Reliable, Server, WithValidation)
-	void ServerEquipWeapon(class AWeapon* NewWeapon);
-
 public:
-
-	/** Currently equipped weapon... */
-	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
-	class AWeapon* CurrentWeapon;
-
+	/** Currently equipped weapon[component]... */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient)
 	UWeaponComponent* CurrentWeaponComp;
-
-	/** Updates current weapon...*/
-	//UFUNCTION(BlueprintCallable)
-	//void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
 
 protected:
 	/** CurrentWeapon replication handler... */
@@ -220,5 +200,5 @@ public:
 
 	// Gets current weapon
 	UFUNCTION(BlueprintGetter)
-	AWeapon* GetCurrentWeapon() { return CurrentWeapon; }
+	AWeapon* GetCurrentWeapon() { return CurrentWeaponComp ? CurrentWeaponComp->GetCurrentWeapon() : nullptr; }
 };
