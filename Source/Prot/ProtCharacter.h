@@ -21,10 +21,6 @@ class AProtCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** For first person (attached to eyes)... */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FPPCamera;
-
 public:
 	AProtCharacter();
 
@@ -39,6 +35,10 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Replicated)
 	UHealthActorComponent* HealthComponent;
+
+	/** For first person (attached to eyes)... */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FPPCamera;
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */

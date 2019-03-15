@@ -141,6 +141,7 @@ void ABotAIC::StopBotShooting()
 	if (Bot && Bot->GetCurrentWeapon())
 	{
 		Bot->CurrentWeaponComp->TryStopFire();
+		Bot->CurrentWeaponComp->StopAim();
 		UWorld* World = GetWorld();
 		if (World)
 		{

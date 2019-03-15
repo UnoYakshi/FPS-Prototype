@@ -1,13 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Bot.h"
-#include "NavigationSystem.h"
-#include "DrawDebugHelpers.h"
-#include "NavigationPath.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Weapons/WeaponComponent.h"
 
 ABot::ABot()
 {
+	FPPCamera->AttachTo(RootComponent);
 }
 
 void ABot::BeginPlay()
