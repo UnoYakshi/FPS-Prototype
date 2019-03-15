@@ -497,7 +497,7 @@ void AWeapon::HandleFiring()
 			}
 		}
 
-		MakeNoise(1.f, GetPawnOwner(), GetActorLocation());
+		MakeNoise(FiringLoudness, GetPawnOwner(), GetActorLocation());
 	}
 	else if (MyPawn && MyPawn->IsLocallyControlled())
 	{
