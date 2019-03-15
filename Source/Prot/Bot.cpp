@@ -6,7 +6,7 @@
 
 ABot::ABot()
 {
-	FPPCamera->AttachTo(RootComponent);
+	FPPCamera->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 void ABot::BeginPlay()

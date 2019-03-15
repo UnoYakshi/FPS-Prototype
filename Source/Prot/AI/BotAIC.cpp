@@ -50,6 +50,8 @@ void ABotAIC::Possess(APawn* Pawn)
 			{
 				SensingInterval = SensingComponent->SensingInterval;
 				SensingComponent->OnSeePawn.AddDynamic(this, &ABotAIC::OnBotSee);
+				// Registering the delegate which will fire when we hear something
+				SensingComponent->OnHearNoise.AddDynamic(this, &ABotAIC::OnHearNoise);
 			}
 		}
 		else
@@ -115,6 +117,34 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 		}
 		BlackboardComponent->SetValueAsObject("TargetPlayer", SeenPawn);
 	}
+}
+
+void ABotAIC::OnHearNoise(APawn* PawnInstigator, const FVector& Location, float Volume)
+{
+	UWorld* World = GetWorld();
+	if (World && PawnInstigator != Cast<APawn>(Bot))
+	{
+		World->GetTimerManager().SetTimer(
+			SeenTimerHandle,
+			this,
+			&ABotAIC::OnUnHearNoise,
+			SensingInterval + 0.1f,
+			false);
+		if (DEBUG)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("I can hear you!"));
+		}
+		BlackboardComponent->SetValueAsObject("TargetPlayer", PawnInstigator);
+	}
+}
+
+void ABotAIC::OnUnHearNoise()
+{
+	if (DEBUG)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("Can't hear you!"));
+	}
+	BlackboardComponent->SetValueAsObject("TargetPlayer", nullptr);
 }
 
 void ABotAIC::StopBotBehaviorTree(AActor* DeadBot)

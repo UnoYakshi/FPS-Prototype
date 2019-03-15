@@ -10,6 +10,7 @@
 #include "HealthActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 #include "ProtCharacter.generated.h"
 
 // Forward declarations...
@@ -39,6 +40,10 @@ protected:
 	/** For first person (attached to eyes)... */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
+
+	/*A Pawn Noise Emitter component which is used in order to emit the sounds to nearby AIs*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPawnNoiseEmitterComponent* PawnNoiseEmitterComp;
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */

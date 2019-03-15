@@ -50,6 +50,13 @@ class PROT_API ABotAIC : public AAIController
 	UFUNCTION()
 	virtual void OnBotSee(APawn* SeenPawn);
 
+	/* Hearing function - will be executed when we hear a Pawn */
+	UFUNCTION()
+	virtual void OnHearNoise(APawn* PawnInstigator, const FVector& Location, float Volume);
+
+	// Called so Bot stops hearing the player
+	virtual void OnUnHearNoise();
+
 	// Stops Bot's BehaviorTree
 	UFUNCTION()
 	virtual void StopBotBehaviorTree(AActor* DeadBot);

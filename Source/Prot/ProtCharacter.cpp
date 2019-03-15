@@ -72,6 +72,8 @@ AProtCharacter::AProtCharacter()
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
 	CurrentInteractive = nullptr;
+
+	PawnNoiseEmitterComp = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("PawnNoiseEmitterComp"));
 }
 
 void AProtCharacter::BeginPlay()
