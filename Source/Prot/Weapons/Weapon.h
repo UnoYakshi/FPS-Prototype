@@ -206,7 +206,7 @@ protected:
 
 	// The loudness of firing noise
 	UPROPERTY(EditAnywhere, Category = AI)
-	float FiringLoudness = 1.f;
+	float FiringLoudness;
 
 protected://TODO: private
 	/** Weapon's mesh... VisibleDefaultsOnly*/
