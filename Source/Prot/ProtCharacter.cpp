@@ -14,7 +14,6 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -52,26 +51,23 @@ AProtCharacter::AProtCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	// Create and set-up TFP camera...
+	// Create and set-up FPP camera...
+	// TODO: Make blendspace to make pitch more seamless...
 	FPPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPPCamera"));
-	FPPCamera->SetupAttachment(GetMesh(), FName("eyes"));
-	FPPCamera->bUsePawnControlRotation = false;
+	FPPCamera->SetupAttachment(GetMesh(), "eyes");
+	FPPCamera->bUsePawnControlRotation = true;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-	CameraTreshold = 20.f;
-	RecoilOffset = 10.f;
-
-	// Handle Weapon settings...
-	WeaponAttachPoint = FName("weapon_socket_right");
 	
-	// Create weapon's skeletal mesh (TESTING ONLY)...
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSKMesh"));
-	WeaponMesh->AttachToComponent(this->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponAttachPoint);
-
 	// Health system...
 	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("Health"));
 	HealthComponent->SetIsReplicated(true);
+
+	// Create weapon component...
+	CurrentWeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComp"));
+	CurrentWeaponComp->SetIsReplicated(true);
+	CurrentWeaponComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, CurrentWeaponComp->WeaponAttachPoint);
 
 	// Default values for Interactive stuff...
 	MaxUseDistance = 600.f;
@@ -82,8 +78,6 @@ void AProtCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	WeaponMesh = CurrentWeapon->GetWeaponMesh();
-	WeaponMesh->SetRelativeLocation(FVector::ZeroVector);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -102,18 +96,11 @@ void AProtCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProtCharacter::TryStartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProtCharacter::TryStopFire);
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProtCharacter::StartAim);
-	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProtCharacter::StopAim);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AProtCharacter::Reload);
 	PlayerInputComponent->BindAction("ThrowBomb", IE_Pressed, this, &AProtCharacter::AttempToSpawnGrenade);
 
 	PlayerInputComponent->BindAction("Use", IE_Pressed, this, &AProtCharacter::Use);
 	PlayerInputComponent->BindAction("Use", IE_Released, this, &AProtCharacter::StopUsing);
 
-	//PlayerInputComponent->BindAxis("MoveForward", PC, &AMyPlayerController::InputMovementFront);
-	//PlayerInputComponent->BindAxis("MoveRight", PC, &AMyPlayerController::InputMovementSide);
 	PlayerInputComponent->BindAxis("CameraRotationVertical", PC, &AMyPlayerController::InputCameraAddPitch);
 	PlayerInputComponent->BindAxis("CameraRotationHorizontal", PC, &AMyPlayerController::InputCameraAddYaw);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProtCharacter::MoveForward);
@@ -211,15 +198,7 @@ bool AProtCharacter::StopUsing_Validate()
 	return true;
 }
 
-bool AProtCharacter::CanFire() const
-{
-	return HealthComponent->IsAlive();
-}
 
-bool AProtCharacter::WeaponCanFire() const
-{
-	return CurrentWeapon->CanFire();
-}
 
 ///
 /// GRENADE & HP
@@ -309,119 +288,6 @@ bool AProtCharacter::ServerSpawnGrenade_Validate()
 	return true;
 }
 
-///
-/// FIREARMS
-///
-void AProtCharacter::TryStartFire()
-{
-	if (DEBUG)
-	{
-		switch (Role)
-		{
-		case ROLE_SimulatedProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::SimProxy!"));
-			break;
-		case ROLE_AutonomousProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Client!"));
-			break;
-		case ROLE_Authority:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::Server!"));
-			break;
-		default:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::NANI!"));
-			break;
-		}
-	}
-	// TODO: Check if character CanFire()...
-
-	JustFire();
-}
-
-void AProtCharacter::TryStopFire()
-{
-	if (DEBUG)
-	{
-		switch (Role)
-		{
-		case ROLE_SimulatedProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::SimProxy!"));
-			break;
-		case ROLE_AutonomousProxy:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Client!"));
-			break;
-		case ROLE_Authority:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::Server!"));
-			break;
-		default:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::NANI!"));
-			break;
-		}
-	}
-
-	JustFireEnd();
-}
-
-void AProtCharacter::JustFire()
-{
-	if (!bWantsToFire)
-	{
-		bWantsToFire = true;
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->StartFire();
-		}
-	}
-}
-
-void AProtCharacter::JustFireEnd()
-{
-	if (bWantsToFire)
-	{
-		bWantsToFire = false;
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->StopFire();
-		}
-	}
-}
-
-void AProtCharacter::Reload()
-{
-	UE_LOG(LogTemp, Warning, TEXT("RELOAD"));
-
-	UWorld* World = GetWorld();
-	AMagazine* NewMag = World->SpawnActor<AMagazine>(
-		MagClassToSpawn,
-		GetActorLocation(),
-		GetActorRotation()
-		);
-	if (NewMag)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CHAR::Reload"));
-		NewMag->SetActorHiddenInGame(false);
-		CurrentWeapon->ChangeMagazine(NewMag);
-	}
-}
-
-void AProtCharacter::StartAim_Implementation()
-{
-
-}
-
-bool AProtCharacter::StartAim_Validate()
-{
-	return true;
-}
-
-void AProtCharacter::StopAim_Implementation()
-{
-
-}
-
-bool AProtCharacter::StopAim_Validate()
-{
-	return true;
-}
 
 void AProtCharacter::OnResetVR()
 {
@@ -440,19 +306,55 @@ void AProtCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locatio
 
 void AProtCharacter::TurnAtRate(float Rate)
 {
+	if (Role < ROLE_Authority)
+	{
+		FRotator ControlRot = GetControlRotation();
+		FRotator ActorRot = GetActorRotation();
+		FRotator Res = UKismetMathLibrary::NormalizedDeltaRotator(ControlRot, ActorRot);
+		TurnAtRateServer(Rate);
+	}
+
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
+void AProtCharacter::TurnAtRateServer_Implementation(float Rate)
+{
+	CurTurnRate = Rate;
+}
+
+bool AProtCharacter::TurnAtRateServer_Validate(float Rate)
+{
+	return true;
+}
+
 void AProtCharacter::LookUpAtRate(float Rate)
 {
+	if (Role < ROLE_Authority)
+	{
+		FRotator ControlRot = GetControlRotation();
+		FRotator ActorRot = GetActorRotation();
+		FRotator Res = UKismetMathLibrary::NormalizedDeltaRotator(ControlRot, ActorRot);
+		LookUpAtRateServer(Res.Pitch);
+	}
+
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
+void AProtCharacter::LookUpAtRateServer_Implementation(float Rate)
+{
+	CurLookUpRate = Rate;
+}
+
+bool AProtCharacter::LookUpAtRateServer_Validate(float Rate)
+{
+	return true;
+}
+
 void AProtCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if (Controller && Value)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -481,31 +383,68 @@ void AProtCharacter::MoveRight(float Value)
 
 void AProtCharacter::PreUpdateCamera(float DeltaTime)
 {
-	if (!FPPCamera || !Controller || HealthComponent->IsDead())
+	if (!FPPCamera || !PC || HealthComponent->IsDead())
 	{
 		return;
 	}
-
-	// Will be retrieved by AnimBlueprint for 2D AimOffset...
-	CameraLocalRotation = (GetBaseAimRotation() - GetActorRotation()).GetNormalized();
-
 	//-------------------------------------------------------
-	// Blend Pitch to 0.0 if we are performing a montage (input are disabled)
-	/*-------------------------------------------------------
-	if (IsPerformingMontage())
-	{
-		//Reset camera rotation to 0 for when the Montage finish
-		FRotator TargetControl = EPC->GetControlRotation();
-		TargetControl.Pitch = 0.0f;
+	// Compute the rotation for Mesh AimOffset...
+	//-------------------------------------------------------
+	FRotator ControllerRotation = PC->GetControlRotation();
+	FRotator NewRotation = ControllerRotation;
 
-		float BlenSpeed = 300.0f;
+	// Get current controller rotation and process it to match the Character
+	NewRotation.Yaw = CameraProcessYaw(ControllerRotation.Yaw);
+	NewRotation.Pitch = CameraProcessPitch(ControllerRotation.Pitch + RecoilOffset);
+	NewRotation.Normalize();
 
-		TargetControl = FMath::RInterpConstantTo(EPC->GetControlRotation(), TargetControl, DeltaTime, BlenSpeed);
+	// Clamp new rotation
+	NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch, -90.0f + CameraTreshold, 90.0f - CameraTreshold);
+	NewRotation.Yaw = FMath::Clamp(NewRotation.Yaw, -91.0f, 91.0f);
 
-		EPC->SetControlRotation(TargetControl);
-	}
-	//*/
+	// Will be retrieved by AnimBlueprint...
+	CameraLocalRotation = NewRotation;
+
+	CameraTreshold = 20.f;
+	RecoilOffset = 10.f;
 }
+
+float AProtCharacter::CameraProcessPitch(float Input)
+{
+	//Recenter value
+	if (Input > 269.99f)
+	{
+		Input -= 270.0f;
+		Input = 90.0f - Input;
+		Input *= -1.0f;
+	}
+
+	return Input;
+}
+
+
+/////////////////////////////////////////////
+// REPLICATION
+
+void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
+{
+	//SetCurrentWeapon(CurrentWeapon, LastWeapon);
+}
+void AProtCharacter::OnRep_GrenadeCount()
+{
+}
+void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	/// only to local owner: weapon change requests are locally instigated, other clients don't need it
+	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
+
+	DOREPLIFETIME(AProtCharacter, CameraLocalRotation);
+}
+
+/////////////////////////////////////////////
+// UTILITY
 
 float AProtCharacter::CameraProcessYaw(float Input)
 {
@@ -530,101 +469,4 @@ float AProtCharacter::CameraProcessYaw(float Input)
 	}
 
 	return Angle;
-}
-
-float AProtCharacter::CameraProcessPitch(float Input)
-{
-	// Recenter value
-	if (Input > 269.99f)
-	{
-		Input -= 270.0f;
-		Input = 90.0f - Input;
-		Input *= -1.0f;
-	}
-
-	return Input;
-}
-
-void AProtCharacter::EquipWeapon(AWeapon* Weapon)
-{
-	if (Weapon)
-	{
-		if (Role == ROLE_Authority)
-		{
-			SetCurrentWeapon(Weapon, CurrentWeapon);
-		}
-		else
-		{
-			ServerEquipWeapon(Weapon);
-		}
-	}
-}
-
-bool AProtCharacter::ServerEquipWeapon_Validate(AWeapon* Weapon)
-{
-	return true;
-}
-
-void AProtCharacter::ServerEquipWeapon_Implementation(AWeapon* Weapon)
-{
-	EquipWeapon(Weapon);
-}
-
-void AProtCharacter::SetCurrentWeapon(AWeapon* NewWeapon, AWeapon* LastWeapon)
-{
-	AWeapon* LocalLastWeapon = nullptr;
-
-	if (LastWeapon)
-	{
-		LocalLastWeapon = LastWeapon;
-	}
-	else if (NewWeapon != CurrentWeapon)
-	{
-		LocalLastWeapon = CurrentWeapon;
-	}
-
-	// Unequip previous weapon if any...
-	if (LocalLastWeapon)
-	{
-		LocalLastWeapon->OnUnEquip();
-	}
-
-	CurrentWeapon = NewWeapon;
-
-	// Equip a new one...
-	if (NewWeapon)
-	{
-		NewWeapon->SetOwningPawn(this);	// Make sure weapon's MyPawn is pointing back to us. 
-		// During replication, we can't guarantee APawn::CurrentWeapon will rep after AWeapon::MyPawn!
-		
-		NewWeapon->OnEquip(LastWeapon);
-	}
-}
-
-/////////////////////////////////////////////
-// REPLICATION
-
-void AProtCharacter::OnRep_CurrentWeapon(AWeapon* LastWeapon)
-{
-	SetCurrentWeapon(CurrentWeapon, LastWeapon);
-}
-void AProtCharacter::OnRep_GrenadeCount()
-{
-}
-void AProtCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	/// only to local owner: weapon change requests are locally instigated, other clients don't need it
-	///DOREPLIFETIME_CONDITION(AShooterCharacter, Inventory, COND_OwnerOnly);
-
-	DOREPLIFETIME(AProtCharacter, CurrentWeapon);
-	DOREPLIFETIME(AProtCharacter, CameraLocalRotation);
-}
-
-/////////////////////////////////////////////
-// UTILITY
-FName AProtCharacter::GetWeaponAttachPoint() const
-{
-	return WeaponAttachPoint;
 }

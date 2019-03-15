@@ -7,8 +7,9 @@
 #include "Magazine.h"
 #include "Weapon.generated.h"
 
+class UWeaponComponent;
+class ACharacter;
 class UAnimMontage;
-class AProtCharacter;
 class UAudioComponent;
 class UParticleSystemComponent;
 class UCameraShake;
@@ -71,6 +72,9 @@ class PROT_API AWeapon : public AActor
 public:
 	AWeapon();
 
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	virtual void Tick(float DeltaTime);
 
@@ -107,7 +111,7 @@ public:
 	virtual void OnUnEquip();
 
 	/** [server] weapon was added to pawn's inventory */
-	virtual void OnEnterInventory(AProtCharacter* NewOwner);
+	virtual void OnEnterInventory(ACharacter* NewOwner);
 
 	/** [server] weapon was removed from pawn's inventory */
 	virtual void OnLeaveInventory();
@@ -177,10 +181,10 @@ public:
 
 	/** get pawn owner */
 	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
-	class AProtCharacter* GetPawnOwner() const;
+	class ACharacter* GetPawnOwner() const;
 
 	/** set the weapon's owning pawn */
-	void SetOwningPawn(AProtCharacter* AShooterCharacter);
+	void SetOwningPawn(ACharacter* NewPawn);
 
 	/** gets last time when this weapon was switched to */
 	float GetEquipStartedTime() const;
@@ -191,7 +195,10 @@ public:
 protected:
 	/** Weapon's pawn owner... */
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_MyPawn)
-	class AProtCharacter* MyPawn;
+	class ACharacter* MyPawn;
+
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_MyParent)
+	UWeaponComponent* ParentWeaponComp;
 
 	/** Weapon's data... */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Config)
@@ -357,15 +364,21 @@ protected:
 	void OnRep_MyPawn();
 
 	UFUNCTION()
+	void OnRep_MyParent();
+	
+	UFUNCTION()
 	void OnRep_BurstCounter();
 
 	UFUNCTION()
 	void OnRep_Reload();
 
+public:
 	/** Called in network play to do the cosmetic fx for firing */
+	UFUNCTION(NetMulticast, Reliable)
 	virtual void SimulateWeaponFire();
 
 	/** Called in network play to stop cosmetic fx (e.g. for a looping shot). */
+	UFUNCTION(NetMulticast, Reliable)
 	virtual void StopSimulatingWeaponFire();
 
 

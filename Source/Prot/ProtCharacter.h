@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "MyPlayerController.h"
 #include "Weapons/Weapon.h"
+#include "Weapons/WeaponComponent.h"
 #include "Weapons/Grenade.h"
 #include "HealthActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
-#include "ParticleDefinitions.h"
 #include "ProtCharacter.generated.h"
 
 // Forward declarations...
@@ -24,8 +24,10 @@ class AProtCharacter : public ACharacter
 	/** For first person (attached to eyes)... */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPPCamera;
+
 public:
 	AProtCharacter();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -40,12 +42,20 @@ protected:
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
 	float BaseTurnRate;
 
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
 	float BaseLookUpRate;
+
+	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
+	float CurTurnRate;
+
+	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category=Camera)
+	float CurLookUpRate;
 
 	/** Returns Aim Offsets?.. */
 	UFUNCTION(BlueprintCallable, Category = "Game|Weapon")
@@ -92,71 +102,7 @@ private:
 
 	UFUNCTION()
 	void OnRep_GrenadeCount();
-	////////////////////////////////
 
-	public:
-	/** Weapon's mesh to hold in hands... */
-	// TODO: Rework as CurrentWeapon of Weapon class...
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	USkeletalMeshComponent* WeaponMesh;
-
-	/** Either player pressed Fire action or not (i.e., LMB is pressed)... */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	bool bWantsToFire;
-
-	/// //////////////////////////////////////////
-	/// FIRE
-	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
-	bool CanFire() const;
-
-	UFUNCTION(BlueprintPure, Category = "Game|Weapon")
-	bool WeaponCanFire() const;
-
-	//////////////////////////////////////////////
-	// Handles Character's side start firing...
-	//
-	/** Player pressed StartFire action (LMB pressed)... */
-	UFUNCTION(BlueprintCallable)
-	void TryStartFire();
-
-	/** Starts weapon fire... */
-	void JustFire();
-
-	//////////////////////////////////////////////
-	// Handles Character's side stop firing...
-	//
-	/** Player pressed StartFire action (LMB released)... */
-	UFUNCTION(BlueprintCallable)
-	void TryStopFire();
-
-	/** Stops weapon fire... */
-	void JustFireEnd();
-
-	/// //////////////////////////////////////////
-	/// RELOAD
-	//////////////////////////////////////////////
-	// Handles Character's side start reloading...
-	//
-	/** Player pressed Reload action (R pressed)... */
-	void Reload();
-
-	UPROPERTY(EditDefaultsOnly, Category = Ammo)
-	TSubclassOf<class AMagazine> MagClassToSpawn;
-
-	/// //////////////////////////////////////////
-	/// AIM
-	//////////////////////////////////////////////
-	// Handles camera manipulations for aiming (RMB)...
-	//
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StartAim();
-	virtual void StartAim_Implementation();
-	bool StartAim_Validate();
-
-	UFUNCTION(BlueprintCallable, WithValidation, Server, Reliable, Category = "Weapons")
-	virtual void StopAim();
-	virtual void StopAim_Implementation();
-	bool StopAim_Validate();
 
 public:
 	/** Current InteractiveObject... */
@@ -197,11 +143,17 @@ protected:
 	 */
 	void TurnAtRate(float Rate);
 
+	UFUNCTION(Server, WithValidation, Reliable)
+	void TurnAtRateServer(float Rate);
+
 	/**
 	 * Called via input to turn look up/down at a given rate. 
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
+
+	UFUNCTION(Server, WithValidation, Reliable)
+	void LookUpAtRateServer(float Rate);
 
 	/** Handler for when a touch input begins. */
 	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
@@ -230,28 +182,10 @@ public:
 	virtual float CameraProcessYaw(float Input);
 	virtual float CameraProcessPitch(float Input);
 
-protected:
-	/**
-	* [server + local] equips weapon from inventory
-	*
-	* @param Weapon	Weapon to equip
-	*/
-	void EquipWeapon(class AWeapon* Weapon);
-
-	/** equip weapon */
-	UFUNCTION(Reliable, Server, WithValidation)
-	void ServerEquipWeapon(class AWeapon* NewWeapon);
-
-protected:
-	FName WeaponAttachPoint;
-
-	/** Currently equipped weapon... */
-	UPROPERTY(BlueprintReadWrite, Transient, ReplicatedUsing = OnRep_CurrentWeapon, BlueprintGetter = GetCurrentWeapon)
-	class AWeapon* CurrentWeapon;
-
-	/** Updates current weapon...*/
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentWeapon(class AWeapon* NewWeapon, class AWeapon* LastWeapon = nullptr);
+public:
+	/** Currently equipped weapon[component]... */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient)
+	UWeaponComponent* CurrentWeaponComp;
 
 protected:
 	/** CurrentWeapon replication handler... */
@@ -264,10 +198,7 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFPPCamera() const { return FPPCamera; }
 
-	/** Returns Weapon attach point... */
-	FName GetWeaponAttachPoint() const;
-
 	// Gets current weapon
 	UFUNCTION(BlueprintGetter)
-	AWeapon* GetCurrentWeapon() { return CurrentWeapon; }
+	AWeapon* GetCurrentWeapon() { return CurrentWeaponComp ? CurrentWeaponComp->GetCurrentWeapon() : nullptr; }
 };

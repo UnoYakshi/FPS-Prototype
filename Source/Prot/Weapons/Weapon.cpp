@@ -5,6 +5,7 @@
 #include "Prot.h"
 #include "ProtCharacter.h"
 #include "Projectile.h"
+#include "WeaponComponent.h"
 #include "MyPlayerController.h"
 
 #include "Particles/ParticleSystemComponent.h"
@@ -50,14 +51,19 @@ AWeapon::AWeapon()
 	MinNetUpdateFrequency = 33.0f;
 }
 
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetActorRelativeLocation(FVector::ZeroVector);
+}
+
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	const FVector Origin = GetMuzzleLocation();
-	// Should be GetForwardVector()...	
-	// But we have the weapon rotated by 90 degrees counter-clockwise...
-	const FVector Direciton = Mesh->GetRightVector();
+	const FVector Direciton = Mesh->GetForwardVector();
 	const float ProjectileAdjustRange = 10000.0f;
 
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
@@ -164,7 +170,7 @@ void AWeapon::OnUnEquip()
 	DetermineWeaponState();
 }
 
-void AWeapon::OnEnterInventory(AProtCharacter* NewOwner)
+void AWeapon::OnEnterInventory(ACharacter* NewOwner)
 {
 	SetOwningPawn(NewOwner);
 }
@@ -191,7 +197,11 @@ void AWeapon::AttachMeshToPawn()
 
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, 
 		// bOwnerNoSee flags deal with visibility.
-		FName AttachPoint = MyPawn->GetWeaponAttachPoint();
+		if (!ParentWeaponComp)
+		{
+			return;
+		}
+		FName AttachPoint = ParentWeaponComp->GetCurrentWeaponAttachPoint();
 		USkeletalMeshComponent* PawnMesh = MyPawn->GetMesh();
 		if (MyPawn->IsLocallyControlled())
 		{
@@ -345,7 +355,7 @@ void AWeapon::FireWeapon()
 	}
 
 	const FVector Origin = GetMuzzleLocation();
-	const FVector Direciton = Mesh->GetRightVector();
+	const FVector Direciton = Mesh->GetForwardVector();
 	const float ProjectileAdjustRange = 10000.0f;
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
 
@@ -395,7 +405,7 @@ bool AWeapon::ServerStartReload_Validate()
 
 void AWeapon::ServerStartReload_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("WEAP::ServerStartReload"));
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::ServerStartReload"));
 	StartReload();
 }
 
@@ -419,7 +429,7 @@ void AWeapon::ClientStartReload_Implementation()
 
 bool AWeapon::CanFire() const
 {
-	bool bCanFire = MyPawn && MyPawn->CanFire();
+	bool bCanFire = MyPawn && MyPawn->FindComponentByClass<UWeaponComponent>()->CanFire();
 	bool bStateOKToFire = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanFire && bStateOKToFire && !bPendingReload);
 }
@@ -434,8 +444,9 @@ bool AWeapon::CanReload() const
 {
 	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
 	// TODO: Check if MyPawn has magazines...
-	bool bCanReload = (MyPawn);
-	bool bGotAmmo = true;
+	// bool bCanReload = MyPawn && MyPawn->FindComponentByClass<UWeaponComponent>()->CanReload();
+	bool bCanReload = true;
+	bool bGotAmmo = (CurrentMag && CurrentMag->Data.CurrentAmmoNum > 0);
 
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return (bCanReload && bGotAmmo && bStateOKToReload);
@@ -562,7 +573,7 @@ void AWeapon::RemoveMagazine()
 	{
 		// TODO: Add animation?..
 		CurrentMag = nullptr;
-		UE_LOG(LogTemp, Warning, TEXT("WEAP::RemoveOldMag"));
+		UE_LOG(LogTemp, Warning, TEXT("AWeapon::RemoveOldMag"));
 	}
 }
 
@@ -799,7 +810,6 @@ FVector AWeapon::GetMuzzleDirection() const
 
 FHitResult AWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
 {
-
 	// Perform trace to retrieve hit info
 	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, Instigator);
 	TraceParams.bTraceAsyncScene = true;
@@ -811,12 +821,13 @@ FHitResult AWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTra
 	return Hit;
 }
 
-void AWeapon::SetOwningPawn(AProtCharacter* NewOwner)
+void AWeapon::SetOwningPawn(ACharacter* NewOwner)
 {
 	if (MyPawn != NewOwner)
 	{
 		Instigator = NewOwner;
 		MyPawn = NewOwner;
+		ParentWeaponComp = NewOwner->FindComponentByClass<UWeaponComponent>();;
 		// net owner for RPC calls
 		SetOwner(NewOwner);
 	}
@@ -834,6 +845,18 @@ void AWeapon::OnRep_MyPawn()
 	else
 	{
 		OnLeaveInventory();
+	}
+}
+
+void AWeapon::OnRep_MyParent()
+{
+	if (ParentWeaponComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ParentWeaponComponent::Instance"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ParentWeaponComponent::nullptr"));
 	}
 }
 
@@ -861,7 +884,7 @@ void AWeapon::OnRep_Reload()
 	}
 }
 
-void AWeapon::SimulateWeaponFire()
+void AWeapon::SimulateWeaponFire_Implementation()
 {
 	if (MuzzleFX)
 	{
@@ -888,7 +911,7 @@ void AWeapon::SimulateWeaponFire()
 	}
 }
 
-void AWeapon::StopSimulatingWeaponFire()
+void AWeapon::StopSimulatingWeaponFire_Implementation()
 {
 	if (bLoopedMuzzleFX)
 	{
@@ -929,7 +952,7 @@ USkeletalMeshComponent* AWeapon::GetWeaponMesh() const
 	return Mesh;
 }
 
-class AProtCharacter* AWeapon::GetPawnOwner() const
+class ACharacter* AWeapon::GetPawnOwner() const
 {
 	return MyPawn;
 }

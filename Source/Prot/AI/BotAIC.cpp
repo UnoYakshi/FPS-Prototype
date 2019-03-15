@@ -140,7 +140,7 @@ void ABotAIC::StopBotShooting()
 	ABot* Bot = Cast<ABot>(GetPawn());
 	if (Bot && Bot->GetCurrentWeapon())
 	{
-		Bot->TryStopFire();
+		Bot->CurrentWeaponComp->TryStopFire();
 		UWorld* World = GetWorld();
 		if (World)
 		{

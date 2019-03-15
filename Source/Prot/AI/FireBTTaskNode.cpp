@@ -14,7 +14,7 @@ EBTNodeResult::Type UFireBTTaskNode::ExecuteTask(UBehaviorTreeComponent & OwnerC
 			AWeapon* Weapon = Bot->GetCurrentWeapon();
 			if (Weapon && Weapon->CanFire())
 			{
-				Bot->TryStartFire();
+				Bot->CurrentWeaponComp->TryStartFire();
 				UWorld* World = GetWorld();
 				ABotAIC* BotController = Cast<ABotAIC>(OwnerComp.GetAIOwner());
 				if (World && BotController)
