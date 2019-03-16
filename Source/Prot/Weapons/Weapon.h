@@ -204,6 +204,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Config)
 	FWeaponData WeaponConfig;
 
+	// The loudness of firing noise
+	UPROPERTY(EditAnywhere, Category = AI)
+	float FiringLoudness;
+
 protected://TODO: private
 	/** Weapon's mesh... VisibleDefaultsOnly*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh)

@@ -40,6 +40,9 @@ class PROT_API ABotAIC : public AAIController
 	// Handle to manage bot seeing timer
 	FTimerHandle SeenTimerHandle;
 
+	// Handle to manage bot seeing timer
+	FTimerHandle HeardTimerHandle;
+
 	// Handle to manage bot shooting timer
 	FTimerHandle FireTimerHandle;
 
@@ -49,6 +52,13 @@ class PROT_API ABotAIC : public AAIController
 	// Called when bot sees the player
 	UFUNCTION()
 	virtual void OnBotSee(APawn* SeenPawn);
+
+	/* Hearing function - will be executed when we hear a Pawn */
+	UFUNCTION()
+	virtual void OnHearNoise(APawn* PawnInstigator, const FVector& Location, float Volume);
+
+	// Called so Bot stops hearing the player
+	virtual void OnUnHearNoise();
 
 	// Stops Bot's BehaviorTree
 	UFUNCTION()

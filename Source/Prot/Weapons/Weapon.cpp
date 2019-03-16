@@ -49,6 +49,7 @@ AWeapon::AWeapon()
 	bNetUseOwnerRelevancy = true;
 	NetUpdateFrequency = 66.0f;
 	MinNetUpdateFrequency = 33.0f;
+	FiringLoudness = 1.f;
 }
 
 void AWeapon::BeginPlay()
@@ -496,6 +497,8 @@ void AWeapon::HandleFiring()
 				);
 			}
 		}
+
+		MakeNoise(FiringLoudness, GetPawnOwner(), GetActorLocation());
 	}
 	else if (MyPawn && MyPawn->IsLocallyControlled())
 	{

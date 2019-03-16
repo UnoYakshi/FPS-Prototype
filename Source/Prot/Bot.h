@@ -36,4 +36,6 @@ public:
 	// Is patrolling order random?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	bool bPatrolRandomly;
+
+	virtual void CameraLookAt(AActor* Actor);
 };
