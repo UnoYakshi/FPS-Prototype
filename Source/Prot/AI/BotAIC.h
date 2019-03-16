@@ -40,6 +40,9 @@ class PROT_API ABotAIC : public AAIController
 	// Handle to manage bot seeing timer
 	FTimerHandle SeenTimerHandle;
 
+	// Handle to manage bot seeing timer
+	FTimerHandle HeardTimerHandle;
+
 	// Handle to manage bot shooting timer
 	FTimerHandle FireTimerHandle;
 

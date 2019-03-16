@@ -106,7 +106,7 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 	if (World)
 	{
 		World->GetTimerManager().SetTimer(
-                	SeenTimerHandle,
+            SeenTimerHandle,
 			this,
 			&ABotAIC::OnBotUnSee,
 			SensingInterval + 0.1f,
@@ -122,10 +122,10 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 void ABotAIC::OnHearNoise(APawn* PawnInstigator, const FVector& Location, float Volume)
 {
 	UWorld* World = GetWorld();
-	if (World && PawnInstigator != Cast<APawn>(Bot))
+	if (World)
 	{
 		World->GetTimerManager().SetTimer(
-			SeenTimerHandle,
+			HeardTimerHandle,
 			this,
 			&ABotAIC::OnUnHearNoise,
 			SensingInterval + 0.1f,
@@ -134,7 +134,7 @@ void ABotAIC::OnHearNoise(APawn* PawnInstigator, const FVector& Location, float 
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("I can hear you!"));
 		}
-		BlackboardComponent->SetValueAsObject("TargetPlayer", PawnInstigator);
+		BlackboardComponent->SetValueAsObject("HeardSomeone", PawnInstigator);
 	}
 }
 
@@ -144,7 +144,7 @@ void ABotAIC::OnUnHearNoise()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("Can't hear you!"));
 	}
-	BlackboardComponent->SetValueAsObject("TargetPlayer", nullptr);
+	BlackboardComponent->SetValueAsObject("HeardSomeone", nullptr);
 }
 
 void ABotAIC::StopBotBehaviorTree(AActor* DeadBot)
@@ -161,7 +161,7 @@ void ABotAIC::SetStopShootingTimer()
 	if (World)
 	{
 		World->GetTimerManager().SetTimer(FireTimerHandle, this, &ABotAIC::StopBotShooting,
-			0.1f, false);
+			0.5f, false);
 	}
 }
 
