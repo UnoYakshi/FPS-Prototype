@@ -115,6 +115,7 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));
 		}
+		Bot->CameraLookAt(SeenPawn);
 		BlackboardComponent->SetValueAsObject("TargetPlayer", SeenPawn);
 	}
 }
