@@ -16,6 +16,19 @@ ABotAIC::ABotAIC()
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 }
 
+void ABotAIC::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (Bot && BlackboardComponent)
+	{
+		APawn* TargetPawn = Cast<APawn>(BlackboardComponent->GetValueAsObject("TargetPlayer"));
+		if (TargetPawn) 
+		{
+			Bot->CameraLookAt(TargetPawn);
+		}
+	}
+}
+
 void ABotAIC::Possess(APawn* Pawn)
 {
 	Super::Possess(Pawn);
@@ -115,7 +128,6 @@ void ABotAIC::OnBotSee(APawn* SeenPawn)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I can see you!"));
 		}
-		Bot->CameraLookAt(SeenPawn);
 		BlackboardComponent->SetValueAsObject("TargetPlayer", SeenPawn);
 	}
 }
