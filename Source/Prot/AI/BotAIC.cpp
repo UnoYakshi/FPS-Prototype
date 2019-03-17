@@ -16,19 +16,6 @@ ABotAIC::ABotAIC()
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 }
 
-void ABotAIC::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	if (Bot && BlackboardComponent)
-	{
-		APawn* TargetPawn = Cast<APawn>(BlackboardComponent->GetValueAsObject("TargetPlayer"));
-		if (TargetPawn) 
-		{
-			Bot->CameraLookAt(TargetPawn);
-		}
-	}
-}
-
 void ABotAIC::Possess(APawn* Pawn)
 {
 	Super::Possess(Pawn);

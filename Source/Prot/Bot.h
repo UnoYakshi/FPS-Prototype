@@ -10,7 +10,7 @@
 #include "Engine/TargetPoint.h"
 #include "Bot.generated.h"
 
-//This class is used to create Bots that can patrol Target Points
+// This class is used to create Bots that can patrol Target Points
 UCLASS()
 class PROT_API ABot : public AProtCharacter
 {
@@ -22,7 +22,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	// The class of Behavior Tree that describes Bot's logic

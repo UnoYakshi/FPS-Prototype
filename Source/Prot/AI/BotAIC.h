@@ -68,8 +68,6 @@ class PROT_API ABotAIC : public AAIController
 	virtual void StopBotShooting();
 
 public:
-	virtual void Tick(float DeltaTime) override;
-
 	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const
 	{
 		return BlackboardComponent;

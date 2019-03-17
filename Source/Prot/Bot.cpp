@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "Weapons/WeaponComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "AI/BotAIC.h"
 
 ABot::ABot()
 {
@@ -17,6 +18,16 @@ void ABot::BeginPlay()
 void ABot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	ABotAIC* BotController = Cast<ABotAIC>(Controller);
+	UBlackboardComponent* BlackboardComponent = BotController->GetBlackboardComponent();
+	if (BlackboardComponent)
+	{
+		APawn* TargetPawn = Cast<APawn>(BlackboardComponent->GetValueAsObject("TargetPlayer"));
+		if (TargetPawn)
+		{
+			CameraLookAt(TargetPawn);
+		}
+	}
 }
 
 void ABot::CameraLookAt(AActor* Actor)
