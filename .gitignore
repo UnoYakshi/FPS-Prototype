@@ -4,6 +4,9 @@
 # Visual Studio 2015 database file
 *.VC.db
 
+# VS Code
+.vscode
+
 # Compiled Object files
 *.slo
 *.lo
@@ -71,7 +74,6 @@ Saved/*
 
 # Compiled source files for the engine to use
 Intermediate/*
-Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
@@ -86,3 +88,6 @@ Content/FPS_Weapon_Bundle/*
 
 # Temporary files
 enc_temp_folder
+
+# Plugins
+Plugins/

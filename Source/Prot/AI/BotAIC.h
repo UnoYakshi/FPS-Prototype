@@ -32,7 +32,7 @@ class PROT_API ABotAIC : public AAIController
 	 * Posses is executed when the character we want to control is spawned.
 	 * Inside this function, we initialize the blackboard and start the behavior tree 
 	 */
-	virtual void Possess(APawn* Pawn) override;
+	virtual void OnPossess(APawn* Pawn) override;
 
 	// Bot that is currently possessed by controller
 	ABot* Bot;

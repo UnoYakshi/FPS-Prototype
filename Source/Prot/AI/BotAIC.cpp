@@ -16,9 +16,9 @@ ABotAIC::ABotAIC()
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 }
 
-void ABotAIC::Possess(APawn* Pawn)
+void ABotAIC::OnPossess(APawn *Pawn)
 {
-	Super::Possess(Pawn);
+	Super::OnPossess(Pawn);
 
 	// Get the possessed Pawn and check if it's Bot
 	Bot = Cast<ABot>(Pawn);
