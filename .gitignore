@@ -85,6 +85,7 @@ Content/FPS_Weapon_Bundle/*
 
 # Utilities
 *.bat
+CPPLINT.cfg
 
 # Temporary files
 enc_temp_folder
