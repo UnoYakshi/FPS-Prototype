@@ -149,7 +149,6 @@ AInteractiveObject* AProtCharacter::GetInteractiveInView()
 	const FVector EndTrace = StartTrace + (direction * MaxUseDistance);
 
 	FCollisionQueryParams TraceParams(FName(TEXT("InteractiveRaytrace")), true, this);
-	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 	TraceParams.bTraceComplex = true;
 
