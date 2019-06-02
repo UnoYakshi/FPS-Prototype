@@ -92,3 +92,6 @@ enc_temp_folder
 
 # Plugins
 Plugins/
+
+# External content
+Content/ShootingRange
