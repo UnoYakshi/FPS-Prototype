@@ -2,12 +2,14 @@
 
 #include "Projectile.h"
 #include "Prot.h"
+#include "Weapon.h"
+#include "ImpactFX.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/AudioComponent.h"
 #include "Engine/Engine.h"
-#include "Weapon.h"
 
 
 // Sets default values
@@ -107,34 +109,33 @@ void AProjectile::OnImpact(const FHitResult& HitResult)
 
 	if (Role == ROLE_Authority && !bExploded)
 	{
-		Explode(HitResult);
+		TriggerImpact(HitResult);
 		DisableAndDestroy();
 	}
 }
 
-void AProjectile::Explode(const FHitResult& Impact)
+void AProjectile::TriggerImpact(const FHitResult& Impact)
 {
-	/*
-	if (ParticleComp)
+	if (ImpactTemplate)
 	{
-		ParticleComp->Deactivate();
+		// Deactivate any particles running...
+		//ParticleComp->Deactivate();
 	}
-	*/
-
-	/* effects and damage origin shouldn't be placed inside mesh at impact point
+	
+	/* effects and damage origin shouldn't be placed inside mesh at impact point */
 	const FVector NudgedImpactLocation = Impact.ImpactPoint + Impact.ImpactNormal * 10.0f;
-	if (ExplosionTemplate)
+	if (ImpactTemplate)
 	{
 		FTransform const SpawnTransform(Impact.ImpactNormal.Rotation(), NudgedImpactLocation);
-		AShooterExplosionEffect* const EffectActor = GetWorld()->SpawnActorDeferred<AShooterExplosionEffect>(ExplosionTemplate, SpawnTransform);
+		AImpactFX* const EffectActor = GetWorld()->SpawnActorDeferred<AImpactFX>(ImpactTemplate, SpawnTransform);
 		if (EffectActor)
 		{
 			EffectActor->SurfaceHit = Impact;
 			UGameplayStatics::FinishSpawningActor(EffectActor, SpawnTransform);
 		}
 	}
-	*/
-
+	
+	// Damage hit actor if possible...
 	AActor* DamagedActor = Impact.GetActor();
 	if (DamagedActor)
 	{
@@ -145,7 +146,7 @@ void AProjectile::Explode(const FHitResult& Impact)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Explode :: NON"));
+		UE_LOG(LogTemp, Warning, TEXT("Impact :: NON"));
 
 	}
 	bExploded = true;
@@ -153,6 +154,7 @@ void AProjectile::Explode(const FHitResult& Impact)
 
 void AProjectile::DisableAndDestroy()
 {
+	// TODO: Change to ImpactTemplate...
 	UAudioComponent* ProjAudioComp = FindComponentByClass<UAudioComponent>();
 	if (ProjAudioComp && ProjAudioComp->IsPlaying())
 	{
@@ -180,7 +182,7 @@ void AProjectile::OnRep_Exploded()
 		Impact.ImpactNormal = -ProjDirection;
 	}
 
-	Explode(Impact);
+	TriggerImpact(Impact);
 }
 
 void AProjectile::PostNetReceiveVelocity(const FVector& NewVelocity)

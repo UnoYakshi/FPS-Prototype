@@ -11,6 +11,9 @@
 #include "Projectile.generated.h"
 
 
+class AImpactFX;
+
+
 UENUM(BlueprintType)
 enum class EProjectileType : uint8
 {
@@ -36,15 +39,12 @@ class PROT_API AProjectile : public AActor
 	void OnImpact(const FHitResult& HitResult);
 
 public:	
-	// Sets default values for this actor's properties
 	AProjectile();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	//UFUNCTION()
@@ -101,9 +101,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	class UProjectileMovementComponent* ProjectileMovement;
 
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	TSubclassOf<AImpactFX> ImpactTemplate;
+
+
 protected:
-	/** trigger explosion */
-	void Explode(const FHitResult& Impact);
+	/** Trigger impact (FXs)... */
+	void TriggerImpact(const FHitResult& Impact);
 
 	/** shutdown projectile and prepare for destruction */
 	void DisableAndDestroy();
