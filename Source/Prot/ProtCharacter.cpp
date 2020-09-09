@@ -159,7 +159,7 @@ AInteractiveObject* AProtCharacter::GetInteractiveInView()
 	const FVector EndTrace = StartTrace + (direction * MaxUseDistance);
 
 	FCollisionQueryParams TraceParams(FName(TEXT("InteractiveRaytrace")), true, this);
-	TraceParams.bTraceAsyncScene = true;
+	// TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 	TraceParams.bTraceComplex = true;
 
@@ -247,7 +247,7 @@ void AProtCharacter::AttempToSpawnGrenade()
 {
 	if (HasGrenades())
 	{
-		if (Role < ROLE_Authority)
+		if (GetLocalRole() < ROLE_Authority)
 		{
 			ServerSpawnGrenade();
 		}
@@ -315,7 +315,7 @@ void AProtCharacter::TryStartFire()
 {
 	if (DEBUG)
 	{
-		switch (Role)
+		switch (GetLocalRole())
 		{
 		case ROLE_SimulatedProxy:
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_On::SimProxy!"));
@@ -340,7 +340,7 @@ void AProtCharacter::TryStopFire()
 {
 	if (DEBUG)
 	{
-		switch (Role)
+		switch (GetLocalRole())
 		{
 		case ROLE_SimulatedProxy:
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Char::LMB_Off::SimProxy!"));
@@ -523,7 +523,7 @@ void AProtCharacter::EquipWeapon(AWeapon* Weapon)
 {
 	if (Weapon)
 	{
-		if (Role == ROLE_Authority)
+		if (GetLocalRole() == ROLE_Authority)
 		{
 			SetCurrentWeapon(Weapon, CurrentWeapon);
 		}

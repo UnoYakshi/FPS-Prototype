@@ -13,7 +13,7 @@ ABotAIC::ABotAIC()
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 }
 
-void ABotAIC::Possess(APawn* Pawn)
+void ABotAIC::OnPossess(APawn* Pawn)
 {
 	Super::Possess(Pawn);
 

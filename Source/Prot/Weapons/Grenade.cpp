@@ -73,7 +73,7 @@ void AGrenade::OnProjectileBounce(const FHitResult& ImpactResult, const FVector&
 {
 	//If the bomb is not armed and we have authority,
 	//arm it and perform a delayed explosion
-	if (!bIsArmed && Role == ROLE_Authority)
+	if (!bIsArmed && GetLocalRole() == ROLE_Authority)
 	{
 		bIsArmed = true;
 		ArmBomb();

@@ -171,7 +171,7 @@ void AWeapon::OnEnterInventory(AProtCharacter* NewOwner)
 
 void AWeapon::OnLeaveInventory()
 {
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		SetOwningPawn(nullptr);
 	}
@@ -221,7 +221,7 @@ void AWeapon::StartFire()
 {
 	if (DEBUG)
 	{
-		switch (Role)
+		switch (GetLocalRole())
 		{
 		case ROLE_SimulatedProxy:
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StartFire::SimProxy!"));
@@ -239,7 +239,7 @@ void AWeapon::StartFire()
 	}
 	
 
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		ServerStartFire();
 	}
@@ -255,7 +255,7 @@ void AWeapon::StopFire()
 {
 	if (DEBUG)
 	{
-		switch (Role)
+		switch (GetLocalRole())
 		{
 		case ROLE_SimulatedProxy:
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Weapon::StopFire::SimProxy!"));
@@ -273,7 +273,7 @@ void AWeapon::StopFire()
 	}
 
 
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		ServerStopFire();
 	}
@@ -289,7 +289,7 @@ void AWeapon::StartReload(bool bFromReplication)
 {
 	UE_LOG(LogTemp, Warning, TEXT("WEAP::StartReload"));
 
-	if (!bFromReplication && Role < ROLE_Authority)
+	if (!bFromReplication && GetLocalRole() < ROLE_Authority)
 	{
 		ServerStartReload();
 	}
@@ -305,7 +305,7 @@ void AWeapon::StartReload(bool bFromReplication)
 			AnimDuration = WeaponConfig.NoAnimReloadDuration;
 		}
 		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &AWeapon::StopReload, AnimDuration, false);
-		if (Role == ROLE_Authority)
+		if (GetLocalRole() == ROLE_Authority)
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &AWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		}
@@ -434,7 +434,7 @@ bool AWeapon::CanReload() const
 {
 	//TODO: bool bCanReload = (!MyPawn || MyPawn->CanReload());
 	// TODO: Check if MyPawn has magazines...
-	bool bCanReload = (MyPawn);
+	bool bCanReload = bool(MyPawn);
 	bool bGotAmmo = true;
 
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
@@ -503,7 +503,7 @@ void AWeapon::HandleFiring()
 	if (MyPawn && MyPawn->IsLocallyControlled())
 	{
 		// local client will notify server
-		if (Role < ROLE_Authority)
+		if (GetLocalRole() < ROLE_Authority)
 		{
 			ServerHandleFiring();
 		}
@@ -713,7 +713,7 @@ void AWeapon::StopWeaponAnimation(UAnimMontage* Animation)
 
 FVector AWeapon::GetCameraAim() const
 {
-	AMyPlayerController* const PlayerController = Instigator ? Cast<AMyPlayerController>(Instigator->Controller) : NULL;
+	AMyPlayerController* const PlayerController = GetInstigator() ? Cast<AMyPlayerController>(GetInstigator()->Controller) : NULL;
 	FVector FinalAim = FVector::ZeroVector;
 
 	if (PlayerController)
@@ -723,9 +723,9 @@ FVector AWeapon::GetCameraAim() const
 		PlayerController->GetPlayerViewPoint(CamLoc, CamRot);
 		FinalAim = CamRot.Vector();
 	}
-	else if (Instigator)
+	else if (GetInstigator())
 	{
-		FinalAim = Instigator->GetBaseAimRotation().Vector();
+		FinalAim = GetInstigator()->GetBaseAimRotation().Vector();
 	}
 
 	return FinalAim;
@@ -733,7 +733,7 @@ FVector AWeapon::GetCameraAim() const
 
 FVector AWeapon::GetAdjustedAim() const
 {
-	AMyPlayerController* const PlayerController = Instigator ? Cast<AMyPlayerController>(Instigator->Controller) : nullptr;
+	AMyPlayerController* const PlayerController = GetInstigator() ? Cast<AMyPlayerController>(GetInstigator()->Controller) : nullptr;
 	FVector FinalAim = FVector::ZeroVector;
 	// If we have a player controller use it for the aim
 	if (PlayerController)
@@ -773,7 +773,7 @@ FVector AWeapon::GetCameraDamageStartLocation(const FVector& AimDir) const
 		PC->GetPlayerViewPoint(OutStartTrace, UnusedRot);
 
 		// Adjust trace so there is nothing blocking the ray between the camera and the pawn, and calculate distance from adjusted start
-		OutStartTrace = OutStartTrace + AimDir * ((Instigator->GetActorLocation() - OutStartTrace) | AimDir);
+		OutStartTrace = OutStartTrace + AimDir * ((GetInstigator()->GetActorLocation() - OutStartTrace) | AimDir);
 	}
 	/*
 	else if (AIPC)
@@ -801,8 +801,8 @@ FHitResult AWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTra
 {
 
 	// Perform trace to retrieve hit info
-	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, Instigator);
-	TraceParams.bTraceAsyncScene = true;
+	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, GetInstigator());
+	// TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = true;
 
 	FHitResult Hit(ForceInit);
@@ -815,7 +815,7 @@ void AWeapon::SetOwningPawn(AProtCharacter* NewOwner)
 {
 	if (MyPawn != NewOwner)
 	{
-		Instigator = NewOwner;
+		SetInstigator(NewOwner);
 		MyPawn = NewOwner;
 		// net owner for RPC calls
 		SetOwner(NewOwner);
