@@ -44,7 +44,7 @@ void UHealthActorComponent::SetHealthValue(const float NewHealthValue)
 		);
 	}
 
-	if (GetOwner()->Role < ROLE_Authority)
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
 	{
 		Server_SetHealthValue(NewHealthValue);
 	}
@@ -100,7 +100,7 @@ void UHealthActorComponent::Die()
 
 	if (DEBUG)
 	{
-		switch (GetOwner()->Role)
+		switch (GetOwner()->GetLocalRole())
 		{
 		case ROLE_SimulatedProxy:
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I am a dead SIMULATED_PROXY!"));

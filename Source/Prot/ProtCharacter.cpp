@@ -59,7 +59,7 @@ AProtCharacter::AProtCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-	
+
 	// Health system...
 	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("Health"));
 	HealthComponent->SetIsReplicated(true);
@@ -200,7 +200,6 @@ bool AProtCharacter::StopUsing_Validate()
 }
 
 
-
 ///
 /// GRENADE & HP
 ///
@@ -228,7 +227,7 @@ void AProtCharacter::AttempToSpawnGrenade()
 {
 	if (HasGrenades())
 	{
-		if (Role < ROLE_Authority)
+		if (GetLocalRole() < ROLE_Authority)
 		{
 			ServerSpawnGrenade();
 		}
@@ -307,7 +306,7 @@ void AProtCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locatio
 
 void AProtCharacter::TurnAtRate(float Rate)
 {
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		FRotator ControlRot = GetControlRotation();
 		FRotator ActorRot = GetActorRotation();
@@ -331,7 +330,7 @@ bool AProtCharacter::TurnAtRateServer_Validate(float Rate)
 
 void AProtCharacter::LookUpAtRate(float Rate)
 {
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		FRotator ControlRot = GetControlRotation();
 		FRotator ActorRot = GetActorRotation();

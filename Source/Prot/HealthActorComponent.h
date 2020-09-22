@@ -90,7 +90,7 @@ public:
 
 	/** Gets maximum health */
 	UFUNCTION(BlueprintGetter, Category = "Game|Health")
-	bool GetMaxHealth() { return MaxHealth; }
+	float GetMaxHealth() { return MaxHealth; }
 
 	private:
 	UFUNCTION()
