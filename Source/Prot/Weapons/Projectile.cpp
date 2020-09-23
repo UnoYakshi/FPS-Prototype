@@ -61,7 +61,7 @@ AProjectile::AProjectile() :
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	bReplicates = true;
-	bReplicateMovement = true;
+	SetReplicateMovement(true);
 
 	InitialLifeSpan = 3.f;
 }
@@ -107,7 +107,7 @@ void AProjectile::OnImpact(const FHitResult& HitResult)
 		UE_LOG(LogTemp, Warning, TEXT("OnImpact :: NON"));
 	}
 
-	if (Role == ROLE_Authority && !bExploded)
+	if (GetLocalRole() == ROLE_Authority && !bExploded)
 	{
 		TriggerImpact(HitResult);
 		DisableAndDestroy();
@@ -175,7 +175,7 @@ void AProjectile::OnRep_Exploded()
 	const FVector EndTrace = GetActorLocation() + ProjDirection * 150;
 	FHitResult Impact;
 
-	if (!GetWorld()->LineTraceSingleByChannel(Impact, StartTrace, EndTrace, COLLISION_PROJECTILE, FCollisionQueryParams(SCENE_QUERY_STAT(ProjClient), true, Instigator)))
+	if (!GetWorld()->LineTraceSingleByChannel(Impact, StartTrace, EndTrace, COLLISION_PROJECTILE, FCollisionQueryParams(SCENE_QUERY_STAT(ProjClient), true, GetInstigator())))
 	{
 		// failsafe
 		Impact.ImpactPoint = GetActorLocation();
