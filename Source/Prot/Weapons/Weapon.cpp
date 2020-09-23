@@ -355,11 +355,13 @@ void AWeapon::FireWeapon()
 		);
 	}
 
+	// Set-up projectile parameters...
 	const FVector Origin = GetMuzzleLocation();
 	const FVector Direciton = Mesh->GetForwardVector();
 	const float ProjectileAdjustRange = 10000.0f;
 	const FVector EndTrace = Origin + Direciton * ProjectileAdjustRange;
 
+	// Spawn the projectile...
 	if (ProjectileClass)
 	{
 		UWorld* World = MyPawn->GetWorld();
