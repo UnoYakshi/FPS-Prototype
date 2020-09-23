@@ -8,6 +8,7 @@
 #include "Sound/SoundCue.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "RMPP/Classes/RealisticProjectileComponent.h"
 #include "Projectile.generated.h"
 
 
@@ -100,7 +101,10 @@ protected:
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	class UProjectileMovementComponent* ProjectileMovement;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    class URealisticProjectileComponent* ProjectileMovement2;
 
+	
 protected:
 	/** trigger explosion */
 	void Explode(const FHitResult& Impact);

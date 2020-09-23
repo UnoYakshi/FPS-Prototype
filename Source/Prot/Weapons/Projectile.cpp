@@ -44,6 +44,9 @@ AProjectile::AProjectile() :
 		)
 	);
 
+	// FIXME: Doesn't work until RMPP is global...
+	// ProjectileMovement2 = CreateDefaultSubobject<URealisticProjectileComponent>(TEXT("ProjectileComp2"));	
+
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;

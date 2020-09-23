@@ -8,9 +8,20 @@ public class Prot : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "GameplayTasks" });
-
-        // Uncomment if you are using Slate UI
-        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "GameplayTasks",
+			"RMPP"
+		});
+		PublicIncludePaths.AddRange(new string[]
+		{
+			"RMPP/Public", "RMPP/Classes"
+		});
+		
+		
+        PrivateDependencyModuleNames.AddRange(new string[]
+        {
+	        "Slate", "SlateCore"
+        });
     }
 }
