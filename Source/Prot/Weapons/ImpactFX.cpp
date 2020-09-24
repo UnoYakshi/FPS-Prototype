@@ -3,17 +3,27 @@
 
 #include "ImpactFX.h"
 
+
+#include "Magazine.h"
 #include "Engine/AutoDestroySubsystem.h"
+#include "Engine/DecalActor.h"
+#include "Engine/Engine.h"
+#include "Components/DecalComponent.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
+
 #include "Runtime/Engine/Classes/PhysicalMaterials/PhysicalMaterial.h"
 
 
 AImpactFX::AImpactFX()
 {
-	/*for (const auto& Entry : TestVar)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("-- %d"), Entry.Value);
-	}*/
+	DecalComp = CreateDefaultSubobject<UDecalComponent>(L"Decal");
+	DecalComp->SetupAttachment(RootComponent);
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(L"Audio");
+	AudioComp->SetupAttachment(RootComponent);
 }
 
 void AImpactFX::BeginPlay()
@@ -23,6 +33,52 @@ void AImpactFX::BeginPlay()
 	for (const auto& Entry : Data)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("-- %d"), Entry.Key);
+	}
+
+	FVector CurrentActorLocation = GetActorLocation();
+	
+	UPhysicalMaterial* HitPhysMat = SurfaceHit.PhysMaterial.Get();
+	EPhysicalSurface HitSurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitPhysMat);
+
+	// Spawn VFX...
+	UParticleSystem* ImpactFX = GetImpactFX(HitSurfaceType);
+	if (ImpactFX)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactFX, CurrentActorLocation, GetActorRotation());
+	}
+
+	// Spawn sound...
+	USoundCue* ImpactSound = GetImpactSound(HitSurfaceType);
+	if (ImpactSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, CurrentActorLocation);
+	}
+
+	/*if (DefaultDecal.DecalMaterial)
+	{
+	FRotator RandomDecalRotation = SurfaceHit.ImpactNormal.Rotation();
+	RandomDecalRotation.Roll = FMath::FRandRange(-180.0f, 180.0f);
+
+	UGameplayStatics::SpawnDecalAttached(DefaultDecal.DecalMaterial, FVector(1.0f, DefaultDecal.DecalSize, DefaultDecal.DecalSize),
+	SurfaceHit.Component.Get(), SurfaceHit.BoneName,
+	SurfaceHit.ImpactPoint, RandomDecalRotation, EAttachLocation::KeepWorldPosition,
+	DefaultDecal.LifeSpan);
+	}*/
+	UMaterial* DecalMaterial = GetDecal(HitSurfaceType);
+	if (DecalMaterial)
+	{
+		ADecalActor* NewDecal = GetWorld()->SpawnActor<ADecalActor>(CurrentActorLocation, FRotator());
+		if (NewDecal)
+		{
+			NewDecal->SetDecalMaterial(DecalMaterial);
+			NewDecal->SetLifeSpan(2.0f);
+			NewDecal->GetDecal()->DecalSize = FVector(32.0f, 64.0f, 64.0f);
+			// m_previousActionDecal = NewDecal;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No decal's spawned..."));
 	}
 }
 
@@ -37,33 +93,8 @@ void AImpactFX::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	UPhysicalMaterial* HitPhysMat = SurfaceHit.PhysMaterial.Get();
-	EPhysicalSurface HitSurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitPhysMat);
 
-	// show particles
-	UParticleSystem* ImpactFX = GetImpactFX(HitSurfaceType);
-	if (ImpactFX)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactFX, GetActorLocation(), GetActorRotation());
-	}
 
-	// play sound
-	USoundCue* ImpactSound = GetImpactSound(HitSurfaceType);
-	if (ImpactSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-	}
-
-	/*if (DefaultDecal.DecalMaterial)
-	{
-		FRotator RandomDecalRotation = SurfaceHit.ImpactNormal.Rotation();
-		RandomDecalRotation.Roll = FMath::FRandRange(-180.0f, 180.0f);
-
-		UGameplayStatics::SpawnDecalAttached(DefaultDecal.DecalMaterial, FVector(1.0f, DefaultDecal.DecalSize, DefaultDecal.DecalSize),
-			SurfaceHit.Component.Get(), SurfaceHit.BoneName,
-			SurfaceHit.ImpactPoint, RandomDecalRotation, EAttachLocation::KeepWorldPosition,
-			DefaultDecal.LifeSpan);
-	}*/
 }
 
 UParticleSystem* AImpactFX::GetImpactFX(TEnumAsByte<EPhysicalSurface> SurfaceType) const
@@ -77,6 +108,19 @@ UParticleSystem* AImpactFX::GetImpactFX(TEnumAsByte<EPhysicalSurface> SurfaceTyp
 	}
 
 	return ImpactFX;
+}
+
+UMaterial* AImpactFX::GetDecal(TEnumAsByte<EPhysicalSurface> SurfaceType) const
+{
+	UMaterial* DecalMaterial = nullptr;
+
+	if (Data.Contains(SurfaceType))
+	{
+		FMaterialImpactData CurrentSurfaceData = Data[SurfaceType];
+		DecalMaterial = CurrentSurfaceData.DecalMaterial;
+	}
+
+	return DecalMaterial;
 }
 
 USoundCue* AImpactFX::GetImpactSound(TEnumAsByte<EPhysicalSurface> SurfaceType) const

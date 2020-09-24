@@ -116,12 +116,6 @@ void AProjectile::OnImpact(const FHitResult& HitResult)
 
 void AProjectile::TriggerImpact(const FHitResult& Impact)
 {
-	if (ImpactTemplate)
-	{
-		// Deactivate any particles running...
-		//ParticleComp->Deactivate();
-	}
-	
 	/* effects and damage origin shouldn't be placed inside mesh at impact point */
 	const FVector NudgedImpactLocation = Impact.ImpactPoint + Impact.ImpactNormal * 10.0f;
 	if (ImpactTemplate)
@@ -142,12 +136,13 @@ void AProjectile::TriggerImpact(const FHitResult& Impact)
 		FDamageEvent DamageEvent;
 		//UGameplayStatics::ApplyDamage(DamagedActor, 3.f, MyController.Get(), this, nullptr);
 
-		DamagedActor->TakeDamage(2.f, DamageEvent, MyController.Get(), this);
+		// FIXME: Calculate proper damage!
+		float DamageToDeal = 2.f;
+		DamagedActor->TakeDamage(DamageToDeal, DamageEvent, MyController.Get(), this);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Impact :: NON"));
-
+		UE_LOG(LogTemp, Warning, TEXT("Impact :: No damage is dealt..."));
 	}
 	bExploded = true;
 }

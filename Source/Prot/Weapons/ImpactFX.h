@@ -9,6 +9,9 @@
 #include "Components/DecalComponent.h"
 #include "Materials/Material.h"
 
+
+// #include "ImpactSpawner.h"
+
 #include "ImpactFX.generated.h"
 
 
@@ -41,12 +44,12 @@ struct FMaterialImpactData: public FTableRowBase
 	UParticleSystem* ImpactFX;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Visual)
-    UMaterial* Decal;
+    UMaterial* DecalMaterial;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Sound)
 	USoundCue* ImpactSound;
 
-	FMaterialImpactData() : ImpactFX(nullptr), Decal(nullptr), ImpactSound(nullptr)
+	FMaterialImpactData() : ImpactFX(nullptr), DecalMaterial(nullptr), ImpactSound(nullptr)
 	{}
 
 	// TODO: Make it hashable... https://answers.unrealengine.com/questions/707922/tmap-hashable-keytype.html or...
@@ -73,26 +76,21 @@ class PROT_API AImpactFX : public AActor
 	
 public:	
 	AImpactFX();
-
-protected:
-	virtual void BeginPlay() override;
-	
-	/** spawn effect */
-	virtual void PostInitializeComponents() override;
-
-public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	//static const TMap<FString, int32> TestVar;
+	virtual void BeginPlay() override;
+	/** spawn effect */
+	virtual void PostInitializeComponents() override;
 
-	/** Named impact particles and sounds map... */
+protected:
+	/** Spawners... */
+	class UDecalComponent* DecalComp;
+	class UAudioComponent* AudioComp;
+
+	/** Named impact effects map... */
 	UPROPERTY(EditDefaultsOnly, Category=Content)
 	TMap<TEnumAsByte<EPhysicalSurface>, FMaterialImpactData> Data;
-
-	///** Default decal when material specific override doesn't exist */
-	//UPROPERTY(EditDefaultsOnly, Category=Defaults)
-	//struct FDecalData DefaultDecal;
 
 public:
 	/** surface data for spawning */
@@ -100,9 +98,13 @@ public:
 	FHitResult SurfaceHit;
 
 protected:
-	/** get FX for material type */
+	/** VFX getter... */
 	UParticleSystem* GetImpactFX(TEnumAsByte<EPhysicalSurface> SurfaceType) const;
 
-	/** get sound for material type */
+	/** Decal getter... */
+	UMaterial* GetDecal(TEnumAsByte<EPhysicalSurface> SurfaceType) const;
+
+	/** SFX getter... */
 	USoundCue* GetImpactSound(TEnumAsByte<EPhysicalSurface> SurfaceType) const;
+
 };
