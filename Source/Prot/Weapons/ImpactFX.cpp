@@ -2,18 +2,14 @@
 
 
 #include "ImpactFX.h"
+
+#include "Engine/AutoDestroySubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/PhysicalMaterials/PhysicalMaterial.h"
 
-//const TMap<FString, int32> AImpactFX::TestVar = {
-//	{"5", 5},
-//	{"3", 3}
-//};
 
 AImpactFX::AImpactFX()
 {
-	bAutoDestroyWhenFinished = true;
-
 	/*for (const auto& Entry : TestVar)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("-- %d"), Entry.Value);

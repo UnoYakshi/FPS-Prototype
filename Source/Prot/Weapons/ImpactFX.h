@@ -3,8 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
 #include "Sound/SoundCue.h"
+#include "Components/DecalComponent.h"
+#include "Materials/Material.h"
+
 #include "ImpactFX.generated.h"
 
 
@@ -16,26 +20,34 @@
 #define SURFACE_Wood		SurfaceType5
 #define SURFACE_Grass		SurfaceType6
 #define SURFACE_Glass		SurfaceType7
-#define SURFACE_Flesh		SurfaceType8
 
-#define SURFACE_Snow		SurfaceType9
+#define SURFACE_Flesh		SurfaceType8
+#define SURFACE_Bone		SurfaceType9
 #define SURFACE_Monster		SurfaceType10
-#define SURFACE_Ice			SurfaceType11
+
+#define SURFACE_Snow		SurfaceType11
+#define SURFACE_Ice			SurfaceType12
 
 
 /*
  * [Named] particle-sound pair...
  */
-USTRUCT()
-struct PROT_API FMaterialImpactData
+USTRUCT(BlueprintType, Blueprintable)
+struct FMaterialImpactData: public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category=FX)
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Visual)
 	UParticleSystem* ImpactFX;
 
-	UPROPERTY(EditDefaultsOnly, Category=Sound)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Visual)
+    UMaterial* Decal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Sound)
 	USoundCue* ImpactSound;
+
+	FMaterialImpactData() : ImpactFX(nullptr), Decal(nullptr), ImpactSound(nullptr)
+	{}
 
 	// TODO: Make it hashable... https://answers.unrealengine.com/questions/707922/tmap-hashable-keytype.html or...
 	/*
@@ -82,6 +94,7 @@ protected:
 	//UPROPERTY(EditDefaultsOnly, Category=Defaults)
 	//struct FDecalData DefaultDecal;
 
+public:
 	/** surface data for spawning */
 	UPROPERTY(BlueprintReadOnly, Category=Surface)
 	FHitResult SurfaceHit;

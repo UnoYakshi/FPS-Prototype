@@ -8,6 +8,7 @@
 #include "Sound/SoundCue.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "ImpactFX.h"
 #include "Projectile.generated.h"
 
 
