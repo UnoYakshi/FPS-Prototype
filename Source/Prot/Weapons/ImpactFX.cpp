@@ -3,15 +3,14 @@
 
 #include "ImpactFX.h"
 
-
 #include "Magazine.h"
 #include "Engine/AutoDestroySubsystem.h"
 #include "Engine/DecalActor.h"
 #include "Engine/Engine.h"
-#include "Components/DecalComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Particles/ParticleSystemComponent.h"
+#include "Components/DecalComponent.h"
 #include "Components/AudioComponent.h"
 
 #include "Runtime/Engine/Classes/PhysicalMaterials/PhysicalMaterial.h"
@@ -20,8 +19,9 @@
 AImpactFX::AImpactFX()
 {
 	DecalComp = CreateDefaultSubobject<UDecalComponent>(L"Decal");
-	DecalComp->SetupAttachment(RootComponent);
-
+	// DecalComp->SetupAttachment(RootComponent);
+	RootComponent = DecalComp;
+	
 	AudioComp = CreateDefaultSubobject<UAudioComponent>(L"Audio");
 	AudioComp->SetupAttachment(RootComponent);
 }
@@ -67,14 +67,20 @@ void AImpactFX::BeginPlay()
 	UMaterial* DecalMaterial = GetDecal(HitSurfaceType);
 	if (DecalMaterial)
 	{
-		ADecalActor* NewDecal = GetWorld()->SpawnActor<ADecalActor>(CurrentActorLocation, FRotator());
-		if (NewDecal)
-		{
-			NewDecal->SetDecalMaterial(DecalMaterial);
-			NewDecal->SetLifeSpan(2.0f);
-			NewDecal->GetDecal()->DecalSize = FVector(32.0f, 64.0f, 64.0f);
-			// m_previousActionDecal = NewDecal;
-		}
+		float DecalLifetime = 2.f;
+		DecalComp->SetMaterial(0, DecalMaterial);
+		DecalComp->SetLifeSpan(DecalLifetime);
+		DecalComp->SetFadeOut(0.f, 10.f, true);
+		DecalComp->DecalSize = FVector(32.f, 32.f, 32.f);
+
+		// ADecalActor* NewDecal = GetWorld()->SpawnActor<ADecalActor>(CurrentActorLocation, FRotator());
+		// if (NewDecal)
+		// {
+		// 	NewDecal->SetDecalMaterial(DecalMaterial);
+		// 	NewDecal->SetLifeSpan(DecalLifetime);
+		// 	NewDecal->GetDecal()->DecalSize = FVector(32.0f, 32.0f, 32.0f);
+		// 	// m_previousActionDecal = NewDecal;
+		// }
 	}
 	else
 	{
@@ -92,8 +98,6 @@ void AImpactFX::Tick(float DeltaTime)
 void AImpactFX::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-
 
 }
 
