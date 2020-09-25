@@ -20,9 +20,11 @@ AImpactFX::AImpactFX()
 {
 	DecalComp = CreateDefaultSubobject<UDecalComponent>(L"Decal");
 	// DecalComp->SetupAttachment(RootComponent);
+	DecalComp->SetIsReplicated(true);
 	RootComponent = DecalComp;
 	
 	AudioComp = CreateDefaultSubobject<UAudioComponent>(L"Audio");
+	AudioComp->SetIsReplicated(true);
 	AudioComp->SetupAttachment(RootComponent);
 }
 
@@ -44,47 +46,67 @@ void AImpactFX::BeginPlay()
 	UParticleSystem* ImpactFX = GetImpactFX(HitSurfaceType);
 	if (ImpactFX)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactFX, CurrentActorLocation, GetActorRotation());
+		UGameplayStatics::SpawnEmitterAtLocation(
+			this,
+			ImpactFX,
+			CurrentActorLocation,
+			FRotator::ZeroRotator,
+			FVector(1),
+			true,
+			EPSCPoolMethod::AutoRelease,
+			true
+		);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No VFX's spawned..."));
 	}
 
-	// Spawn sound...
-	USoundCue* ImpactSound = GetImpactSound(HitSurfaceType);
-	if (ImpactSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, CurrentActorLocation);
-	}
-
-	/*if (DefaultDecal.DecalMaterial)
-	{
-	FRotator RandomDecalRotation = SurfaceHit.ImpactNormal.Rotation();
-	RandomDecalRotation.Roll = FMath::FRandRange(-180.0f, 180.0f);
-
-	UGameplayStatics::SpawnDecalAttached(DefaultDecal.DecalMaterial, FVector(1.0f, DefaultDecal.DecalSize, DefaultDecal.DecalSize),
-	SurfaceHit.Component.Get(), SurfaceHit.BoneName,
-	SurfaceHit.ImpactPoint, RandomDecalRotation, EAttachLocation::KeepWorldPosition,
-	DefaultDecal.LifeSpan);
-	}*/
+	// Spawn decal...
 	UMaterial* DecalMaterial = GetDecal(HitSurfaceType);
-	if (DecalMaterial)
+	if (DecalMaterial && DecalComp)
 	{
 		float DecalLifetime = 2.f;
 		DecalComp->SetMaterial(0, DecalMaterial);
 		DecalComp->SetLifeSpan(DecalLifetime);
 		DecalComp->SetFadeOut(0.f, 10.f, true);
 		DecalComp->DecalSize = FVector(32.f, 32.f, 32.f);
-
-		// ADecalActor* NewDecal = GetWorld()->SpawnActor<ADecalActor>(CurrentActorLocation, FRotator());
-		// if (NewDecal)
-		// {
-		// 	NewDecal->SetDecalMaterial(DecalMaterial);
-		// 	NewDecal->SetLifeSpan(DecalLifetime);
-		// 	NewDecal->GetDecal()->DecalSize = FVector(32.0f, 32.0f, 32.0f);
-		// 	// m_previousActionDecal = NewDecal;
-		// }
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No decal's spawned..."));
+	}
+
+	// Spawn sound...
+	USoundCue* ImpactSound = GetImpactSound(HitSurfaceType);
+	if (ImpactSound && AudioComp)
+	{
+		// UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, CurrentActorLocation);
+
+		AudioComp->SetSound(ImpactSound);
+		// AudioComp->ActiveCount = 1;
+		AudioComp->bAutoDestroy = true;
+		if (!AudioComp->IsActive()) 
+		{
+			AudioComp->Activate(true);
+		}
+		// default pitch value 1.0f
+		// modify the pitch to create variance by grabbing a random float between 1.0 and 1.3
+		AudioComp->SetPitchMultiplier(FMath::RandRange(1.0f, 1.3f));
+		AudioComp->SetVolumeMultiplier(3.f);
+		FSoundAttenuationSettings NewSettings = FSoundAttenuationSettings();
+		NewSettings.bSpatialize = true;
+		NewSettings.BinauralRadius = 150.f;
+		NewSettings.FalloffDistance = 500.f;
+		NewSettings.SpatializationAlgorithm = ESoundSpatializationAlgorithm::SPATIALIZATION_HRTF;
+		AudioComp->AdjustAttenuation(NewSettings);
+
+		// play the sound
+		AudioComp->Play(0.f);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No SFX's spawned..."));
 	}
 }
 
